@@ -1,0 +1,171 @@
+# Task 2.6 — Schema Init Subscriber + Schema Changed Subscriber
+
+## Dependencies
+- All Phase 1 tasks
+- Task 2.1 (adapter interface + resolver)
+- Tasks 2.2–2.5 (all adapter implementations)
+
+## Goal
+Implement the `WPOS_Subscriber_Schema_Init` subscriber that wires all adapters into
+the resolver and fires the `wpos_register_entity_sets` WP action for external plugins.
+Also finalize `WPOS_Subscriber_Schema_Changed` (started in Task 1.5).
+
+---
+
+## Schema Init Flow (from master plan Section 8)
+
+```
+WP 'init' fires
+  → WPOS_Hook_Bridge::on_wp_init()
+      → dispatch(WPOS_Event_WP_Init)
+          → WPOS_Subscriber_Schema_Init::handle()
+              → do_action('wpos_register_entity_sets', $registry)   ← external plugins
+              → dispatch(WPOS_Event_Schema_Register)
+                  → registers built-in adapters into WPOS_Adapter_Resolver
+                  → populates WPOS_Schema_Registry from registered adapters
+```
+
+---
+
+## File: `src/hooks/subscribers/class-wpos-subscriber-schema-init.php`
+
+```php
+class WPOS_Subscriber_Schema_Init implements WPOS_Event_Listener {
+
+    public function __construct(
+        private WPOS_Schema_Registry  $registry,
+        private WPOS_Adapter_Resolver $resolver,
+        private WPOS_Hook_Bridge      $bridge,
+        private WPOS_Event_Bus        $event_bus,
+    ) {}
+
+    public function get_event(): string {
+        return WPOS_Event_WP_Init::class;
+    }
+
+    public function handle( WPOS_Event $event ): void {
+        // 1. Let external plugins register their entity sets first
+        $this->bridge->action( 'wpos_register_entity_sets', [ $this->registry ] );
+
+        // 2. Dispatch the internal schema register event to wire built-in adapters
+        $schema_event = new WPOS_Event_Schema_Register( $this->registry );
+        $this->event_bus->dispatch( $schema_event );
+
+        // 3. Register built-in adapters
+        $this->register_builtin_adapters();
+
+        // 4. Discover and register CPTs + custom taxonomies
+        $this->register_discovered_adapters();
+
+        // 5. Populate schema registry from all registered adapters
+        foreach ( $this->resolver->registered_entity_sets() as $entity_set ) {
+            $adapter = $this->resolver->resolve( $entity_set );
+            if ( ! $this->registry->has( $entity_set ) ) {
+                $this->registry->register( $entity_set, $adapter->get_entity_type_definition() );
+            }
+        }
+
+        // 6. Signal that schema has been fully initialized (triggers metadata cache bust)
+        $this->event_bus->dispatch( new WPOS_Event_Schema_Changed(
+            reason:     'entity_registered',
+            entity_set: '*',
+        ) );
+    }
+
+    private function register_builtin_adapters(): void {
+        // Adapters are pre-built in bootstrapper; resolve them here and register
+        // into the adapter resolver with their entity set names.
+        // The exact pattern is: $this->resolver->register( $adapter->get_entity_set_name(), $adapter )
+        // Bootstrapper provides the concrete adapter instances via the container.
+        // This method receives them through constructor injection or a builder pattern.
+        // See Bootstrapper Update section below.
+    }
+
+    private function register_discovered_adapters(): void {
+        // Auto-discover CPTs and custom taxonomies
+        foreach ( WPOS_Adapter_CPT::discover_all() as $entity_set => $adapter ) {
+            if ( ! $this->resolver->has( $entity_set ) ) {
+                $this->resolver->register( $entity_set, $adapter );
+            }
+        }
+
+        foreach ( WPOS_Adapter_Taxonomy::discover_all() as $entity_set => $adapter ) {
+            if ( ! $this->resolver->has( $entity_set ) ) {
+                $this->resolver->register( $entity_set, $adapter );
+            }
+        }
+    }
+}
+```
+
+---
+
+## External Plugin Registration
+
+External plugins register custom entity sets via the `wpos_register_entity_sets` action:
+
+```php
+// Example from another plugin:
+add_action( 'wpos_register_entity_sets', function( WPOS_Schema_Registry $registry ) {
+    // Register a custom table adapter
+    $adapter = new WPOS_Adapter_Custom_Table( 'employees', 'Employees', 'id' );
+    $registry->register( 'Employees', $adapter->get_entity_type_definition() );
+    // Note: The adapter itself also needs to be registered with the resolver.
+    // This is done via a companion filter or a second argument.
+} );
+```
+
+**Design decision:** The `wpos_register_entity_sets` action should receive BOTH
+the schema registry AND the adapter resolver so external plugins can register adapters:
+
+```php
+$this->bridge->action( 'wpos_register_entity_sets', [ $this->registry, $this->resolver ] );
+```
+
+Update the hook signature documentation accordingly.
+
+---
+
+## Bootstrapper Update
+
+Update `WPOS_Bootstrapper::register_subscribers()` to provide all built-in adapters
+to `WPOS_Subscriber_Schema_Init`. The subscriber needs the adapter instances.
+Use one of these patterns:
+
+**Option A** — Pass adapters array directly:
+```php
+new WPOS_Subscriber_Schema_Init(
+    $c->get(WPOS_Schema_Registry::class),
+    $c->get(WPOS_Adapter_Resolver::class),
+    $c->get(WPOS_Hook_Bridge::class),
+    $c->get(WPOS_Event_Bus::class),
+    // Built-in adapters:
+    [
+        $c->get(WPOS_Adapter_WP_Posts::class . '.posts'),
+        $c->get(WPOS_Adapter_WP_Posts::class . '.pages'),
+        $c->get(WPOS_Adapter_WP_Posts::class . '.attachments'),
+        $c->get(WPOS_Adapter_WP_Users::class),
+        $c->get(WPOS_Adapter_WP_Terms::class . '.categories'),
+        $c->get(WPOS_Adapter_WP_Terms::class . '.tags'),
+    ]
+)
+```
+
+**Option B** — Register directly in bootstrapper and pass only resolver:
+Register adapters into the resolver inside `WPOS_Bootstrapper::build()` before
+any subscribers are registered. Then `WPOS_Subscriber_Schema_Init` only needs
+to call `register_discovered_adapters()` for CPTs/taxonomies.
+
+Choose whichever pattern is cleaner; document your choice clearly.
+
+---
+
+## Acceptance Criteria
+
+- `wpos_register_entity_sets` action fires with `WPOS_Schema_Registry` (and optionally `WPOS_Adapter_Resolver`) as arguments.
+- After the `init` hook fires, `Posts`, `Pages`, `Users`, `Categories`, `Tags`, `Attachments` are all registered in `WPOS_Adapter_Resolver`.
+- Any public CPT registered via `register_post_type()` before `init` is auto-discovered and registered.
+- Any public custom taxonomy registered before `init` is auto-discovered and registered.
+- `WPOS_Schema_Registry` is populated for all registered entity sets.
+- `WPOS_Event_Schema_Changed` is dispatched once after full initialization, which busts the metadata cache transients.
+- External plugin can register a custom entity set via `wpos_register_entity_sets` and have it appear in `$metadata` output.
