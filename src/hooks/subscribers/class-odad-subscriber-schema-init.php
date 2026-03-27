@@ -70,6 +70,11 @@ class ODAD_Subscriber_Schema_Init implements ODAD_Event_Listener {
             $this->bridge->action( 'ODAD_register_actions', [ $this->action_registry ] );
         }
 
+        // 1c. Fire hook so external plugins can register entity-set capability rules.
+        if ( null !== $this->capability_map ) {
+            $this->bridge->action( 'ODAD_register_permissions', [ $this->capability_map ] );
+        }
+
         // 2. Register built-in adapters injected at construction time.
         $this->register_builtin_adapters();
 

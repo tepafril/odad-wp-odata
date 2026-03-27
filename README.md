@@ -205,7 +205,15 @@ GET /wp-json/odata/v4/Posts?$expand=Author
 
 # Posts with author and tags
 GET /wp-json/odata/v4/Posts?$expand=Author,Tags
+
+# Nested expand — traverse a many-to-many relationship in one request
+GET /wp-json/odata/v4/Employees?$expand=EmployeeSkills($expand=Skill)
+
+# Nested expand with field selection (semicolon-separated options inside parentheses)
+GET /wp-json/odata/v4/Employees?$expand=EmployeeSkills($select=ProficiencyLevel,SkillID;$expand=Skill)
 ```
+
+Supported cardinalities: many-to-one (single object or `null`), one-to-many (array), and many-to-many via a pivot entity set. See [custom-tables.md](custom-tables.md) for how to declare navigation properties.
 
 ---
 
@@ -291,7 +299,7 @@ Returns the created record with its assigned ID and a `201 Created` status.
 
 ### Update a record (partial)
 
-Send only the fields you want to change:
+Send only the fields you want to change. Returns **200 OK** with the full updated entity:
 
 ```
 PATCH /wp-json/odata/v4/Posts(123)
@@ -304,7 +312,7 @@ Content-Type: application/json
 
 ### Replace a record (full)
 
-Send the complete replacement document:
+Send the complete replacement document. Returns **200 OK** with the full updated entity:
 
 ```
 PUT /wp-json/odata/v4/Posts(123)
@@ -318,6 +326,8 @@ Content-Type: application/json
 ```
 
 ### Delete a record
+
+Returns **204 No Content** (empty body):
 
 ```
 DELETE /wp-json/odata/v4/Posts(123)
@@ -427,7 +437,7 @@ Authorization: Basic base64(username:application_password)
 
 ## 8. Exposing Custom Database Tables
 
-See [custom-tables.md](custom-tables.md) for the full guide. Here is the short version.
+See [custom-tables.md](custom-tables.md) for the full guide including navigation properties (one-to-many, many-to-many). Here is the short version.
 
 Add this to your theme's `functions.php` or a small site plugin:
 
@@ -569,6 +579,7 @@ Version 0.1.0 has the following gaps relative to the full OData v4.01 specificat
 | `$search` with relevance ranking | Basic LIKE matching only |
 | `$compute` (derived properties) | Partial support |
 | Delta tracking (`$deltatoken`) | Basic support only |
+| `$expand` on single-entity GET (`/Entity(key)?$expand=...`) | Not yet supported — expand works on collections only |
 | Real-time / streaming | Not supported |
 | WordPress Multisite network endpoints | Not supported |
 

@@ -17,6 +17,9 @@ define( 'ODAD_VERSION',   '0.1.0' );
 define( 'ODAD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ODAD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
+// AST node classes are all defined in one file — load it before the autoloader.
+require_once ODAD_PLUGIN_DIR . 'src/query/class-odad-ast-node.php';
+
 // Autoloader (PSR-4: ODAD_ prefix → src/)
 spl_autoload_register( function ( string $class ): void {
     if ( ! str_starts_with( $class, 'ODAD_' ) ) {
@@ -57,6 +60,10 @@ spl_autoload_register( function ( string $class ): void {
 
 require_once ODAD_PLUGIN_DIR . 'src/odad-hrms/tables.php';
 require_once ODAD_PLUGIN_DIR . 'src/odad-hrms/bootstrap.php';
+
+if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+    require_once ODAD_PLUGIN_DIR . 'src/odad-hrms/seeder.php';
+}
 
 add_action( 'plugins_loaded', function (): void {
     $container = ODAD_Bootstrapper::build();

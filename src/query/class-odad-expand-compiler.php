@@ -116,9 +116,8 @@ class ODAD_Expand_Compiler {
             if ( $entry['nested_filter'] !== null ) {
                 $ctx->filter = $entry['nested_filter'];
             }
-            if ( $entry['nested_expand'] !== null ) {
-                $ctx->expand = $entry['nested_expand'];
-            }
+            // nested_expand is handled by recursive execute() calls inside
+            // execute_single() / execute_collection() — not via $ctx.
             if ( $entry['nested_top'] !== null ) {
                 $ctx->top = (int) $entry['nested_top'];
             }
@@ -315,8 +314,23 @@ class ODAD_Expand_Compiler {
         );
         $batch_ctx->top               = PHP_INT_MAX;
         $batch_ctx->skip              = 0;
+        $batch_ctx->expand            = null; // cleared — handled via recursive execute below
 
         $related_rows = $adapter->get_collection( $batch_ctx );
+
+        // 3b. Recursively execute any nested $expand on the related rows.
+        if ( $entry['nested_expand'] !== null && ! empty( $related_rows ) ) {
+            $nested_def = $adapter->get_entity_type_definition();
+            $nested_nav = $nested_def['nav_properties'] ?? [];
+            if ( ! empty( $nested_nav ) ) {
+                try {
+                    $nested_plan  = $this->parse( $entry['nested_expand'], $nested_nav );
+                    $related_rows = $this->execute( $related_rows, $nested_plan, $entity_set );
+                } catch ( ODAD_Expand_Exception $e ) {
+                    unset( $e );
+                }
+            }
+        }
 
         // 4. Index by the related entity's key property.
         $indexed = [];
@@ -388,10 +402,32 @@ class ODAD_Expand_Compiler {
             $ctx->extra_conditions,
             [ [ 'parent_ids' => $parent_ids, 'parent_ref_property' => $parent_ref_property ] ]
         );
-        $batch_ctx->top  = PHP_INT_MAX;
-        $batch_ctx->skip = 0;
+        $batch_ctx->top    = PHP_INT_MAX;
+        $batch_ctx->skip   = 0;
+        $batch_ctx->expand = null; // cleared — handled via recursive execute below
+
+        // Ensure $parent_ref_property is always in the select list so grouping works.
+        // Without it, rows returned by get_collection() won't contain the FK value
+        // needed to group children under their parent.
+        if ( ! empty( $batch_ctx->select ) && ! in_array( $parent_ref_property, $batch_ctx->select, true ) ) {
+            $batch_ctx->select[] = $parent_ref_property;
+        }
 
         $related_rows = $adapter->get_collection( $batch_ctx );
+
+        // 2b. Recursively execute any nested $expand on the related rows.
+        if ( $entry['nested_expand'] !== null && ! empty( $related_rows ) ) {
+            $nested_def = $adapter->get_entity_type_definition();
+            $nested_nav = $nested_def['nav_properties'] ?? [];
+            if ( ! empty( $nested_nav ) ) {
+                try {
+                    $nested_plan  = $this->parse( $entry['nested_expand'], $nested_nav );
+                    $related_rows = $this->execute( $related_rows, $nested_plan, $entity_set );
+                } catch ( ODAD_Expand_Exception $e ) {
+                    unset( $e );
+                }
+            }
+        }
 
         // 3. Group by parent ID.
         $grouped = [];

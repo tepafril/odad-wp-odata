@@ -82,13 +82,27 @@ Every response follows one of these four shapes. Match on HTTP status code first
 // Status: 201 Created
 // Header → Location: https://{site}/wp-json/odata/v4/Posts(42)
 {
-  "@odata.context": "...",
   "ID": 42,
+  "Title": "My New Post",
+  // full entity object — no @odata.context on 201 responses
+}
+```
+
+### 2.4 Updated Entity (PATCH / PUT → 200)
+
+PATCH and PUT return the full updated entity:
+
+```jsonc
+// Status: 200 OK
+{
+  "@odata.context": "https://{site}/wp-json/odata/v4/Posts(42)",
+  "ID": 42,
+  "Title": "Updated Title",
   // full entity object
 }
 ```
 
-### 2.4 Empty Success (PATCH / PUT / DELETE → 204)
+### 2.5 Empty Success (DELETE → 204)
 
 ```
 // Status: 204 No Content
@@ -112,9 +126,12 @@ Every response follows one of these four shapes. Match on HTTP status code first
 | HTTP | `error.code` | When |
 |---|---|---|
 | 400 | `BadRequest` | Malformed filter, invalid property, bad body |
+| 400 | `InvalidPayload` | Request body is not valid JSON |
+| 400 | `InvalidQuery` | Unsupported OData query option or syntax error |
 | 401 | `Unauthorized` | No credentials or session expired |
+| 403 | `AccessDenied` | Authenticated but lacks required capability |
 | 403 | `Forbidden` | Authenticated but lacks required capability |
-| 404 | `NotFound` | Entity set or record does not exist |
+| 404 | `ResourceNotFound` | Entity set or record does not exist |
 | 405 | `MethodNotAllowed` | Write disabled for this entity set |
 | 500 | `InternalServerError` | Unexpected server error |
 
@@ -394,8 +411,20 @@ Comma-separated navigation property names. Case must match exactly.
 ```
 ?$expand=Author
 ?$expand=Author,Tags,Categories
-?$expand=Tags($select=ID,Name)   // expand with nested $select
+?$expand=Tags($select=ID,Name)                           // nested $select
+?$expand=Tags($filter=Count gt 0)                        // nested $filter
+?$expand=Tags($orderby=Name asc;$top=5)                  // nested $orderby + $top
+?$expand=EmployeeSkills($expand=Skill)                   // nested $expand (deep)
+?$expand=EmployeeSkills($select=ProficiencyLevel,SkillID;$expand=Skill)
 ```
+
+Nested options inside `(...)` are separated by **semicolons**, not `&`.
+Supported nested options: `$select`, `$filter`, `$expand`, `$orderby`, `$top`, `$skip`.
+
+Works for all cardinalities:
+- **Single** (many-to-one): `?$expand=Department` — returns one object or `null`
+- **Collection** (one-to-many): `?$expand=LeaveRequests` — returns an array
+- **Many-to-many** via pivot entity: `?$expand=EmployeeSkills($expand=Skill)` — returns the pivot rows with the related entity nested inside
 
 Available navigation properties per entity set — see Section 3.
 
@@ -504,7 +533,8 @@ async function update(entity, id, patch) {
     body: JSON.stringify(patch),
   });
   if (!res.ok) throw await res.json();
-  // res.status === 204, no body
+  // res.status === 200 — body contains the full updated entity
+  return res.json();
 }
 ```
 
@@ -804,13 +834,17 @@ export type PatchUser  = Partial<CreateUser>;
 1. **Never send read-only properties** (`ID`, `ModifiedDate`, `CommentCount`, `Count`, `Taxonomy`) in POST/PATCH bodies.
 2. **Never quote integer keys** in URLs. Use `/Posts(42)`, not `/Posts('42')`.
 3. **Always URL-encode** `$filter` values when building URLs manually.
-4. **Check HTTP status before reading body.** 204 responses have no body — do not call `.json()`.
+4. **Check HTTP status before reading body.** DELETE returns 204 with no body — do not call `.json()`. POST returns 201, PATCH/PUT return 200, both with a JSON body.
 5. **Respect pagination.** Never set `$top` above 1000. Default is 100 if omitted.
-6. **Property names are PascalCase** — always `Title`, never `title` or `post_title`.
+6. **Property names are PascalCase** — always `Title`, never `title` or `post_title`. This applies to `$filter`, `$select`, `$orderby`, `$expand`, and JSON payloads.
 7. **Single-entity responses have no `value` wrapper.** `GET /Posts(42)` returns `{ "ID": 42, "Title": "..." }`, not `{ "value": { ... } }`.
 8. **`@odata.count` is only present** when `$count=true` was sent on the request.
 9. **`@odata.nextLink` is only present** when the result set has more pages. Its absence means the last page was returned.
 10. **The `$expand` navigation property names are fixed** — use exact names from Section 3. Wrong case returns a 400 error.
+11. **Nested `$expand` options use semicolons**, not `&`. Example: `$expand=Tags($select=ID,Name;$top=5)`.
+12. **Many-to-many relationships use a pivot entity.** Query them in two steps: `$expand=EmployeeSkills($expand=Skill)`. The pivot rows are returned with the related entity nested inside.
+13. **`$filter` uses OData literal types.** Integer values are unquoted (`ID eq 12`), strings use single quotes (`Status eq 'draft'`), dates are ISO 8601 (`HiredAt gt 2024-01-01`).
+14. **`$select` and `$orderby` use OData property names** (PascalCase), never database column names.
 
 ---
 

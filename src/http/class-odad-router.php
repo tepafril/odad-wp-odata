@@ -491,7 +491,8 @@ class ODAD_Router {
     }
 
     /**
-     * POST /odata/v4/{entity}  [501 stub]
+     * POST /odata/v4/{entity}
+     * Creates a new entity. Returns 201 Created with the new entity body.
      *
      * @param WP_REST_Request $wp_request
      * @return WP_REST_Response
@@ -503,7 +504,35 @@ class ODAD_Router {
             return $guard;
         }
 
-        return ODAD_Error::not_implemented( 'Entity creation is not yet implemented.' );
+        if ( null === $this->write_handler ) {
+            return ODAD_Error::not_implemented( 'Entity creation is not yet implemented.' );
+        }
+
+        $payload = $wp_request->get_json_params();
+        if ( ! is_array( $payload ) ) {
+            return ODAD_Error::bad_request( 'InvalidPayload', 'Request body must be a valid JSON object.' );
+        }
+
+        $user = wp_get_current_user();
+
+        try {
+            $created = $this->write_handler->insert( $entity, $payload, $user );
+        } catch ( ODAD_Unknown_Entity_Exception $e ) {
+            return ODAD_Error::not_found( $e->getMessage() );
+        } catch ( ODAD_Field_ACL_Exception $e ) {
+            return ODAD_Error::forbidden( $e->getMessage() );
+        } catch ( \RuntimeException $e ) {
+            return ODAD_Error::forbidden( $e->getMessage() );
+        } catch ( \Exception $e ) {
+            return ODAD_Error::bad_request( 'InsertFailed', $e->getMessage() );
+        }
+
+        // Derive the key value for the Location header from the created row.
+        // 'ID' is the conventional key property; fall back to the first field when absent.
+        $key        = $created['ID'] ?? $created[ array_key_first( $created ) ] ?? '';
+        $entity_url = rest_url( self::NAMESPACE . '/' . $entity . '(' . rawurlencode( (string) $key ) . ')' );
+
+        return ODAD_Response::created( $created, $entity_url );
     }
 
     /**
@@ -591,7 +620,8 @@ class ODAD_Router {
     }
 
     /**
-     * PATCH /odata/v4/{entity}({key})  [501 stub]
+     * PATCH /odata/v4/{entity}({key})
+     * Partially updates an entity (merge semantics). Returns 200 with the updated entity.
      *
      * @param WP_REST_Request $wp_request
      * @return WP_REST_Response
@@ -603,11 +633,39 @@ class ODAD_Router {
             return $guard;
         }
 
-        return ODAD_Error::not_implemented( 'Entity updates are not yet implemented.' );
+        if ( null === $this->write_handler ) {
+            return ODAD_Error::not_implemented( 'Entity updates are not yet implemented.' );
+        }
+
+        $key     = $wp_request->get_param( 'key' ) ?? '';
+        $payload = $wp_request->get_json_params();
+        if ( ! is_array( $payload ) ) {
+            return ODAD_Error::bad_request( 'InvalidPayload', 'Request body must be a valid JSON object.' );
+        }
+
+        $user = wp_get_current_user();
+
+        try {
+            $updated = $this->write_handler->update( $entity, $key, $payload, $user );
+        } catch ( ODAD_Unknown_Entity_Exception $e ) {
+            return ODAD_Error::not_found( $e->getMessage() );
+        } catch ( ODAD_Field_ACL_Exception $e ) {
+            return ODAD_Error::forbidden( $e->getMessage() );
+        } catch ( \RuntimeException $e ) {
+            return ODAD_Error::forbidden( $e->getMessage() );
+        } catch ( \Exception $e ) {
+            return ODAD_Error::bad_request( 'UpdateFailed', $e->getMessage() );
+        }
+
+        $context_url = rest_url( self::NAMESPACE . '/' . $entity . '(' . rawurlencode( (string) $key ) . ')' );
+
+        return ODAD_Response::entity( $updated, $context_url );
     }
 
     /**
-     * PUT /odata/v4/{entity}({key})  [501 stub]
+     * PUT /odata/v4/{entity}({key})
+     * Full replacement of an entity (upsert-style). Delegates to update() since
+     * full PUT semantics are equivalent to a complete PATCH for custom-table entities.
      *
      * @param WP_REST_Request $wp_request
      * @return WP_REST_Response
@@ -619,11 +677,38 @@ class ODAD_Router {
             return $guard;
         }
 
-        return ODAD_Error::not_implemented( 'Entity replacement is not yet implemented.' );
+        if ( null === $this->write_handler ) {
+            return ODAD_Error::not_implemented( 'Entity replacement is not yet implemented.' );
+        }
+
+        $key     = $wp_request->get_param( 'key' ) ?? '';
+        $payload = $wp_request->get_json_params();
+        if ( ! is_array( $payload ) ) {
+            return ODAD_Error::bad_request( 'InvalidPayload', 'Request body must be a valid JSON object.' );
+        }
+
+        $user = wp_get_current_user();
+
+        try {
+            $updated = $this->write_handler->update( $entity, $key, $payload, $user );
+        } catch ( ODAD_Unknown_Entity_Exception $e ) {
+            return ODAD_Error::not_found( $e->getMessage() );
+        } catch ( ODAD_Field_ACL_Exception $e ) {
+            return ODAD_Error::forbidden( $e->getMessage() );
+        } catch ( \RuntimeException $e ) {
+            return ODAD_Error::forbidden( $e->getMessage() );
+        } catch ( \Exception $e ) {
+            return ODAD_Error::bad_request( 'ReplaceFailed', $e->getMessage() );
+        }
+
+        $context_url = rest_url( self::NAMESPACE . '/' . $entity . '(' . rawurlencode( (string) $key ) . ')' );
+
+        return ODAD_Response::entity( $updated, $context_url );
     }
 
     /**
-     * DELETE /odata/v4/{entity}({key})  [501 stub]
+     * DELETE /odata/v4/{entity}({key})
+     * Deletes an entity. Returns 204 No Content on success.
      *
      * @param WP_REST_Request $wp_request
      * @return WP_REST_Response
@@ -635,7 +720,26 @@ class ODAD_Router {
             return $guard;
         }
 
-        return ODAD_Error::not_implemented( 'Entity deletion is not yet implemented.' );
+        if ( null === $this->write_handler ) {
+            return ODAD_Error::not_implemented( 'Entity deletion is not yet implemented.' );
+        }
+
+        $key  = $wp_request->get_param( 'key' ) ?? '';
+        $user = wp_get_current_user();
+
+        try {
+            $this->write_handler->delete( $entity, $key, $user );
+        } catch ( ODAD_Unknown_Entity_Exception $e ) {
+            return ODAD_Error::not_found( $e->getMessage() );
+        } catch ( ODAD_Field_ACL_Exception $e ) {
+            return ODAD_Error::forbidden( $e->getMessage() );
+        } catch ( \RuntimeException $e ) {
+            return ODAD_Error::forbidden( $e->getMessage() );
+        } catch ( \Exception $e ) {
+            return ODAD_Error::bad_request( 'DeleteFailed', $e->getMessage() );
+        }
+
+        return ODAD_Response::no_content();
     }
 
     /**

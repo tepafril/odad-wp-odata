@@ -56,12 +56,24 @@ class ODAD_Field_ACL {
     public function apply( array $rows, string $entity_set, \WP_User $user, string $operation ): array {
         $allowed = $this->get_allowed_properties( $entity_set, $user, $operation );
 
-        // Build a fast lookup set.
+        // Build a fast lookup set for scalar properties.
         $allowed_map = array_flip( $allowed );
 
+        // Navigation properties (populated by $expand) are never scalar fields and
+        // must survive field ACL stripping unchanged.
+        $definition = $this->get_definition( $entity_set );
+        $nav_keys   = array_keys( $definition['nav_properties'] ?? [] );
+
         return array_map(
-            static function ( array $row ) use ( $allowed_map ): array {
-                return array_intersect_key( $row, $allowed_map );
+            static function ( array $row ) use ( $allowed_map, $nav_keys ): array {
+                $filtered = array_intersect_key( $row, $allowed_map );
+                // Re-attach any expanded nav properties that were present on the row.
+                foreach ( $nav_keys as $nav_key ) {
+                    if ( array_key_exists( $nav_key, $row ) ) {
+                        $filtered[ $nav_key ] = $row[ $nav_key ];
+                    }
+                }
+                return $filtered;
             },
             $rows
         );

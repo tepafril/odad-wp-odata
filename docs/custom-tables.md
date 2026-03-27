@@ -79,6 +79,108 @@ $adapter = new ODAD_Adapter_Custom_Table(
 
 ---
 
+## Navigation Properties (`$expand` support)
+
+Navigation properties let clients traverse relationships using `$expand`. Declare them in the `nav_properties` constructor argument. The expand compiler uses batched loading — one query per navigation property across all rows, never N+1.
+
+### Many-to-one (single entity)
+
+An employee belongs to one department. The FK lives on the employee row.
+
+```php
+$adapter = new ODAD_Adapter_Custom_Table(
+    table_name:      'employees',
+    entity_set_name: 'Employees',
+    key_column:      'id',
+    schema:          [ /* ... */ ],
+    nav_properties: [
+        // 'fk' = the FK property on *this* row (EmployeeID → DepartmentID)
+        'Department' => [ 'type' => 'Departments', 'collection' => false, 'fk' => 'DepartmentID' ],
+        'Manager'    => [ 'type' => 'Employees',   'collection' => false, 'fk' => 'ManagerID' ],
+    ],
+);
+```
+
+Usage: `GET /Employees?$expand=Department`
+
+Response: each employee row gains a `"Department": { ... }` key (or `null` if the FK is null).
+
+### One-to-many (collection)
+
+A department has many employees. The FK lives on the child row.
+
+```php
+$adapter = new ODAD_Adapter_Custom_Table(
+    table_name:      'departments',
+    entity_set_name: 'Departments',
+    key_column:      'id',
+    schema:          [ /* ... */ ],
+    nav_properties: [
+        // 'fk'        = the FK property on *this* (parent) row used as the parent ID
+        // 'remote_fk' = the FK property on the *child* row that points back to the parent
+        'Employees' => [ 'type' => 'Employees', 'collection' => true, 'fk' => 'ID', 'remote_fk' => 'DepartmentID' ],
+    ],
+);
+```
+
+Usage: `GET /Departments?$expand=Employees`
+
+Response: each department row gains an `"Employees": [ ... ]` array.
+
+### Many-to-many (via pivot entity)
+
+The OData pattern for many-to-many is to expose the pivot table as its own entity set and navigate through it. Example: Employees ↔ hr_employee_skills ↔ Skills.
+
+**Step 1 — register the pivot entity set:**
+
+```php
+$pivot = new ODAD_Adapter_Custom_Table(
+    table_name:      'employee_skills',
+    entity_set_name: 'EmployeeSkills',
+    key_column:      'id',
+    schema: [
+        'key'        => 'ID',
+        'properties' => [
+            'ID'              => [ 'column' => 'id',                'type' => 'Edm.Int64', 'read_only' => true ],
+            'EmployeeID'      => [ 'column' => 'employee_id',       'type' => 'Edm.Int64' ],
+            'SkillID'         => [ 'column' => 'skill_id',          'type' => 'Edm.Int64' ],
+            'ProficiencyLevel'=> [ 'column' => 'proficiency_level', 'type' => 'Edm.String' ],
+        ],
+    ],
+    nav_properties: [
+        'Employee' => [ 'type' => 'Employees', 'collection' => false, 'fk' => 'EmployeeID' ],
+        'Skill'    => [ 'type' => 'Skills',    'collection' => false, 'fk' => 'SkillID' ],
+    ],
+);
+```
+
+**Step 2 — add a nav property on the parent entity:**
+
+```php
+// Inside the Employees adapter's nav_properties:
+'EmployeeSkills' => [ 'type' => 'EmployeeSkills', 'collection' => true, 'fk' => 'ID', 'remote_fk' => 'EmployeeID' ],
+```
+
+**Usage — traverse the full relationship in one request:**
+
+```
+GET /Employees?$expand=EmployeeSkills($expand=Skill)
+GET /Employees?$expand=EmployeeSkills($select=ProficiencyLevel,SkillID;$expand=Skill)
+```
+
+### Nested expand options
+
+Options inside `(...)` are separated by semicolons:
+
+```
+$expand=EmployeeSkills($select=ProficiencyLevel;$orderby=ProficiencyLevel desc;$top=5)
+$expand=EmployeeSkills($filter=ProficiencyLevel eq 'expert';$expand=Skill)
+```
+
+Supported nested options: `$select`, `$filter`, `$expand`, `$orderby`, `$top`, `$skip`.
+
+---
+
 ## Permissions
 
 ### Option A — WP Admin UI

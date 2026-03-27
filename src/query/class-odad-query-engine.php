@@ -269,8 +269,13 @@ class ODAD_Query_Engine {
         $entity_def = $adapter->get_entity_type_definition();
         $properties = $entity_def['properties'] ?? [];
         $column_map = [];
-        foreach ( array_keys( $properties ) as $prop ) {
-            $column_map[ $prop ] = $prop;
+        foreach ( $properties as $prop => $meta ) {
+            // Resolve the DB column name from the property meta when available
+            // (custom-table adapters define 'column'; built-in adapters omit it
+            // and their get_collection() builds their own queries anyway).
+            $db_col = is_array( $meta ) ? ( $meta['column'] ?? $prop ) : $prop;
+            $safe   = preg_replace( '/[^a-zA-Z0-9_]/', '', $db_col );
+            $column_map[ $prop ] = '`' . $safe . '`';
         }
 
         // ---------------------------------------------------------------
