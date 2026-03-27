@@ -51,7 +51,7 @@ class ODAD_Admin_API_Docs {
             '});'
         );
         ?>
-        <div class="wrap" style="background-color: #fff; padding: 8px 16px;">
+        <div class="wrap" style="background-color: #fff; padding: 8px 16px; border: 1px solid #c1c1c1; border-radius: 12px;">
             <h1><?php esc_html_e( 'API Documentation', 'wp-odata-suite' ); ?></h1>
             <p>
                 <?php esc_html_e( 'Live OpenAPI spec:', 'wp-odata-suite' ); ?>
