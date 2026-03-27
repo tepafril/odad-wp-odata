@@ -16,6 +16,10 @@ class ODAD_HR_Positions extends ODAD_Adapter_Custom_Table {
                     'DepartmentID' => [ 'column' => 'department_id', 'type' => 'Edm.Int64' ],
                 ],
             ],
+            nav_properties: [
+                'Department' => [ 'type' => 'Departments', 'collection' => false, 'fk' => 'DepartmentID' ],
+                'Employees'  => [ 'type' => 'Employees',   'collection' => true,  'fk' => 'ID', 'remote_fk' => 'PositionID' ],
+            ],
         );
     }
 }

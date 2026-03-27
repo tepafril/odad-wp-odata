@@ -22,6 +22,14 @@ class ODAD_HR_Employees extends ODAD_Adapter_Custom_Table {
                     'IsActive'     => [ 'column' => 'is_active',     'type' => 'Edm.Boolean' ],
                 ],
             ],
+            nav_properties: [
+                'Department'    => [ 'type' => 'Departments',   'collection' => false, 'fk' => 'DepartmentID' ],
+                'Position'      => [ 'type' => 'Positions',     'collection' => false, 'fk' => 'PositionID' ],
+                'Manager'       => [ 'type' => 'Employees',     'collection' => false, 'fk' => 'ManagerID' ],
+                'LeaveRequests' => [ 'type' => 'LeaveRequests', 'collection' => true,  'fk' => 'ID', 'remote_fk' => 'EmployeeID' ],
+                'Timesheets'    => [ 'type' => 'Timesheets',    'collection' => true,  'fk' => 'ID', 'remote_fk' => 'EmployeeID' ],
+                'EmployeeSkills' => [ 'type' => 'EmployeeSkills', 'collection' => true, 'fk' => 'ID', 'remote_fk' => 'EmployeeID' ],
+            ],
         );
     }
 }

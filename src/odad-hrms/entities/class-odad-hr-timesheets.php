@@ -20,6 +20,9 @@ class ODAD_HR_Timesheets extends ODAD_Adapter_Custom_Table {
                     'SubmittedAt' => [ 'column' => 'submitted_at', 'type' => 'Edm.DateTimeOffset', 'read_only' => true ],
                 ],
             ],
+            nav_properties: [
+                'Employee' => [ 'type' => 'Employees', 'collection' => false, 'fk' => 'EmployeeID' ],
+            ],
         );
     }
 }

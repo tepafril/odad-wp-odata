@@ -23,6 +23,10 @@ class ODAD_HR_Leave_Requests extends ODAD_Adapter_Custom_Table {
                     'CreatedAt'  => [ 'column' => 'created_at',  'type' => 'Edm.DateTimeOffset', 'read_only' => true ],
                 ],
             ],
+            nav_properties: [
+                'Employee' => [ 'type' => 'Employees', 'collection' => false, 'fk' => 'EmployeeID' ],
+                'Approver' => [ 'type' => 'Employees', 'collection' => false, 'fk' => 'ApprovedBy' ],
+            ],
         );
     }
 }
