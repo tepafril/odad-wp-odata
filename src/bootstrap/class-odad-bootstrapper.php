@@ -163,6 +163,24 @@ class ODAD_Bootstrapper {
 
         self::register_subscribers( $container );
 
+        // ── Auth layer ────────────────────────────────────────────────────
+        $container->singleton( ODAD_JWT::class,             fn() => new ODAD_JWT() );
+        $container->singleton( ODAD_Token_Store::class,     fn() => new ODAD_Token_Store() );
+        $container->singleton( ODAD_Auth_Controller::class, fn( ODAD_Container $c ) => new ODAD_Auth_Controller(
+            $c->get( ODAD_JWT::class ),
+            $c->get( ODAD_Token_Store::class ),
+        ) );
+
+        add_action( 'rest_api_init',
+            fn() => ODAD_container()->get( ODAD_Auth_Controller::class )->register_routes()
+        );
+        add_filter( 'determine_current_user',
+            [ ODAD_JWT_Auth_Handler::class, 'resolve_user' ], 20
+        );
+        add_action( 'odad_purge_expired_tokens',
+            fn() => ODAD_container()->get( ODAD_Token_Store::class )->purge_expired()
+        );
+
         return $container;
     }
 
