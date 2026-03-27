@@ -5,7 +5,7 @@
  * @package WPOS
  */
 
-class WPOS_Event_Set_Operation_After implements WPOS_Event {
+class ODAD_Event_Set_Operation_After implements ODAD_Event {
     public function __construct(
         public string   $entity_set,
         public string   $operation,

@@ -5,4 +5,4 @@
  * @package WPOS
  */
 
-interface WPOS_Event {}
+interface ODAD_Event {}

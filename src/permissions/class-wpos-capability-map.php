@@ -6,7 +6,7 @@
  *   - Defaults for built-in WordPress entity sets (Posts, Pages, Users, etc.)
  *   - Custom registration for CPTs and custom tables via register()
  *   - Convention-based fallback for unregistered entity sets:
- *     wpos_{entity_set_lowercase}_{operation}
+ *     ODAD_{entity_set_lowercase}_{operation}
  *
  * Pure domain service — no WP hook calls.
  *
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Capability_Map {
+class ODAD_Capability_Map {
 
     /**
      * Default capability map for built-in entity sets.
@@ -51,7 +51,7 @@ class WPOS_Capability_Map {
     /**
      * Register capability rules for a custom entity set.
      *
-     * Intended to be called from within a handler for the wpos_register_permissions
+     * Intended to be called from within a handler for the ODAD_register_permissions
      * WP action (the action itself is fired by a subscriber — not by this class).
      *
      * @param string               $entity_set  The OData entity-set name (e.g. 'Employees').
@@ -65,8 +65,8 @@ class WPOS_Capability_Map {
     /**
      * Register admin-configured role overrides for an entity set.
      *
-     * Called on plugin init (from WPOS_Subscriber_Schema_Init) to load saved
-     * permissions, and immediately after saving from WPOS_Admin_Permission_Config.
+     * Called on plugin init (from ODAD_Subscriber_Schema_Init) to load saved
+     * permissions, and immediately after saving from ODAD_Admin_Permission_Config.
      *
      * @param string $entity_set  OData entity-set name.
      * @param array  $role_perms  [ role_slug => [ operation => bool ] ]
@@ -121,7 +121,7 @@ class WPOS_Capability_Map {
      * Resolution order:
      *   1. Custom map (registered via register())
      *   2. Built-in defaults
-     *   3. Convention: wpos_{entity_set_lowercase}_{operation}
+     *   3. Convention: ODAD_{entity_set_lowercase}_{operation}
      *
      * @param string $entity_set OData entity-set name (e.g. 'Posts', 'Employees').
      * @param string $operation  One of: read, insert, update, delete.
@@ -137,7 +137,7 @@ class WPOS_Capability_Map {
         }
 
         // Convention-based fallback for unregistered entity sets.
-        // e.g. entity_set='Employees', operation='read' → 'wpos_employees_read'
-        return 'wpos_' . strtolower( $entity_set ) . '_' . $operation;
+        // e.g. entity_set='Employees', operation='read' → 'ODAD_employees_read'
+        return 'ODAD_' . strtolower( $entity_set ) . '_' . $operation;
     }
 }

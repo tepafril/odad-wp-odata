@@ -5,7 +5,7 @@
  * @package WPOS
  */
 
-interface WPOS_Stoppable_Event extends WPOS_Event {
+interface ODAD_Stoppable_Event extends ODAD_Event {
     public function is_stopped(): bool;
     public function stop_propagation(): void;
 }

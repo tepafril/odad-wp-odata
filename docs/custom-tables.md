@@ -9,11 +9,11 @@ This guide explains how to expose a custom database table as an OData entity set
 Add the following to your theme's `functions.php` or a site-specific plugin:
 
 ```php
-add_action( 'wpos_register_entity_sets', function (
-    WPOS_Schema_Registry  $registry,
-    WPOS_Adapter_Resolver $resolver
+add_action( 'ODAD_register_entity_sets', function (
+    ODAD_Schema_Registry  $registry,
+    ODAD_Adapter_Resolver $resolver
 ) {
-    $adapter = new WPOS_Adapter_Custom_Table(
+    $adapter = new ODAD_Adapter_Custom_Table(
         table_name:      'employees',   // table name WITHOUT $wpdb->prefix
         entity_set_name: 'Employees',   // OData entity set name (PascalCase)
         key_column:      'id',          // primary key column
@@ -45,7 +45,7 @@ By default, OData property names match the column names exactly. Pass a `schema`
 array to remap them to PascalCase or any other naming convention:
 
 ```php
-$adapter = new WPOS_Adapter_Custom_Table(
+$adapter = new ODAD_Adapter_Custom_Table(
     table_name:      'employees',
     entity_set_name: 'Employees',
     key_column:      'id',
@@ -91,7 +91,7 @@ roles can read, insert, update, and delete `Employees`.
 Register capability rules alongside the adapter:
 
 ```php
-add_action( 'wpos_register_permissions', function ( WPOS_Capability_Map $map ) {
+add_action( 'ODAD_register_permissions', function ( ODAD_Capability_Map $map ) {
     $map->register( 'Employees', [
         'read'   => 'read',             // any logged-in user
         'insert' => 'edit_employees',   // custom WP capability
@@ -102,7 +102,7 @@ add_action( 'wpos_register_permissions', function ( WPOS_Capability_Map $map ) {
 ```
 
 If no permissions are registered, the plugin falls back to the convention:
-`wpos_{entityset_lowercase}_{operation}` — e.g. `wpos_employees_read`.
+`ODAD_{entityset_lowercase}_{operation}` — e.g. `ODAD_employees_read`.
 
 ---
 
@@ -142,7 +142,7 @@ find `Employees`, and uncheck **Allow Insert**, **Allow Update**, and **Allow De
 Or do it in code via the entity config option:
 
 ```php
-update_option( 'wpos_entity_config_Employees', [
+update_option( 'ODAD_entity_config_Employees', [
     'enabled'      => true,
     'allow_insert' => false,
     'allow_update' => false,
@@ -208,11 +208,11 @@ register_activation_hook( __FILE__, function () {
 } );
 
 // 2. Register the entity set.
-add_action( 'wpos_register_entity_sets', function (
-    WPOS_Schema_Registry  $registry,
-    WPOS_Adapter_Resolver $resolver
+add_action( 'ODAD_register_entity_sets', function (
+    ODAD_Schema_Registry  $registry,
+    ODAD_Adapter_Resolver $resolver
 ) {
-    $adapter = new WPOS_Adapter_Custom_Table(
+    $adapter = new ODAD_Adapter_Custom_Table(
         table_name:      'employees',
         entity_set_name: 'Employees',
         key_column:      'id',
@@ -234,7 +234,7 @@ add_action( 'wpos_register_entity_sets', function (
 }, 10, 2 );
 
 // 3. Register permissions.
-add_action( 'wpos_register_permissions', function ( WPOS_Capability_Map $map ) {
+add_action( 'ODAD_register_permissions', function ( ODAD_Capability_Map $map ) {
     $map->register( 'Employees', [
         'read'   => 'read',
         'insert' => 'manage_options',

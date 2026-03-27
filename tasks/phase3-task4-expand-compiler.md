@@ -2,7 +2,7 @@
 
 ## Dependencies
 - Task 2.1 (adapter interface — for navigation property resolution)
-- Task 3.3 (WPOS_Query_Context updated structure)
+- Task 3.3 (ODAD_Query_Context updated structure)
 
 ## Goal
 Implement the `$expand` compiler that resolves navigation properties and
@@ -16,10 +16,10 @@ E.g. `$expand=Author,Tags` or `$expand=Author($select=DisplayName)`.
 ### `src/query/class-wpos-expand-compiler.php`
 
 ```php
-class WPOS_Expand_Compiler {
+class ODAD_Expand_Compiler {
 
     public function __construct(
-        private WPOS_Adapter_Resolver $adapter_resolver,
+        private ODAD_Adapter_Resolver $adapter_resolver,
     ) {}
 
     /**
@@ -120,6 +120,6 @@ attach Tag arrays to corresponding rows.
 - `parse('Author,Tags', $nav_map)` returns two entries with correct `entity_set` and `is_collection`.
 - `parse('Author($select=DisplayName)', $nav_map)` returns `nested_select: ['DisplayName']`.
 - `execute()` produces no N+1 queries — related entities are loaded in batches.
-- Unknown navigation property in `$expand` throws `WPOS_Expand_Exception`.
+- Unknown navigation property in `$expand` throws `ODAD_Expand_Exception`.
 - Nested `$expand` (depth 2+) is supported.
-- No WordPress calls in this file (uses `WPOS_Adapter_Resolver::resolve()` to get adapters, which are WP-aware but accessed through the interface).
+- No WordPress calls in this file (uses `ODAD_Adapter_Resolver::resolve()` to get adapters, which are WP-aware but accessed through the interface).

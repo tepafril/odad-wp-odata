@@ -1,8 +1,8 @@
 <?php
 /**
- * WPOS_Function_Registry — registry for OData bound and unbound functions.
+ * ODAD_Function_Registry — registry for OData bound and unbound functions.
  *
- * External plugins register callables during the 'wpos_register_functions'
+ * External plugins register callables during the 'ODAD_register_functions'
  * WP action.  The router dispatches GET requests to the registered handlers.
  *
  * Registration entry shape:
@@ -21,7 +21,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Function_Registry {
+class ODAD_Function_Registry {
 
     /** @var array<string, array> Registered functions keyed by qualified name. */
     private array $functions = [];

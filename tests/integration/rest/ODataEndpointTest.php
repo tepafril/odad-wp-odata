@@ -1,6 +1,6 @@
 <?php
 /**
- * Integration tests for the OData REST endpoints registered by WPOS_Router.
+ * Integration tests for the OData REST endpoints registered by ODAD_Router.
  *
  * Each test dispatches requests through a fresh WP_REST_Server instance that
  * is re-initialised via the 'rest_api_init' action.  This matches the approach

@@ -7,15 +7,15 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Subscriber_Metadata_Build implements WPOS_Event_Listener {
+class ODAD_Subscriber_Metadata_Build implements ODAD_Event_Listener {
 
     public function __construct() {}
 
     public function get_event(): string {
-        return WPOS_Event_Metadata_Build::class;
+        return ODAD_Event_Metadata_Build::class;
     }
 
-    public function handle( WPOS_Event $event ): void {
+    public function handle( ODAD_Event $event ): void {
         // Implemented in a later task
     }
 }

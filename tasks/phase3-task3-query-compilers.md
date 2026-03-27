@@ -1,7 +1,7 @@
 # Task 3.3 — Select, OrderBy, Search, Compute Compilers
 
 ## Dependencies
-- Task 2.1 (WPOS_Query_Context stub)
+- Task 2.1 (ODAD_Query_Context stub)
 - Task 3.1 (AST node classes — Compute compiler may reuse AST)
 
 ## Goal
@@ -15,7 +15,7 @@ SQL fragments. Each compiler handles one OData system query option.
 Translates `$select=Title,Status,AuthorID` into a SQL column list.
 
 ```php
-class WPOS_Select_Compiler {
+class ODAD_Select_Compiler {
 
     /**
      * @param string[]             $properties  OData property names from $select
@@ -28,7 +28,7 @@ class WPOS_Select_Compiler {
 
 Rules:
 - If `$properties` is empty, return `*` or the full column list (all mapped columns).
-- Validate each property name against the column map. Throw `WPOS_Select_Exception` for unknown properties.
+- Validate each property name against the column map. Throw `ODAD_Select_Exception` for unknown properties.
 - Never allow raw SQL injection via property names — always look up in `$column_map`.
 - The key property (e.g. `ID`) is always included even if not in `$select`.
 
@@ -39,7 +39,7 @@ Rules:
 Translates `$orderby=PublishedDate desc,Title` into a SQL ORDER BY clause.
 
 ```php
-class WPOS_Orderby_Compiler {
+class ODAD_Orderby_Compiler {
 
     /**
      * @param string               $orderby    Raw $orderby string, e.g. "PublishedDate desc,Title"
@@ -53,7 +53,7 @@ class WPOS_Orderby_Compiler {
 Rules:
 - Parse comma-separated list of `property [asc|desc]` tokens.
 - Default direction is `ASC` if not specified.
-- Validate each property against `$column_map`. Throw `WPOS_Orderby_Exception` for unknown properties.
+- Validate each property against `$column_map`. Throw `ODAD_Orderby_Exception` for unknown properties.
 - Return empty string if `$orderby` is empty.
 - Direction must be exactly `ASC` or `DESC` — never interpolated from input.
 
@@ -64,7 +64,7 @@ Rules:
 Translates `$search=keyword` into a SQL LIKE expression for a basic full-text search.
 
 ```php
-class WPOS_Search_Compiler {
+class ODAD_Search_Compiler {
 
     /**
      * @param string   $search_term   Raw search term from $search
@@ -88,7 +88,7 @@ Rules:
 Translates `$compute=Price mul Quantity as Total` into SQL computed columns.
 
 ```php
-class WPOS_Compute_Compiler {
+class ODAD_Compute_Compiler {
 
     /**
      * @param string               $compute    Raw $compute string
@@ -111,13 +111,13 @@ Rules:
 
 ---
 
-## `WPOS_Query_Context` Update
+## `ODAD_Query_Context` Update
 
-Update the `WPOS_Query_Context` stub from Task 2.1 to add proper typed properties
+Update the `ODAD_Query_Context` stub from Task 2.1 to add proper typed properties
 for parsed query options. Replace the `string` properties with structured types:
 
 ```php
-class WPOS_Query_Context {
+class ODAD_Query_Context {
     public ?string $filter   = null;     // raw $filter string
     public ?array  $select   = null;     // parsed property names
     public ?array  $orderby  = null;     // [ ['property'=>'Title', 'dir'=>'asc'], ... ]

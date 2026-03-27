@@ -1,6 +1,6 @@
 <?php
 /**
- * Integration tests for WPOS_Adapter_WP_Terms.
+ * Integration tests for ODAD_Adapter_WP_Terms.
  *
  * Requires a live WordPress test database (WP_UnitTestCase).
  * Each test runs inside a transaction that is rolled back on tearDown.
@@ -10,17 +10,17 @@
 
 class WPTermsAdapterTest extends WP_UnitTestCase {
 
-    private WPOS_Adapter_WP_Terms $adapter;
+    private ODAD_Adapter_WP_Terms $adapter;
 
     public function setUp(): void {
         parent::setUp();
-        $this->adapter = new WPOS_Adapter_WP_Terms( 'category', 'Categories' );
+        $this->adapter = new ODAD_Adapter_WP_Terms( 'category', 'Categories' );
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private function make_ctx(): WPOS_Query_Context {
-        $ctx      = new WPOS_Query_Context();
+    private function make_ctx(): ODAD_Query_Context {
+        $ctx      = new ODAD_Query_Context();
         $ctx->top = 100;
         return $ctx;
     }

@@ -1,6 +1,6 @@
 <?php
 /**
- * WPOS_Metadata_Cache — WP Transients-based cache for the compiled $metadata document.
+ * ODAD_Metadata_Cache — WP Transients-based cache for the compiled $metadata document.
  *
  * Both XML (CSDL) and JSON representations are stored under separate transient
  * keys with a TTL of DAY_IN_SECONDS. The bust() method deletes both transients
@@ -11,10 +11,10 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Metadata_Cache {
+class ODAD_Metadata_Cache {
 
-    private const TRANSIENT_XML  = 'wpos_metadata_xml';
-    private const TRANSIENT_JSON = 'wpos_metadata_json';
+    private const TRANSIENT_XML  = 'ODAD_metadata_xml';
+    private const TRANSIENT_JSON = 'ODAD_metadata_json';
     private const TTL            = DAY_IN_SECONDS;
 
     // -------------------------------------------------------------------------
@@ -70,7 +70,7 @@ class WPOS_Metadata_Cache {
     /**
      * Delete both cached metadata documents.
      *
-     * Called by WPOS_Subscriber_Schema_Changed whenever the schema changes so
+     * Called by ODAD_Subscriber_Schema_Changed whenever the schema changes so
      * that the next request triggers a full rebuild.
      */
     public function bust(): void {

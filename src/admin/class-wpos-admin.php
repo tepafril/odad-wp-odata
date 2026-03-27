@@ -7,16 +7,16 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Admin {
+class ODAD_Admin {
 
     public function __construct(
-        private WPOS_Schema_Registry $registry,
-        private WPOS_Event_Bus       $event_bus,
+        private ODAD_Schema_Registry $registry,
+        private ODAD_Event_Bus       $event_bus,
     ) {}
 
     /**
      * Register admin menu pages.
-     * Called via WP 'admin_menu' action (registered in WPOS_Hook_Bridge).
+     * Called via WP 'admin_menu' action (registered in ODAD_Hook_Bridge).
      */
     public function register_menu(): void {
         add_menu_page(
@@ -44,7 +44,7 @@ class WPOS_Admin {
             __( 'Entity Settings', 'wp-odata-suite' ),
             'manage_options',
             'wpos-entity-config',
-            fn() => wpos_container()->get( WPOS_Admin_Entity_Config::class )->render()
+            fn() => ODAD_container()->get( ODAD_Admin_Entity_Config::class )->render()
         );
 
         add_submenu_page(
@@ -53,7 +53,7 @@ class WPOS_Admin {
             __( 'Permissions', 'wp-odata-suite' ),
             'manage_options',
             'wpos-permission-config',
-            fn() => wpos_container()->get( WPOS_Admin_Permission_Config::class )->render()
+            fn() => ODAD_container()->get( ODAD_Admin_Permission_Config::class )->render()
         );
 
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
@@ -68,15 +68,15 @@ class WPOS_Admin {
         }
         wp_enqueue_style(
             'wpos-admin',
-            WPOS_PLUGIN_URL . 'assets/css/wpos-admin.css',
+            ODAD_PLUGIN_URL . 'assets/css/wpos-admin.css',
             [],
-            WPOS_VERSION
+            ODAD_VERSION
         );
         wp_enqueue_script(
             'wpos-admin',
-            WPOS_PLUGIN_URL . 'assets/js/wpos-admin.js',
+            ODAD_PLUGIN_URL . 'assets/js/wpos-admin.js',
             [ 'jquery' ],
-            WPOS_VERSION,
+            ODAD_VERSION,
             true
         );
     }
@@ -112,7 +112,7 @@ class WPOS_Admin {
                 <tbody>
                     <tr>
                         <td><strong><?php esc_html_e( 'Version', 'wp-odata-suite' ); ?></strong></td>
-                        <td><?php echo esc_html( WPOS_VERSION ); ?></td>
+                        <td><?php echo esc_html( ODAD_VERSION ); ?></td>
                     </tr>
                     <tr>
                         <td><strong><?php esc_html_e( 'OData Endpoint', 'wp-odata-suite' ); ?></strong></td>

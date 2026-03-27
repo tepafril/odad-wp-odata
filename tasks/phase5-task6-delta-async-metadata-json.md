@@ -2,7 +2,7 @@
 
 ## Dependencies
 - Task 1.5 (metadata builder + cache)
-- Task 1.4 (HTTP layer — WPOS_Response)
+- Task 1.4 (HTTP layer — ODAD_Response)
 - Phase 2 adapters (for $metadata entity type output)
 
 ## Goal
@@ -27,7 +27,7 @@ changed since the last request.
 ### `src/query/class-wpos-delta-token.php`
 
 ```php
-class WPOS_Delta_Token {
+class ODAD_Delta_Token {
 
     /** Encode a delta token from a timestamp */
     public static function encode( \DateTimeInterface $since ): string;
@@ -47,7 +47,7 @@ Validate tokens to prevent injection.
 
 When `$deltatoken` is present in the request:
 1. Decode the token to get `$since` timestamp.
-2. Inject `modified_after = $since` into `WPOS_Query_Context`.
+2. Inject `modified_after = $since` into `ODAD_Query_Context`.
 3. Each adapter checks this field and adds a WHERE condition (e.g. `post_modified_gmt > %s`).
 4. Include deleted entity stubs (`@removed` entries) in the response.
 5. Include `@odata.deltaLink` in the response (new token = now).
@@ -78,10 +78,10 @@ WP-Cron job, and returns `202 Accepted` with a status URL.
 **`src/http/class-wpos-async-handler.php`**
 
 ```php
-class WPOS_Async_Handler {
+class ODAD_Async_Handler {
 
     /** Queue a request as a background job. Returns a job ID. */
-    public function queue( WPOS_Request $request, \WP_User $user ): string;
+    public function queue( ODAD_Request $request, \WP_User $user ): string;
 
     /** Get the status and result of a queued job. */
     public function get_status( string $job_id ): array;
@@ -92,12 +92,12 @@ class WPOS_Async_Handler {
 ```
 
 **Flow:**
-1. Detect `Prefer: respond-async` header in `WPOS_Router`.
+1. Detect `Prefer: respond-async` header in `ODAD_Router`.
 2. Call `async_handler->queue($request, $user)` — stores request in a WP option/transient with a unique job ID.
 3. Return `202 Accepted` with:
    - `Location: /odata/v4/$status/{job_id}` header
    - Body: `{"@odata.status": "queued"}`
-4. WP-Cron fires `wpos_async_job_{job_id}` hook.
+4. WP-Cron fires `ODAD_async_job_{job_id}` hook.
 5. `execute_job()` runs the actual request and stores the result in a transient.
 6. Client polls `GET /odata/v4/$status/{job_id}` — returns result when ready, or 202 if still processing.
 
@@ -138,10 +138,10 @@ returns the CSDL in JSON format instead of XML.
 
 ### Implementation
 
-In `WPOS_Metadata_Builder::get_json()`:
+In `ODAD_Metadata_Builder::get_json()`:
 1. Check `$cache->get_json()`. Return if cached.
 2. Convert the same internal schema representation to JSON CSDL format.
-3. Apply same `wpos_metadata_entity_types` / `wpos_metadata_entity_sets` filters.
+3. Apply same `ODAD_metadata_entity_types` / `ODAD_metadata_entity_sets` filters.
 4. `json_encode()` with `JSON_PRETTY_PRINT`.
 5. Cache and return.
 
@@ -165,4 +165,4 @@ calls `get_json()` instead of `get_xml()`.
 ### JSON CSDL
 - `GET /odata/v4/$metadata?$format=application/json` returns valid OData v4.01 JSON CSDL.
 - JSON CSDL contains all entity types and entity sets registered in the schema.
-- JSON CSDL is cached and busted by `WPOS_Event_Schema_Changed`.
+- JSON CSDL is cached and busted by `ODAD_Event_Schema_Changed`.

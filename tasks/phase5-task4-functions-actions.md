@@ -1,7 +1,7 @@
 # Task 5.4 — OData Functions + Actions Registry + Routing
 
 ## Dependencies
-- Task 1.3 (hook bridge — `wpos_register_functions`, `wpos_register_actions` hooks)
+- Task 1.3 (hook bridge — `ODAD_register_functions`, `ODAD_register_actions` hooks)
 - Task 1.4 (router — new routes needed)
 - Task 4.3 (permission check flow)
 
@@ -33,7 +33,7 @@ POST /odata/v4/Posts(42)/NS.PublishNow          → bound action
 ## File 1: `src/query/class-wpos-function-registry.php`
 
 ```php
-class WPOS_Function_Registry {
+class ODAD_Function_Registry {
 
     private array $functions = [];
 
@@ -63,13 +63,13 @@ class WPOS_Function_Registry {
 
 ## File 2: `src/write/class-wpos-action-registry.php`
 
-Same structure as `WPOS_Function_Registry` but for actions (POST).
+Same structure as `ODAD_Function_Registry` but for actions (POST).
 
 ---
 
 ## Router Updates
 
-Add routes to `WPOS_Router`:
+Add routes to `ODAD_Router`:
 
 ```
 // Unbound function
@@ -93,22 +93,22 @@ Router dispatch for functions:
 $fn_entry  = $function_registry->get($function_name);
 $params    = parse_function_params($raw_params);   // parse key=value from URL
 $result    = ($fn_entry['handler'])($params, $user);
-return WPOS_Response::entity(['value' => $result], $context_url);
+return ODAD_Response::entity(['value' => $result], $context_url);
 ```
 
 ---
 
 ## Registration via WP Hooks
 
-In `WPOS_Subscriber_Schema_Init` (or a dedicated init subscriber), fire:
+In `ODAD_Subscriber_Schema_Init` (or a dedicated init subscriber), fire:
 ```php
-$this->bridge->action('wpos_register_functions', [$function_registry]);
-$this->bridge->action('wpos_register_actions',   [$action_registry]);
+$this->bridge->action('ODAD_register_functions', [$function_registry]);
+$this->bridge->action('ODAD_register_actions',   [$action_registry]);
 ```
 
 External plugin example:
 ```php
-add_action('wpos_register_functions', function(WPOS_Function_Registry $r) {
+add_action('ODAD_register_functions', function(ODAD_Function_Registry $r) {
     $r->register(
         'NS.GetPublishedCount',
         fn($params, $user) => (new \WP_Query(['post_status'=>'publish','post_type'=>'post']))->found_posts,
@@ -124,7 +124,7 @@ add_action('wpos_register_functions', function(WPOS_Function_Registry $r) {
 ## Metadata Integration
 
 Functions and actions must appear in `$metadata` CSDL output.
-In `WPOS_Metadata_Builder::build_xml()`, iterate `function_registry->all()` and
+In `ODAD_Metadata_Builder::build_xml()`, iterate `function_registry->all()` and
 `action_registry->all()` to emit `<Function>` and `<Action>` CSDL elements.
 
 ---
@@ -135,5 +135,5 @@ In `WPOS_Metadata_Builder::build_xml()`, iterate `function_registry->all()` and
 - `POST /odata/v4/Posts(42)/NS.Publish` dispatches to the bound action handler with `$key = 42`.
 - Unregistered function/action returns 404.
 - Functions and actions appear in `$metadata` CSDL output.
-- `wpos_register_functions` fires during `init` and receives `WPOS_Function_Registry` as argument.
-- `wpos_register_actions` fires during `init` and receives `WPOS_Action_Registry` as argument.
+- `ODAD_register_functions` fires during `init` and receives `ODAD_Function_Registry` as argument.
+- `ODAD_register_actions` fires during `init` and receives `ODAD_Action_Registry` as argument.

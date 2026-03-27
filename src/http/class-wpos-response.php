@@ -1,6 +1,6 @@
 <?php
 /**
- * WPOS_Response — factory for OData-compliant WP_REST_Response objects.
+ * ODAD_Response — factory for OData-compliant WP_REST_Response objects.
  *
  * All JSON responses carry:
  *   Content-Type : application/json;odata.metadata=minimal;odata.streaming=true
@@ -11,7 +11,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Response {
+class ODAD_Response {
 
     // -------------------------------------------------------------------------
     // Header constants

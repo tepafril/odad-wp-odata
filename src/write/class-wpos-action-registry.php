@@ -1,8 +1,8 @@
 <?php
 /**
- * WPOS_Action_Registry — registry for OData bound and unbound actions.
+ * ODAD_Action_Registry — registry for OData bound and unbound actions.
  *
- * External plugins register callables during the 'wpos_register_actions'
+ * External plugins register callables during the 'ODAD_register_actions'
  * WP action.  The router dispatches POST requests to the registered handlers.
  *
  * Registration entry shape:
@@ -21,7 +21,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Action_Registry {
+class ODAD_Action_Registry {
 
     /** @var array<string, array> Registered actions keyed by qualified name. */
     private array $actions = [];

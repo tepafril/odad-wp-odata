@@ -1,6 +1,6 @@
 <?php
 /**
- * WPOS_Router — registers all OData REST routes with WP_REST_Server.
+ * ODAD_Router — registers all OData REST routes with WP_REST_Server.
  *
  * Base namespace : odata/v4
  *
@@ -18,48 +18,48 @@
  * - POST /odata/v4/{entity}({key})/{NS.Action}                → handle_action()    (bound to entity)
  * - GET  /odata/v4/$status/{job_id}                           → handle_async_status()
  * - Delta token ($deltatoken param) injected into query context.
- * - Prefer: respond-async delegates to WPOS_Async_Handler.
+ * - Prefer: respond-async delegates to ODAD_Async_Handler.
  *
  * Injected services:
- *   WPOS_Query_Engine        — may be null in Phase 1
- *   WPOS_Write_Handler       — may be null in Phase 1
- *   WPOS_Metadata_Builder    — required; must be functional in Phase 1
- *   WPOS_Permission_Engine   — may be null in Phase 1
- *   WPOS_Function_Registry   — may be null pre-Phase-5
- *   WPOS_Action_Registry     — may be null pre-Phase-5
- *   WPOS_Async_Handler       — may be null pre-Phase-5
+ *   ODAD_Query_Engine        — may be null in Phase 1
+ *   ODAD_Write_Handler       — may be null in Phase 1
+ *   ODAD_Metadata_Builder    — required; must be functional in Phase 1
+ *   ODAD_Permission_Engine   — may be null in Phase 1
+ *   ODAD_Function_Registry   — may be null pre-Phase-5
+ *   ODAD_Action_Registry     — may be null pre-Phase-5
+ *   ODAD_Async_Handler       — may be null pre-Phase-5
  *
  * @package WPOS
  */
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Router {
+class ODAD_Router {
 
     /** WP REST API namespace for all OData endpoints. */
     public const NAMESPACE = 'odata/v4';
 
     /**
-     * @param object|null              $query_engine       WPOS_Query_Engine instance or null stub.
-     * @param object|null              $write_handler      WPOS_Write_Handler instance or null stub.
-     * @param object                   $metadata_builder   WPOS_Metadata_Builder instance (required).
-     * @param object|null              $permission_engine  WPOS_Permission_Engine instance or null stub.
-     * @param WPOS_Hook_Bridge|null    $bridge             Hook bridge for applying WP filters.
-     * @param WPOS_Function_Registry|null $function_registry OData function registry.
-     * @param WPOS_Action_Registry|null   $action_registry   OData action registry.
-     * @param WPOS_Async_Handler|null     $async_handler     Async request handler.
-     * @param WPOS_Batch_Handler|null     $batch_handler     Batch request handler.
+     * @param object|null              $query_engine       ODAD_Query_Engine instance or null stub.
+     * @param object|null              $write_handler      ODAD_Write_Handler instance or null stub.
+     * @param object                   $metadata_builder   ODAD_Metadata_Builder instance (required).
+     * @param object|null              $permission_engine  ODAD_Permission_Engine instance or null stub.
+     * @param ODAD_Hook_Bridge|null    $bridge             Hook bridge for applying WP filters.
+     * @param ODAD_Function_Registry|null $function_registry OData function registry.
+     * @param ODAD_Action_Registry|null   $action_registry   OData action registry.
+     * @param ODAD_Async_Handler|null     $async_handler     Async request handler.
+     * @param ODAD_Batch_Handler|null     $batch_handler     Batch request handler.
      */
     public function __construct(
         private readonly mixed                    $query_engine,
         private readonly mixed                    $write_handler,
         private readonly mixed                    $metadata_builder,
         private readonly mixed                    $permission_engine,
-        private readonly ?WPOS_Hook_Bridge        $bridge            = null,
-        private readonly ?WPOS_Function_Registry  $function_registry = null,
-        private readonly ?WPOS_Action_Registry    $action_registry   = null,
-        private readonly ?WPOS_Async_Handler      $async_handler     = null,
-        private readonly ?WPOS_Batch_Handler      $batch_handler     = null,
+        private readonly ?ODAD_Hook_Bridge        $bridge            = null,
+        private readonly ?ODAD_Function_Registry  $function_registry = null,
+        private readonly ?ODAD_Action_Registry    $action_registry   = null,
+        private readonly ?ODAD_Async_Handler      $async_handler     = null,
+        private readonly ?ODAD_Batch_Handler      $batch_handler     = null,
     ) {}
 
     /**
@@ -315,7 +315,7 @@ class WPOS_Router {
      * Check whether the request is allowed to proceed for the given entity set
      * and HTTP method.
      *
-     * If the user is not authenticated, applies the `wpos_allow_public_access`
+     * If the user is not authenticated, applies the `ODAD_allow_public_access`
      * filter. If the filter returns false (the default), returns a 403 response.
      * Returns null when the request may proceed.
      *
@@ -331,14 +331,14 @@ class WPOS_Router {
         $allow_public = false;
         if ( null !== $this->bridge ) {
             $allow_public = (bool) $this->bridge->filter(
-                'wpos_allow_public_access',
+                'ODAD_allow_public_access',
                 false,
                 [ $entity_set, $method ]
             );
         }
 
         if ( ! $allow_public ) {
-            return WPOS_Error::forbidden( 'Authentication required.' );
+            return ODAD_Error::forbidden( 'Authentication required.' );
         }
 
         return null;
@@ -358,7 +358,7 @@ class WPOS_Router {
     public function handle_service_document( WP_REST_Request $wp_request ): WP_REST_Response {
         $entity_sets = $this->metadata_builder->get_entity_set_names();
         $base_url    = rest_url( self::NAMESPACE . '/' );
-        return WPOS_Response::service_document( $entity_sets, $base_url );
+        return ODAD_Response::service_document( $entity_sets, $base_url );
     }
 
     /**
@@ -379,17 +379,17 @@ class WPOS_Router {
 
         if ( $want_json ) {
             $csdl_json = $this->metadata_builder->build_json();
-            return WPOS_Response::metadata_json( $csdl_json );
+            return ODAD_Response::metadata_json( $csdl_json );
         }
 
         $csdl_xml = $this->metadata_builder->build_xml();
-        return WPOS_Response::metadata_xml( $csdl_xml );
+        return ODAD_Response::metadata_xml( $csdl_xml );
     }
 
     /**
      * POST /odata/v4/$batch
      *
-     * Delegates to WPOS_Batch_Handler when available.
+     * Delegates to ODAD_Batch_Handler when available.
      * Stores the raw WP_REST_Request in a global so the batch handler can
      * access headers and raw body via get_current_wp_request().
      *
@@ -398,16 +398,16 @@ class WPOS_Router {
      */
     public function handle_batch( WP_REST_Request $wp_request ): WP_REST_Response {
         if ( null === $this->batch_handler ) {
-            return WPOS_Error::not_implemented( '$batch is not yet implemented.' );
+            return ODAD_Error::not_implemented( '$batch is not yet implemented.' );
         }
 
         // Expose the raw WP_REST_Request to the batch handler so it can inspect
         // Content-Type and raw body without needing an additional parameter.
-        $GLOBALS['wpos_current_batch_request'] = $wp_request;
+        $GLOBALS['ODAD_current_batch_request'] = $wp_request;
 
         $path_params              = [];
         $path_params['_batch']    = true;
-        $request                  = WPOS_Request::from_wp( $wp_request, $path_params );
+        $request                  = ODAD_Request::from_wp( $wp_request, $path_params );
         $user                     = wp_get_current_user();
 
         return $this->batch_handler->handle( $request, $user );
@@ -419,7 +419,7 @@ class WPOS_Router {
      *
      * Supports:
      *   - $deltatoken param → inject modified_after into query context (delta responses).
-     *   - Prefer: respond-async header → queue via WPOS_Async_Handler and return 202.
+     *   - Prefer: respond-async header → queue via ODAD_Async_Handler and return 202.
      *
      * @param WP_REST_Request $wp_request
      * @return WP_REST_Response
@@ -432,10 +432,10 @@ class WPOS_Router {
         }
 
         if ( null === $this->query_engine ) {
-            return WPOS_Error::not_implemented( 'Entity collection queries are not yet implemented.' );
+            return ODAD_Error::not_implemented( 'Entity collection queries are not yet implemented.' );
         }
 
-        $request = WPOS_Request::from_wp( $wp_request, $wp_request->get_url_params() );
+        $request = ODAD_Request::from_wp( $wp_request, $wp_request->get_url_params() );
         $user    = wp_get_current_user();
 
         // ── Prefer: respond-async ─────────────────────────────────────────────
@@ -448,25 +448,25 @@ class WPOS_Router {
         $modified_after  = null;
 
         if ( null !== $delta_token_raw && '' !== $delta_token_raw ) {
-            $modified_after = WPOS_Delta_Token::decode( (string) $delta_token_raw );
+            $modified_after = ODAD_Delta_Token::decode( (string) $delta_token_raw );
             if ( null === $modified_after ) {
-                return WPOS_Error::bad_request( 'InvalidDeltaToken', 'The supplied $deltatoken is invalid or has expired.' );
+                return ODAD_Error::bad_request( 'InvalidDeltaToken', 'The supplied $deltatoken is invalid or has expired.' );
             }
         }
 
         try {
             $result = $this->query_engine->execute( $request, $user, $modified_after );
-        } catch ( WPOS_Unknown_Entity_Exception $e ) {
-            return WPOS_Error::not_found( $e->getMessage() );
+        } catch ( ODAD_Unknown_Entity_Exception $e ) {
+            return ODAD_Error::not_found( $e->getMessage() );
         } catch ( \Exception $e ) {
-            return WPOS_Error::bad_request( 'InvalidQuery', $e->getMessage() );
+            return ODAD_Error::bad_request( 'InvalidQuery', $e->getMessage() );
         }
 
         $context_url = rest_url( self::NAMESPACE . '/' . $request->entity_set );
 
         // When a delta token was supplied, include a new @odata.deltaLink in the response.
         if ( null !== $modified_after ) {
-            $new_token  = WPOS_Delta_Token::now();
+            $new_token  = ODAD_Delta_Token::now();
             $delta_link = rest_url( self::NAMESPACE . '/' . $request->entity_set . '?$deltatoken=' . $new_token );
 
             $body = [ '@odata.context' => $context_url ];
@@ -477,12 +477,12 @@ class WPOS_Router {
             $body['value']            = $result->rows;
 
             $response = new WP_REST_Response( $body, 200 );
-            $response->header( WPOS_Response::HEADER_ODATA_VER,    WPOS_Response::ODATA_VERSION );
-            $response->header( WPOS_Response::HEADER_CONTENT_TYPE, WPOS_Response::CT_JSON_ODATA );
+            $response->header( ODAD_Response::HEADER_ODATA_VER,    ODAD_Response::ODATA_VERSION );
+            $response->header( ODAD_Response::HEADER_CONTENT_TYPE, ODAD_Response::CT_JSON_ODATA );
             return $response;
         }
 
-        return WPOS_Response::collection(
+        return ODAD_Response::collection(
             $result->rows,
             $context_url,
             $result->total_count,
@@ -503,7 +503,7 @@ class WPOS_Router {
             return $guard;
         }
 
-        return WPOS_Error::not_implemented( 'Entity creation is not yet implemented.' );
+        return ODAD_Error::not_implemented( 'Entity creation is not yet implemented.' );
     }
 
     /**
@@ -522,27 +522,27 @@ class WPOS_Router {
         }
 
         if ( null === $this->query_engine ) {
-            return WPOS_Error::not_implemented( 'POST /$query is not yet implemented.' );
+            return ODAD_Error::not_implemented( 'POST /$query is not yet implemented.' );
         }
 
         // Mark the request as a /$query POST so the engine merges body params.
         $path_params              = $wp_request->get_url_params();
         $path_params['_query']    = true;
 
-        $request = WPOS_Request::from_wp( $wp_request, $path_params );
+        $request = ODAD_Request::from_wp( $wp_request, $path_params );
         $user    = wp_get_current_user();
 
         try {
             $result = $this->query_engine->execute( $request, $user );
-        } catch ( WPOS_Unknown_Entity_Exception $e ) {
-            return WPOS_Error::not_found( $e->getMessage() );
+        } catch ( ODAD_Unknown_Entity_Exception $e ) {
+            return ODAD_Error::not_found( $e->getMessage() );
         } catch ( \Exception $e ) {
-            return WPOS_Error::bad_request( 'InvalidQuery', $e->getMessage() );
+            return ODAD_Error::bad_request( 'InvalidQuery', $e->getMessage() );
         }
 
         $context_url = rest_url( self::NAMESPACE . '/' . $request->entity_set );
 
-        return WPOS_Response::collection(
+        return ODAD_Response::collection(
             $result->rows,
             $context_url,
             $result->total_count,
@@ -565,29 +565,29 @@ class WPOS_Router {
         }
 
         if ( null === $this->query_engine ) {
-            return WPOS_Error::not_implemented( 'Single entity reads are not yet implemented.' );
+            return ODAD_Error::not_implemented( 'Single entity reads are not yet implemented.' );
         }
 
-        $request = WPOS_Request::from_wp( $wp_request, $wp_request->get_url_params() );
+        $request = ODAD_Request::from_wp( $wp_request, $wp_request->get_url_params() );
         $user    = wp_get_current_user();
 
         try {
             $row = $this->query_engine->get_entity( $request, $user );
-        } catch ( WPOS_Unknown_Entity_Exception $e ) {
-            return WPOS_Error::not_found( $e->getMessage() );
+        } catch ( ODAD_Unknown_Entity_Exception $e ) {
+            return ODAD_Error::not_found( $e->getMessage() );
         } catch ( \Exception $e ) {
-            return WPOS_Error::bad_request( 'InvalidQuery', $e->getMessage() );
+            return ODAD_Error::bad_request( 'InvalidQuery', $e->getMessage() );
         }
 
         if ( null === $row ) {
-            return WPOS_Error::not_found();
+            return ODAD_Error::not_found();
         }
 
         $context_url = rest_url(
             self::NAMESPACE . '/' . $request->entity_set . '(' . rawurlencode( (string) $request->key ) . ')'
         );
 
-        return WPOS_Response::entity( $row, $context_url );
+        return ODAD_Response::entity( $row, $context_url );
     }
 
     /**
@@ -603,7 +603,7 @@ class WPOS_Router {
             return $guard;
         }
 
-        return WPOS_Error::not_implemented( 'Entity updates are not yet implemented.' );
+        return ODAD_Error::not_implemented( 'Entity updates are not yet implemented.' );
     }
 
     /**
@@ -619,7 +619,7 @@ class WPOS_Router {
             return $guard;
         }
 
-        return WPOS_Error::not_implemented( 'Entity replacement is not yet implemented.' );
+        return ODAD_Error::not_implemented( 'Entity replacement is not yet implemented.' );
     }
 
     /**
@@ -635,7 +635,7 @@ class WPOS_Router {
             return $guard;
         }
 
-        return WPOS_Error::not_implemented( 'Entity deletion is not yet implemented.' );
+        return ODAD_Error::not_implemented( 'Entity deletion is not yet implemented.' );
     }
 
     /**
@@ -651,7 +651,7 @@ class WPOS_Router {
             return $guard;
         }
 
-        return WPOS_Error::not_implemented( 'Navigation property traversal is not yet implemented.' );
+        return ODAD_Error::not_implemented( 'Navigation property traversal is not yet implemented.' );
     }
 
     /**
@@ -669,16 +669,16 @@ class WPOS_Router {
         }
 
         if ( null === $this->query_engine ) {
-            return WPOS_Error::not_implemented( 'Inline $count on collections is not yet implemented.' );
+            return ODAD_Error::not_implemented( 'Inline $count on collections is not yet implemented.' );
         }
 
         // Force $count=true and a zero $top so we only fetch the total, not rows.
         $path_params = $wp_request->get_url_params();
-        $request     = WPOS_Request::from_wp( $wp_request, $path_params );
+        $request     = ODAD_Request::from_wp( $wp_request, $path_params );
         $user        = wp_get_current_user();
 
         // Build a synthetic request with $count forced on and $top=0.
-        $count_request = new WPOS_Request(
+        $count_request = new ODAD_Request(
             entity_set:    $request->entity_set,
             method:        $request->method,
             key:           $request->key,
@@ -701,17 +701,17 @@ class WPOS_Router {
 
         try {
             $result = $this->query_engine->execute( $count_request, $user );
-        } catch ( WPOS_Unknown_Entity_Exception $e ) {
-            return WPOS_Error::not_found( $e->getMessage() );
+        } catch ( ODAD_Unknown_Entity_Exception $e ) {
+            return ODAD_Error::not_found( $e->getMessage() );
         } catch ( \Exception $e ) {
-            return WPOS_Error::bad_request( 'InvalidQuery', $e->getMessage() );
+            return ODAD_Error::bad_request( 'InvalidQuery', $e->getMessage() );
         }
 
         $count = $result->total_count ?? 0;
 
         $response = new WP_REST_Response( (string) $count, 200 );
-        $response->header( WPOS_Response::HEADER_ODATA_VER,    WPOS_Response::ODATA_VERSION );
-        $response->header( WPOS_Response::HEADER_CONTENT_TYPE, 'text/plain' );
+        $response->header( ODAD_Response::HEADER_ODATA_VER,    ODAD_Response::ODATA_VERSION );
+        $response->header( ODAD_Response::HEADER_CONTENT_TYPE, 'text/plain' );
         return $response;
     }
 
@@ -731,13 +731,13 @@ class WPOS_Router {
      */
     public function handle_function( WP_REST_Request $wp_request ): WP_REST_Response {
         if ( null === $this->function_registry ) {
-            return WPOS_Error::not_implemented( 'OData functions are not enabled.' );
+            return ODAD_Error::not_implemented( 'OData functions are not enabled.' );
         }
 
         $function_name = (string) ( $wp_request->get_param( 'function' ) ?? '' );
 
         if ( ! $this->function_registry->has( $function_name ) ) {
-            return WPOS_Error::not_found( "Function '{$function_name}' is not registered." );
+            return ODAD_Error::not_found( "Function '{$function_name}' is not registered." );
         }
 
         $fn_entry = $this->function_registry->get( $function_name );
@@ -748,11 +748,11 @@ class WPOS_Router {
         try {
             $result = ( $fn_entry['handler'] )( $params, $user );
         } catch ( \Throwable $e ) {
-            return WPOS_Error::internal( $e->getMessage() );
+            return ODAD_Error::internal( $e->getMessage() );
         }
 
         $context_url = rest_url( self::NAMESPACE . '/' );
-        return WPOS_Response::entity( [ 'value' => $result ], $context_url );
+        return ODAD_Response::entity( [ 'value' => $result ], $context_url );
     }
 
     /**
@@ -766,13 +766,13 @@ class WPOS_Router {
      */
     public function handle_action( WP_REST_Request $wp_request ): WP_REST_Response {
         if ( null === $this->action_registry ) {
-            return WPOS_Error::not_implemented( 'OData actions are not enabled.' );
+            return ODAD_Error::not_implemented( 'OData actions are not enabled.' );
         }
 
         $action_name = (string) ( $wp_request->get_param( 'action' ) ?? '' );
 
         if ( ! $this->action_registry->has( $action_name ) ) {
-            return WPOS_Error::not_found( "Action '{$action_name}' is not registered." );
+            return ODAD_Error::not_found( "Action '{$action_name}' is not registered." );
         }
 
         $action_entry = $this->action_registry->get( $action_name );
@@ -791,16 +791,16 @@ class WPOS_Router {
         try {
             $result = ( $action_entry['handler'] )( $params, $user );
         } catch ( \Throwable $e ) {
-            return WPOS_Error::internal( $e->getMessage() );
+            return ODAD_Error::internal( $e->getMessage() );
         }
 
         // Void actions return 204 No Content; non-void return 200 with value.
         if ( null === $result ) {
-            return WPOS_Response::no_content();
+            return ODAD_Response::no_content();
         }
 
         $context_url = rest_url( self::NAMESPACE . '/' );
-        return WPOS_Response::entity( [ 'value' => $result ], $context_url );
+        return ODAD_Response::entity( [ 'value' => $result ], $context_url );
     }
 
     // =========================================================================
@@ -819,25 +819,25 @@ class WPOS_Router {
      */
     public function handle_async_status( WP_REST_Request $wp_request ): WP_REST_Response {
         if ( null === $this->async_handler ) {
-            return WPOS_Error::not_implemented( 'Async processing is not enabled.' );
+            return ODAD_Error::not_implemented( 'Async processing is not enabled.' );
         }
 
         $job_id = (string) ( $wp_request->get_param( 'job_id' ) ?? '' );
 
         if ( '' === $job_id ) {
-            return WPOS_Error::bad_request( 'MissingJobId', 'A job_id is required.' );
+            return ODAD_Error::bad_request( 'MissingJobId', 'A job_id is required.' );
         }
 
         $status = $this->async_handler->get_status( $job_id );
 
         switch ( $status['status'] ) {
             case 'not_found':
-                return WPOS_Error::not_found( "Job '{$job_id}' was not found or has expired." );
+                return ODAD_Error::not_found( "Job '{$job_id}' was not found or has expired." );
 
             case 'complete':
                 $result      = $status['result'] ?? [];
                 $context_url = rest_url( self::NAMESPACE . '/' );
-                return WPOS_Response::collection(
+                return ODAD_Response::collection(
                     $result['rows']        ?? [],
                     $context_url,
                     $result['total_count'] ?? null,
@@ -845,7 +845,7 @@ class WPOS_Router {
                 );
 
             case 'error':
-                return WPOS_Error::internal( $status['message'] ?? 'The job failed.' );
+                return ODAD_Error::internal( $status['message'] ?? 'The job failed.' );
 
             case 'queued':
             case 'processing':
@@ -855,8 +855,8 @@ class WPOS_Router {
                     [ '@odata.status' => $status['status'] ],
                     202
                 );
-                $response->header( WPOS_Response::HEADER_ODATA_VER,    WPOS_Response::ODATA_VERSION );
-                $response->header( WPOS_Response::HEADER_CONTENT_TYPE, WPOS_Response::CT_JSON_ODATA );
+                $response->header( ODAD_Response::HEADER_ODATA_VER,    ODAD_Response::ODATA_VERSION );
+                $response->header( ODAD_Response::HEADER_CONTENT_TYPE, ODAD_Response::CT_JSON_ODATA );
                 $response->header( 'Location', $status_url );
                 return $response;
         }
@@ -869,10 +869,10 @@ class WPOS_Router {
     /**
      * Check whether the request carries "Prefer: respond-async".
      *
-     * @param WPOS_Request $request
+     * @param ODAD_Request $request
      * @return bool
      */
-    private function is_async_request( WPOS_Request $request ): bool {
+    private function is_async_request( ODAD_Request $request ): bool {
         if ( null === $request->prefer ) {
             return false;
         }
@@ -882,17 +882,17 @@ class WPOS_Router {
     /**
      * Queue the request and return a 202 Accepted response with a Location header.
      *
-     * @param WPOS_Request $request
+     * @param ODAD_Request $request
      * @param WP_User      $user
      * @return WP_REST_Response
      */
-    private function queue_async( WPOS_Request $request, WP_User $user ): WP_REST_Response {
+    private function queue_async( ODAD_Request $request, WP_User $user ): WP_REST_Response {
         $job_id     = $this->async_handler->queue( $request, $user );
         $status_url = rest_url( self::NAMESPACE . '/\$status/' . $job_id );
 
         $response = new WP_REST_Response( [ '@odata.status' => 'queued' ], 202 );
-        $response->header( WPOS_Response::HEADER_ODATA_VER,    WPOS_Response::ODATA_VERSION );
-        $response->header( WPOS_Response::HEADER_CONTENT_TYPE, WPOS_Response::CT_JSON_ODATA );
+        $response->header( ODAD_Response::HEADER_ODATA_VER,    ODAD_Response::ODATA_VERSION );
+        $response->header( ODAD_Response::HEADER_CONTENT_TYPE, ODAD_Response::CT_JSON_ODATA );
         $response->header( 'Location', $status_url );
         return $response;
     }

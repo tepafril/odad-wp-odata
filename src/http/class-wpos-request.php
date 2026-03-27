@@ -1,13 +1,13 @@
 <?php
 /**
- * WPOS_Request — typed OData request parsed from a WP_REST_Request.
+ * ODAD_Request — typed OData request parsed from a WP_REST_Request.
  *
  * @package WPOS
  */
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Request {
+class ODAD_Request {
 
     /** Default page size enforced when client omits $top. */
     public const DEFAULT_TOP = 100;
@@ -57,7 +57,7 @@ class WPOS_Request {
     ) {}
 
     /**
-     * Build a WPOS_Request from an incoming WP_REST_Request and the matched
+     * Build a ODAD_Request from an incoming WP_REST_Request and the matched
      * path parameters extracted by the router.
      *
      * Expected path params:

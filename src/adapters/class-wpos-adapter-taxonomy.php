@@ -1,13 +1,13 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Adapter_Taxonomy extends WPOS_Adapter_WP_Terms {
+class ODAD_Adapter_Taxonomy extends ODAD_Adapter_WP_Terms {
 
     /**
      * Auto-discovers all registered public non-builtin taxonomies and returns
-     * one WPOS_Adapter_Taxonomy instance per taxonomy, keyed by entity set name.
+     * one ODAD_Adapter_Taxonomy instance per taxonomy, keyed by entity set name.
      *
-     * @return WPOS_Adapter_Taxonomy[]  keyed by entity set name
+     * @return ODAD_Adapter_Taxonomy[]  keyed by entity set name
      */
     public static function discover_all(): array {
         $taxonomies = get_taxonomies( [ 'public' => true, '_builtin' => false ], 'objects' );

@@ -1,13 +1,13 @@
 # Task 4.1 — Capability Map + Permission Engine
 
 ## Dependencies
-- Task 1.2 (WPOS_Event_Permission_Check event)
-- Task 2.1 (WPOS_Query_Context)
+- Task 1.2 (ODAD_Event_Permission_Check event)
+- Task 2.1 (ODAD_Query_Context)
 
 ## Goal
 Build the two-layer permission system:
-- `WPOS_Capability_Map` — maps entity sets to WordPress capabilities per operation
-- `WPOS_Permission_Engine` — executes permission checks and injects row-level security
+- `ODAD_Capability_Map` — maps entity sets to WordPress capabilities per operation
+- `ODAD_Permission_Engine` — executes permission checks and injects row-level security
 
 Both are pure PHP domain services. No WP hook calls here — those happen in subscribers.
 
@@ -16,7 +16,7 @@ Both are pure PHP domain services. No WP hook calls here — those happen in sub
 ## File 1: `src/permissions/class-wpos-capability-map.php`
 
 ```php
-class WPOS_Capability_Map {
+class ODAD_Capability_Map {
 
     /** Default capability map for built-in entity sets */
     private array $defaults = [
@@ -34,13 +34,13 @@ class WPOS_Capability_Map {
 
     /**
      * Register capability rules for a custom entity set.
-     * Called from the wpos_register_permissions WP action.
+     * Called from the ODAD_register_permissions WP action.
      */
     public function register( string $entity_set, array $operations ): void;
 
     /**
      * Get the required capability for an entity set + operation.
-     * Falls back to custom convention: wpos_{entity_set_lower}_{operation}
+     * Falls back to custom convention: ODAD_{entity_set_lower}_{operation}
      */
     public function get_capability( string $entity_set, string $operation ): string;
 }
@@ -48,10 +48,10 @@ class WPOS_Capability_Map {
 
 **Custom capability convention (for unregistered entity sets):**
 ```
-wpos_{entity_set_lowercase}_{operation}
-e.g.  wpos_employees_read
-      wpos_employees_insert
-      wpos_salary_read    ← field-level
+ODAD_{entity_set_lowercase}_{operation}
+e.g.  ODAD_employees_read
+      ODAD_employees_insert
+      ODAD_salary_read    ← field-level
 ```
 
 ---
@@ -59,10 +59,10 @@ e.g.  wpos_employees_read
 ## File 2: `src/permissions/class-wpos-permission-engine.php`
 
 ```php
-class WPOS_Permission_Engine {
+class ODAD_Permission_Engine {
 
     public function __construct(
-        private WPOS_Capability_Map $capability_map,
+        private ODAD_Capability_Map $capability_map,
     ) {}
 
     /**
@@ -89,8 +89,8 @@ class WPOS_Permission_Engine {
     public function apply_row_filter(
         string             $entity_set,
         \WP_User           $user,
-        WPOS_Query_Context $ctx
-    ): WPOS_Query_Context;
+        ODAD_Query_Context $ctx
+    ): ODAD_Query_Context;
 }
 ```
 
@@ -114,7 +114,7 @@ can() implementation:
   1. Get required capability from capability_map->get_capability()
   2. Check $user->has_cap($capability)
   3. Return result
-  Note: The wpos_can_* WP filter override happens in WPOS_Subscriber_Permission_Check
+  Note: The ODAD_can_* WP filter override happens in ODAD_Subscriber_Permission_Check
 ```
 
 ---
@@ -123,7 +123,7 @@ can() implementation:
 
 - `can_read('Posts', $admin_user)` returns `true` (admin has `read`).
 - `can_insert('Posts', $subscriber_user)` returns `false` (subscriber lacks `edit_posts`).
-- `can_read('Employees', $user)` uses convention `wpos_employees_read`.
+- `can_read('Employees', $user)` uses convention `ODAD_employees_read`.
 - `apply_row_filter('Posts', $non_admin)` adds `extra_conditions` limiting to `publish` posts or own posts.
 - `apply_row_filter('Posts', $admin)` adds no extra conditions.
 - No WordPress hook calls (`apply_filters`, `add_filter`) anywhere in these files.

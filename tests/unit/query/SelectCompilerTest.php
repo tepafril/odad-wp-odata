@@ -1,13 +1,13 @@
 <?php
 /**
- * Unit tests for WPOS_Select_Compiler.
+ * Unit tests for ODAD_Select_Compiler.
  */
 
 use PHPUnit\Framework\TestCase;
 
 class SelectCompilerTest extends TestCase {
 
-    private WPOS_Select_Compiler $compiler;
+    private ODAD_Select_Compiler $compiler;
 
     /** @var array<string,string> */
     private array $column_map = [
@@ -17,7 +17,7 @@ class SelectCompilerTest extends TestCase {
     ];
 
     protected function setUp(): void {
-        $this->compiler = new WPOS_Select_Compiler();
+        $this->compiler = new ODAD_Select_Compiler();
     }
 
     // ── Selected properties map to correct column names ───────────────────────
@@ -49,7 +49,7 @@ class SelectCompilerTest extends TestCase {
     // ── Unknown property throws exception ─────────────────────────────────────
 
     public function test_unknown_property_throws_exception(): void {
-        $this->expectException( WPOS_Select_Exception::class );
+        $this->expectException( ODAD_Select_Exception::class );
         $this->compiler->compile( [ 'NonExistent' ], $this->column_map );
     }
 

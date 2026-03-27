@@ -14,17 +14,17 @@ names to adapter instances. These are the contracts everything in Phase 2 is bui
 ### `src/adapters/interface-wpos-adapter.php`
 
 ```php
-interface WPOS_Adapter {
+interface ODAD_Adapter {
 
     // ── Reads ─────────────────────────────────────────────────────────────
     /** Return an array of entity rows matching the query context. */
-    public function get_collection( WPOS_Query_Context $ctx ): array;
+    public function get_collection( ODAD_Query_Context $ctx ): array;
 
     /** Return a single entity row by key, or null if not found. */
-    public function get_entity( mixed $key, WPOS_Query_Context $ctx ): ?array;
+    public function get_entity( mixed $key, ODAD_Query_Context $ctx ): ?array;
 
     /** Return the total count of rows matching $ctx (ignoring $top/$skip). */
-    public function get_count( WPOS_Query_Context $ctx ): int;
+    public function get_count( ODAD_Query_Context $ctx ): int;
 
     // ── Writes ────────────────────────────────────────────────────────────
     /** Insert a new entity. Returns the new key value. */
@@ -62,18 +62,18 @@ interface WPOS_Adapter {
 Maps entity set names → adapter instances. Injected into all domain services.
 
 ```php
-class WPOS_Adapter_Resolver {
+class ODAD_Adapter_Resolver {
 
-    /** @var array<string, WPOS_Adapter> */
+    /** @var array<string, ODAD_Adapter> */
     private array $adapters = [];
 
-    public function register( string $entity_set, WPOS_Adapter $adapter ): void {
+    public function register( string $entity_set, ODAD_Adapter $adapter ): void {
         $this->adapters[ $entity_set ] = $adapter;
     }
 
-    public function resolve( string $entity_set ): WPOS_Adapter {
+    public function resolve( string $entity_set ): ODAD_Adapter {
         if ( ! isset( $this->adapters[ $entity_set ] ) ) {
-            throw new WPOS_Unknown_Entity_Exception(
+            throw new ODAD_Unknown_Entity_Exception(
                 "No adapter registered for entity set: {$entity_set}"
             );
         }
@@ -97,18 +97,18 @@ class WPOS_Adapter_Resolver {
 
 Create `src/adapters/class-wpos-unknown-entity-exception.php`:
 ```php
-class WPOS_Unknown_Entity_Exception extends \RuntimeException {}
+class ODAD_Unknown_Entity_Exception extends \RuntimeException {}
 ```
 
 ---
 
-## `WPOS_Query_Context` Stub
+## `ODAD_Query_Context` Stub
 
-`WPOS_Query_Context` is fully built in Phase 3 (Task 3.5), but the adapter interface
+`ODAD_Query_Context` is fully built in Phase 3 (Task 3.5), but the adapter interface
 references it. Create a minimal stub in `src/query/class-wpos-query-context.php` now:
 
 ```php
-class WPOS_Query_Context {
+class ODAD_Query_Context {
     public ?string $filter  = null;
     public ?array  $select  = null;
     public ?array  $orderby = null;
@@ -128,15 +128,15 @@ class WPOS_Query_Context {
 
 In `class-wpos-bootstrapper.php`, add:
 ```php
-$c->singleton( WPOS_Adapter_Resolver::class, fn() => new WPOS_Adapter_Resolver() );
+$c->singleton( ODAD_Adapter_Resolver::class, fn() => new ODAD_Adapter_Resolver() );
 ```
 
 ---
 
 ## Acceptance Criteria
 
-- `WPOS_Adapter` interface is well-typed and matches the signatures above exactly.
-- `WPOS_Adapter_Resolver::resolve()` throws `WPOS_Unknown_Entity_Exception` (not a generic RuntimeException) for unknown entity sets.
-- `WPOS_Adapter_Resolver::registered_entity_sets()` returns only entity set names that have been registered.
-- `WPOS_Query_Context` stub compiles without errors.
+- `ODAD_Adapter` interface is well-typed and matches the signatures above exactly.
+- `ODAD_Adapter_Resolver::resolve()` throws `ODAD_Unknown_Entity_Exception` (not a generic RuntimeException) for unknown entity sets.
+- `ODAD_Adapter_Resolver::registered_entity_sets()` returns only entity set names that have been registered.
+- `ODAD_Query_Context` stub compiles without errors.
 - No WordPress functions called in these files.

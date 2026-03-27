@@ -5,7 +5,7 @@ defined( 'ABSPATH' ) || exit;
  * OData v4.01 $filter recursive-descent parser.
  *
  * Converts a raw OData $filter string into an AST whose root is a
- * WPOS_AST_Node subclass instance. No WordPress dependencies; pure PHP.
+ * ODAD_AST_Node subclass instance. No WordPress dependencies; pure PHP.
  *
  * Operator precedence (lowest → highest):
  *   1. or
@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *   8. unary -
  *   9. function call / property / literal / (…)
  */
-class WPOS_Filter_Parser {
+class ODAD_Filter_Parser {
 
     // -------------------------------------------------------------------------
     // Token type constants
@@ -101,10 +101,10 @@ class WPOS_Filter_Parser {
      * Parse an OData $filter expression and return its AST root node.
      *
      * @param string $filter_expression  Raw OData $filter string.
-     * @return WPOS_AST_Node
-     * @throws WPOS_Filter_Parse_Exception
+     * @return ODAD_AST_Node
+     * @throws ODAD_Filter_Parse_Exception
      */
-    public function parse( string $filter_expression ): WPOS_AST_Node {
+    public function parse( string $filter_expression ): ODAD_AST_Node {
         $this->expr    = $filter_expression;
         $this->pos     = 0;
         $this->tokens  = [];
@@ -477,14 +477,14 @@ class WPOS_Filter_Parser {
     // =========================================================================
 
     /**
-     * Throw a WPOS_Filter_Parse_Exception.
+     * Throw a ODAD_Filter_Parse_Exception.
      *
      * @param string $message
      * @param int    $offset   Byte offset in the expression.
      * @return never
      */
     private function error( string $message, int $offset ): never {
-        throw new WPOS_Filter_Parse_Exception(
+        throw new ODAD_Filter_Parse_Exception(
             $message . " (at position {$offset} in: {$this->expr})",
             $offset,
             $this->expr
@@ -509,13 +509,13 @@ class WPOS_Filter_Parser {
     // Level 1 — or
     // -------------------------------------------------------------------------
 
-    private function parse_or(): WPOS_AST_Node {
+    private function parse_or(): ODAD_AST_Node {
         $left = $this->parse_and();
 
         while ( $this->is_keyword( 'or' ) ) {
             $this->consume();
             $right = $this->parse_and();
-            $left  = new WPOS_AST_Binary( 'or', $left, $right );
+            $left  = new ODAD_AST_Binary( 'or', $left, $right );
         }
 
         return $left;
@@ -525,13 +525,13 @@ class WPOS_Filter_Parser {
     // Level 2 — and
     // -------------------------------------------------------------------------
 
-    private function parse_and(): WPOS_AST_Node {
+    private function parse_and(): ODAD_AST_Node {
         $left = $this->parse_not();
 
         while ( $this->is_keyword( 'and' ) ) {
             $this->consume();
             $right = $this->parse_not();
-            $left  = new WPOS_AST_Binary( 'and', $left, $right );
+            $left  = new ODAD_AST_Binary( 'and', $left, $right );
         }
 
         return $left;
@@ -541,11 +541,11 @@ class WPOS_Filter_Parser {
     // Level 3 — not (unary logical)
     // -------------------------------------------------------------------------
 
-    private function parse_not(): WPOS_AST_Node {
+    private function parse_not(): ODAD_AST_Node {
         if ( $this->is_keyword( 'not' ) ) {
             $this->consume();
             $operand = $this->parse_not();
-            return new WPOS_AST_Unary( 'not', $operand );
+            return new ODAD_AST_Unary( 'not', $operand );
         }
 
         return $this->parse_comparison();
@@ -555,14 +555,14 @@ class WPOS_Filter_Parser {
     // Level 4 — comparison: eq, ne, lt, le, gt, ge
     // -------------------------------------------------------------------------
 
-    private function parse_comparison(): WPOS_AST_Node {
+    private function parse_comparison(): ODAD_AST_Node {
         $left = $this->parse_in();
 
         if ( $this->is_keyword_in( self::BINARY_COMPARISON_OPS ) ) {
             $op    = strtolower( (string) $this->current_value() );
             $this->consume();
             $right = $this->parse_in();
-            return new WPOS_AST_Binary( $op, $left, $right );
+            return new ODAD_AST_Binary( $op, $left, $right );
         }
 
         return $left;
@@ -572,7 +572,7 @@ class WPOS_Filter_Parser {
     // Level 5 — in operator: expr 'in' '(' value, value, ... ')'
     // -------------------------------------------------------------------------
 
-    private function parse_in(): WPOS_AST_Node {
+    private function parse_in(): ODAD_AST_Node {
         $left = $this->parse_additive();
 
         if ( $this->is_keyword( 'in' ) ) {
@@ -592,7 +592,7 @@ class WPOS_Filter_Parser {
             }
 
             $this->expect( self::T_RPAREN );
-            return new WPOS_AST_In( $left, $values );
+            return new ODAD_AST_In( $left, $values );
         }
 
         return $left;
@@ -602,7 +602,7 @@ class WPOS_Filter_Parser {
     // Level 6 — additive: add, sub
     // -------------------------------------------------------------------------
 
-    private function parse_additive(): WPOS_AST_Node {
+    private function parse_additive(): ODAD_AST_Node {
         $left = $this->parse_multiplicative();
 
         while ( $this->is_keyword_in( self::BINARY_ADDITIVE_OPS )
@@ -615,7 +615,7 @@ class WPOS_Filter_Parser {
             }
             $this->consume();
             $right = $this->parse_multiplicative();
-            $left  = new WPOS_AST_Binary( $op, $left, $right );
+            $left  = new ODAD_AST_Binary( $op, $left, $right );
         }
 
         return $left;
@@ -625,14 +625,14 @@ class WPOS_Filter_Parser {
     // Level 7 — multiplicative: mul, div, divby, mod
     // -------------------------------------------------------------------------
 
-    private function parse_multiplicative(): WPOS_AST_Node {
+    private function parse_multiplicative(): ODAD_AST_Node {
         $left = $this->parse_unary();
 
         while ( $this->is_keyword_in( self::BINARY_MULTIPLICATIVE_OPS ) ) {
             $op = strtolower( (string) $this->current_value() );
             $this->consume();
             $right = $this->parse_unary();
-            $left  = new WPOS_AST_Binary( $op, $left, $right );
+            $left  = new ODAD_AST_Binary( $op, $left, $right );
         }
 
         return $left;
@@ -642,11 +642,11 @@ class WPOS_Filter_Parser {
     // Level 8 — unary minus
     // -------------------------------------------------------------------------
 
-    private function parse_unary(): WPOS_AST_Node {
+    private function parse_unary(): ODAD_AST_Node {
         if ( $this->current_type() === self::T_MINUS ) {
             $this->consume();
             $operand = $this->parse_unary();
-            return new WPOS_AST_Unary( '-', $operand );
+            return new ODAD_AST_Unary( '-', $operand );
         }
 
         return $this->parse_primary();
@@ -656,7 +656,7 @@ class WPOS_Filter_Parser {
     // Level 9 — primary: literal, property, function, lambda, '(' expr ')'
     // -------------------------------------------------------------------------
 
-    private function parse_primary(): WPOS_AST_Node {
+    private function parse_primary(): ODAD_AST_Node {
         $type  = $this->current_type();
         $value = $this->current_value();
 
@@ -676,27 +676,27 @@ class WPOS_Filter_Parser {
         // Numeric / string / typed literals
         if ( $type === self::T_INT ) {
             $this->consume();
-            return new WPOS_AST_Literal( 'int', $value );
+            return new ODAD_AST_Literal( 'int', $value );
         }
         if ( $type === self::T_FLOAT ) {
             $this->consume();
-            return new WPOS_AST_Literal( 'float', $value );
+            return new ODAD_AST_Literal( 'float', $value );
         }
         if ( $type === self::T_STRING ) {
             $this->consume();
-            return new WPOS_AST_Literal( 'string', $value );
+            return new ODAD_AST_Literal( 'string', $value );
         }
         if ( $type === self::T_DATETIME ) {
             $this->consume();
-            return new WPOS_AST_Literal( 'datetime', $value );
+            return new ODAD_AST_Literal( 'datetime', $value );
         }
         if ( $type === self::T_GUID ) {
             $this->consume();
-            return new WPOS_AST_Literal( 'guid', $value );
+            return new ODAD_AST_Literal( 'guid', $value );
         }
         if ( $type === self::T_DURATION ) {
             $this->consume();
-            return new WPOS_AST_Literal( 'duration', $value );
+            return new ODAD_AST_Literal( 'duration', $value );
         }
 
         // Identifier — could be: boolean/null literal, function, lambda, or property
@@ -706,15 +706,15 @@ class WPOS_Filter_Parser {
             // Boolean / null literals
             if ( $lower === 'true' ) {
                 $this->consume();
-                return new WPOS_AST_Literal( 'bool', true );
+                return new ODAD_AST_Literal( 'bool', true );
             }
             if ( $lower === 'false' ) {
                 $this->consume();
-                return new WPOS_AST_Literal( 'bool', false );
+                return new ODAD_AST_Literal( 'bool', false );
             }
             if ( $lower === 'null' ) {
                 $this->consume();
-                return new WPOS_AST_Literal( 'null', null );
+                return new ODAD_AST_Literal( 'null', null );
             }
 
             // Function call? An identifier followed immediately by '(' is a function.
@@ -745,7 +745,7 @@ class WPOS_Filter_Parser {
     // also treated as function calls here.
     // -------------------------------------------------------------------------
 
-    private function parse_function_call(): WPOS_AST_Node {
+    private function parse_function_call(): ODAD_AST_Node {
         $name_tok = $this->expect( self::T_IDENT );
         $name     = (string) $name_tok[1];
         $lower    = strtolower( $name );
@@ -762,20 +762,20 @@ class WPOS_Filter_Parser {
 
         // Lambda: any(v:expr) or all(v:expr) — standalone form
         if ( in_array( $lower, self::LAMBDA_OPERATORS, true ) ) {
-            return $this->parse_lambda_body( $lower, new WPOS_AST_Literal( 'null', null ) );
+            return $this->parse_lambda_body( $lower, new ODAD_AST_Literal( 'null', null ) );
         }
 
         $args = $this->parse_argument_list();
 
         $this->expect( self::T_RPAREN );
 
-        return new WPOS_AST_Function( $lower, $args );
+        return new ODAD_AST_Function( $lower, $args );
     }
 
     /**
      * Parse a comma-separated argument list (without the surrounding parens).
      *
-     * @return WPOS_AST_Node[]
+     * @return ODAD_AST_Node[]
      */
     private function parse_argument_list(): array {
         $args = [];
@@ -802,7 +802,7 @@ class WPOS_Filter_Parser {
     // where lambda_op is 'any' or 'all'.
     // -------------------------------------------------------------------------
 
-    private function parse_property_or_lambda(): WPOS_AST_Node {
+    private function parse_property_or_lambda(): ODAD_AST_Node {
         $offset = $this->current_offset();
         $path   = $this->parse_path_segment();
 
@@ -828,7 +828,7 @@ class WPOS_Filter_Parser {
                     $this->consume(); // lambda op
                     $this->consume(); // '('
 
-                    $collection = new WPOS_AST_Property( $path );
+                    $collection = new ODAD_AST_Property( $path );
                     return $this->parse_lambda_body( $lambda_op, $collection );
                 }
             }
@@ -843,7 +843,7 @@ class WPOS_Filter_Parser {
             $this->consume();
         }
 
-        return new WPOS_AST_Property( $path );
+        return new ODAD_AST_Property( $path );
     }
 
     /**
@@ -864,10 +864,10 @@ class WPOS_Filter_Parser {
 
     /**
      * @param string        $operator   'any' or 'all'
-     * @param WPOS_AST_Node $collection Collection expression (may be a dummy
+     * @param ODAD_AST_Node $collection Collection expression (may be a dummy
      *                                   Literal(null) for top-level lambdas).
      */
-    private function parse_lambda_body( string $operator, WPOS_AST_Node $collection ): WPOS_AST_Node {
+    private function parse_lambda_body( string $operator, ODAD_AST_Node $collection ): ODAD_AST_Node {
         // Variable identifier
         $var_tok  = $this->expect( self::T_IDENT );
         $variable = (string) $var_tok[1];
@@ -878,7 +878,7 @@ class WPOS_Filter_Parser {
 
         $this->expect( self::T_RPAREN );
 
-        return new WPOS_AST_Lambda( $operator, $collection, $variable, $expr );
+        return new ODAD_AST_Lambda( $operator, $collection, $variable, $expr );
     }
 
     // -------------------------------------------------------------------------
@@ -888,44 +888,44 @@ class WPOS_Filter_Parser {
     /**
      * Parse a single literal value.  Only literals are valid inside an 'in' list.
      */
-    private function parse_literal(): WPOS_AST_Node {
+    private function parse_literal(): ODAD_AST_Node {
         $type  = $this->current_type();
         $value = $this->current_value();
 
         switch ( $type ) {
             case self::T_INT:
                 $this->consume();
-                return new WPOS_AST_Literal( 'int', $value );
+                return new ODAD_AST_Literal( 'int', $value );
 
             case self::T_FLOAT:
                 $this->consume();
-                return new WPOS_AST_Literal( 'float', $value );
+                return new ODAD_AST_Literal( 'float', $value );
 
             case self::T_STRING:
                 $this->consume();
-                return new WPOS_AST_Literal( 'string', $value );
+                return new ODAD_AST_Literal( 'string', $value );
 
             case self::T_DATETIME:
                 $this->consume();
-                return new WPOS_AST_Literal( 'datetime', $value );
+                return new ODAD_AST_Literal( 'datetime', $value );
 
             case self::T_GUID:
                 $this->consume();
-                return new WPOS_AST_Literal( 'guid', $value );
+                return new ODAD_AST_Literal( 'guid', $value );
 
             case self::T_DURATION:
                 $this->consume();
-                return new WPOS_AST_Literal( 'duration', $value );
+                return new ODAD_AST_Literal( 'duration', $value );
 
             case self::T_MINUS:
                 // Negative numeric literal
                 $this->consume();
                 $inner = $this->parse_literal();
-                if ( $inner instanceof WPOS_AST_Literal && $inner->type === 'int' ) {
-                    return new WPOS_AST_Literal( 'int', -(int) $inner->value );
+                if ( $inner instanceof ODAD_AST_Literal && $inner->type === 'int' ) {
+                    return new ODAD_AST_Literal( 'int', -(int) $inner->value );
                 }
-                if ( $inner instanceof WPOS_AST_Literal && $inner->type === 'float' ) {
-                    return new WPOS_AST_Literal( 'float', -(float) $inner->value );
+                if ( $inner instanceof ODAD_AST_Literal && $inner->type === 'float' ) {
+                    return new ODAD_AST_Literal( 'float', -(float) $inner->value );
                 }
                 $this->error( "Expected numeric literal after '-'", $this->current_offset() );
 
@@ -933,15 +933,15 @@ class WPOS_Filter_Parser {
                 $lower = strtolower( (string) $value );
                 if ( $lower === 'true' ) {
                     $this->consume();
-                    return new WPOS_AST_Literal( 'bool', true );
+                    return new ODAD_AST_Literal( 'bool', true );
                 }
                 if ( $lower === 'false' ) {
                     $this->consume();
-                    return new WPOS_AST_Literal( 'bool', false );
+                    return new ODAD_AST_Literal( 'bool', false );
                 }
                 if ( $lower === 'null' ) {
                     $this->consume();
-                    return new WPOS_AST_Literal( 'null', null );
+                    return new ODAD_AST_Literal( 'null', null );
                 }
                 $this->error( "Expected a literal value but got identifier '{$value}'", $this->current_offset() );
 

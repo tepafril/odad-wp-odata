@@ -1,7 +1,7 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Query_Context {
+class ODAD_Query_Context {
     public ?string $filter             = null;   // raw $filter string
     public ?array  $select             = null;   // parsed property names
     public ?array  $orderby            = null;   // [ ['property'=>'Title', 'dir'=>'asc'], ... ]

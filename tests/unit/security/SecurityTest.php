@@ -20,12 +20,12 @@ class SecurityTest extends TestCase {
         'Status' => 'p.post_status',
     ];
 
-    private WPOS_Filter_Parser   $parser;
-    private WPOS_Filter_Compiler $compiler;
+    private ODAD_Filter_Parser   $parser;
+    private ODAD_Filter_Compiler $compiler;
 
     protected function setUp(): void {
-        $this->parser   = new WPOS_Filter_Parser();
-        $this->compiler = new WPOS_Filter_Compiler();
+        $this->parser   = new ODAD_Filter_Parser();
+        $this->compiler = new ODAD_Filter_Compiler();
     }
 
     // =========================================================================
@@ -68,7 +68,7 @@ class SecurityTest extends TestCase {
      * raw dangerous SQL fragment.
      */
     public function test_orderby_injection_rejected(): void {
-        $compiler = new WPOS_Orderby_Compiler();
+        $compiler = new ODAD_Orderby_Compiler();
 
         $dangerous_dir = "'; DROP TABLE wp_posts; --";
 
@@ -91,7 +91,7 @@ class SecurityTest extends TestCase {
                 $sql,
                 'Direction must be normalized to ASC or DESC.'
             );
-        } catch ( WPOS_Orderby_Exception $e ) {
+        } catch ( ODAD_Orderby_Exception $e ) {
             // Throwing is also acceptable; the property segment before the
             // dangerous direction may or may not be valid depending on parsing.
             $this->addToAssertionCount( 1 );
@@ -104,7 +104,7 @@ class SecurityTest extends TestCase {
 
     /**
      * Build a deeply nested filter expression (21 levels of parentheses) and
-     * verify that the parser throws WPOS_Filter_Parse_Exception.
+     * verify that the parser throws ODAD_Filter_Parse_Exception.
      */
     public function test_filter_max_depth_enforced(): void {
         // Build 21 levels of nested parentheses: (((... Title eq 'x' ...)))
@@ -112,7 +112,7 @@ class SecurityTest extends TestCase {
         $inner      = "Title eq 'x'";
         $expression = str_repeat( '(', $depth ) . $inner . str_repeat( ')', $depth );
 
-        $this->expectException( WPOS_Filter_Parse_Exception::class );
+        $this->expectException( ODAD_Filter_Parse_Exception::class );
 
         $this->parser->parse( $expression );
     }
@@ -127,7 +127,7 @@ class SecurityTest extends TestCase {
      * any SQL output.
      */
     public function test_select_unknown_property_rejected(): void {
-        $compiler        = new WPOS_Select_Compiler();
+        $compiler        = new ODAD_Select_Compiler();
         $unknown_property = 'InjectedProp; DROP TABLE wp_posts; --';
 
         $threw = false;
@@ -135,14 +135,14 @@ class SecurityTest extends TestCase {
 
         try {
             $sql = $compiler->compile( [ $unknown_property ], $this->column_map );
-        } catch ( WPOS_Select_Exception $e ) {
+        } catch ( ODAD_Select_Exception $e ) {
             $threw = true;
             // The exception message should not include the raw property in a way
             // that could be exploited — we just verify an exception was thrown.
         }
 
         $this->assertTrue( $threw,
-            'WPOS_Select_Compiler must throw WPOS_Select_Exception for unknown properties.' );
+            'ODAD_Select_Compiler must throw ODAD_Select_Exception for unknown properties.' );
 
         // If (hypothetically) no exception was thrown, SQL must not contain the property.
         $this->assertStringNotContainsString( 'DROP TABLE', $sql,
@@ -154,11 +154,11 @@ class SecurityTest extends TestCase {
     // =========================================================================
 
     /**
-     * Verify that WPOS_Batch_Handler::is_safe_url() (via Reflection) rejects
+     * Verify that ODAD_Batch_Handler::is_safe_url() (via Reflection) rejects
      * external URLs and accepts relative URLs.
      */
     public function test_batch_external_url_rejected(): void {
-        // We need a WPOS_Batch_Handler instance. Use reflection to call the
+        // We need a ODAD_Batch_Handler instance. Use reflection to call the
         // private is_safe_url() method without constructing the full graph.
         $handler = $this->createBatchHandlerWithReflection();
 
@@ -196,19 +196,19 @@ class SecurityTest extends TestCase {
     // ── Private helpers ───────────────────────────────────────────────────────
 
     /**
-     * Create a minimal WPOS_Batch_Handler for reflection testing.
+     * Create a minimal ODAD_Batch_Handler for reflection testing.
      *
      * The constructor requires a router-resolver Closure and a
-     * WPOS_Permission_Engine. We pass dummy stubs — neither is invoked by
+     * ODAD_Permission_Engine. We pass dummy stubs — neither is invoked by
      * is_safe_url().
      */
-    private function createBatchHandlerWithReflection(): WPOS_Batch_Handler {
+    private function createBatchHandlerWithReflection(): ODAD_Batch_Handler {
         $router_resolver = static function (): never {
             throw new \LogicException( 'Router must not be resolved in is_safe_url tests.' );
         };
 
-        $permissions = $this->createStub( WPOS_Permission_Engine::class );
+        $permissions = $this->createStub( ODAD_Permission_Engine::class );
 
-        return new WPOS_Batch_Handler( $router_resolver, $permissions );
+        return new ODAD_Batch_Handler( $router_resolver, $permissions );
     }
 }

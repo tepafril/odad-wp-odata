@@ -50,11 +50,11 @@ require_once dirname(__DIR__, 2) . '/wp-odata-suite.php';
 
 ```php
 class WPPostsAdapterTest extends WP_UnitTestCase {
-    private WPOS_Adapter_WP_Posts $adapter;
+    private ODAD_Adapter_WP_Posts $adapter;
 
     public function setUp(): void {
         parent::setUp();
-        $this->adapter = new WPOS_Adapter_WP_Posts('post', 'Posts');
+        $this->adapter = new ODAD_Adapter_WP_Posts('post', 'Posts');
     }
 }
 ```
@@ -97,30 +97,30 @@ Tests that all public WP hooks fire correctly:
 ```php
 class HookBridgeTest extends WP_UnitTestCase {
 
-    public function test_wpos_register_entity_sets_fires_on_init(): void {
+    public function test_ODAD_register_entity_sets_fires_on_init(): void {
         $called = false;
-        add_action('wpos_register_entity_sets', function() use (&$called) {
+        add_action('ODAD_register_entity_sets', function() use (&$called) {
             $called = true;
         });
         do_action('init');
         $this->assertTrue($called);
     }
 
-    public function test_wpos_query_context_filter_modifies_context(): void {
-        add_filter('wpos_query_context', function($ctx) {
+    public function test_ODAD_query_context_filter_modifies_context(): void {
+        add_filter('ODAD_query_context', function($ctx) {
             $ctx->extra_conditions[] = '1=0'; // Return no results
             return $ctx;
         });
         // Execute a query and verify no results returned
     }
 
-    public function test_wpos_can_read_filter_denies_access(): void {
-        add_filter('wpos_can_read', '__return_false');
+    public function test_ODAD_can_read_filter_denies_access(): void {
+        add_filter('ODAD_can_read', '__return_false');
         // Make REST request, expect 403
     }
 
-    public function test_wpos_inserted_action_fires(): void { ... }
-    public function test_wpos_before_insert_filter_modifies_payload(): void { ... }
+    public function test_ODAD_inserted_action_fires(): void { ... }
+    public function test_ODAD_before_insert_filter_modifies_payload(): void { ... }
 }
 ```
 
@@ -144,13 +144,13 @@ should have at least one integration test.
 
 ### `AdminEntityConfigTest.php`
 
-- Saving entity config dispatches `WPOS_Event_Admin_Entity_Config_Saved`
-- `wpos_admin_entity_config_saved` WP action fires
+- Saving entity config dispatches `ODAD_Event_Admin_Entity_Config_Saved`
+- `ODAD_admin_entity_config_saved` WP action fires
 - Metadata cache is busted after save
 
 ### `AdminPermissionConfigTest.php`
 
-- Saving permission config dispatches `WPOS_Event_Admin_Permission_Saved`
+- Saving permission config dispatches `ODAD_Event_Admin_Permission_Saved`
 - Permission check respects saved role overrides
 
 ---

@@ -1,13 +1,13 @@
 <?php
 /**
- * Unit tests for WPOS_Orderby_Compiler.
+ * Unit tests for ODAD_Orderby_Compiler.
  */
 
 use PHPUnit\Framework\TestCase;
 
 class OrderbyCompilerTest extends TestCase {
 
-    private WPOS_Orderby_Compiler $compiler;
+    private ODAD_Orderby_Compiler $compiler;
 
     /** @var array<string,string> */
     private array $column_map = [
@@ -17,7 +17,7 @@ class OrderbyCompilerTest extends TestCase {
     ];
 
     protected function setUp(): void {
-        $this->compiler = new WPOS_Orderby_Compiler();
+        $this->compiler = new ODAD_Orderby_Compiler();
     }
 
     // ── Ascending (default) ───────────────────────────────────────────────────
@@ -57,7 +57,7 @@ class OrderbyCompilerTest extends TestCase {
     // ── Unknown property ─────────────────────────────────────────────────────
 
     public function test_unknown_property_throws_exception(): void {
-        $this->expectException( WPOS_Orderby_Exception::class );
+        $this->expectException( ODAD_Orderby_Exception::class );
         $this->compiler->compile( 'NonExistent', $this->column_map );
     }
 

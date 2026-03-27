@@ -5,7 +5,7 @@
  * @package WPOS
  */
 
-class WPOS_Event_Deep_Update_Before implements WPOS_Event {
+class ODAD_Event_Deep_Update_Before implements ODAD_Event {
     public bool $cancelled = false;
 
     public function __construct(

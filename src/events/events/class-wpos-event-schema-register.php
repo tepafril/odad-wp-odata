@@ -5,8 +5,8 @@
  * @package WPOS
  */
 
-class WPOS_Event_Schema_Register implements WPOS_Event {
+class ODAD_Event_Schema_Register implements ODAD_Event {
     public function __construct(
-        public WPOS_Schema_Registry $registry,
+        public ODAD_Schema_Registry $registry,
     ) {}
 }

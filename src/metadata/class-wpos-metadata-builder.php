@@ -1,27 +1,27 @@
 <?php
 /**
- * WPOS_Metadata_Builder — builds the OData $metadata document (CSDL).
+ * ODAD_Metadata_Builder — builds the OData $metadata document (CSDL).
  *
  * Checks the metadata cache before building. On a cache miss it:
- *   1. Dispatches WPOS_Event_Metadata_Build so internal listeners can inspect
+ *   1. Dispatches ODAD_Event_Metadata_Build so internal listeners can inspect
  *      the entity types / sets before serialisation.
- *   2. Applies the wpos_metadata_entity_types WP filter (via the Hook Bridge)
+ *   2. Applies the ODAD_metadata_entity_types WP filter (via the Hook Bridge)
  *      so external plugins can inject or modify entity type definitions.
- *   3. Applies the wpos_metadata_entity_sets WP filter (via the Hook Bridge)
+ *   3. Applies the ODAD_metadata_entity_sets WP filter (via the Hook Bridge)
  *      so external plugins can inject or modify entity set declarations.
  *   4. Serialises the result to CSDL XML (and separately to CSDL JSON).
  *   5. Stores both representations in the cache.
  *
  * The public get_xml() / get_json() methods are the canonical cache-aware API.
  * build_xml() / build_json() are kept as public aliases for backward
- * compatibility with WPOS_Router (Phase 1).
+ * compatibility with ODAD_Router (Phase 1).
  *
  * @package WPOS
  */
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Metadata_Builder {
+class ODAD_Metadata_Builder {
 
     /** OData / CSDL XML namespaces. */
     private const EDMX_NS = 'http://docs.oasis-open.org/odata/ns/edmx';
@@ -37,12 +37,12 @@ class WPOS_Metadata_Builder {
     private const CONTAINER_NAME = 'WPODataService';
 
     public function __construct(
-        private WPOS_Schema_Registry       $registry,
-        private WPOS_Metadata_Cache        $cache,
-        private WPOS_Event_Bus             $event_bus,
-        private WPOS_Hook_Bridge           $bridge,
-        private ?WPOS_Function_Registry    $function_registry = null,
-        private ?WPOS_Action_Registry      $action_registry   = null,
+        private ODAD_Schema_Registry       $registry,
+        private ODAD_Metadata_Cache        $cache,
+        private ODAD_Event_Bus             $event_bus,
+        private ODAD_Hook_Bridge           $bridge,
+        private ?ODAD_Function_Registry    $function_registry = null,
+        private ?ODAD_Action_Registry      $action_registry   = null,
     ) {}
 
     // -------------------------------------------------------------------------
@@ -82,7 +82,7 @@ class WPOS_Metadata_Builder {
     }
 
     // -------------------------------------------------------------------------
-    // Backward-compatible aliases used by WPOS_Router (Phase 1)
+    // Backward-compatible aliases used by ODAD_Router (Phase 1)
     // -------------------------------------------------------------------------
 
     /**
@@ -110,7 +110,7 @@ class WPOS_Metadata_Builder {
     /**
      * Return the names of all registered entity sets.
      *
-     * Used by WPOS_Router to build the service document.
+     * Used by ODAD_Router to build the service document.
      *
      * @return string[]
      */
@@ -370,9 +370,9 @@ XML;
     /**
      * Build the final entity-type and entity-set arrays by:
      *   1. Starting from the schema registry.
-     *   2. Dispatching WPOS_Event_Metadata_Build (internal listeners may mutate).
-     *   3. Applying wpos_metadata_entity_types WP filter via the Hook Bridge.
-     *   4. Applying wpos_metadata_entity_sets  WP filter via the Hook Bridge.
+     *   2. Dispatching ODAD_Event_Metadata_Build (internal listeners may mutate).
+     *   3. Applying ODAD_metadata_entity_types WP filter via the Hook Bridge.
+     *   4. Applying ODAD_metadata_entity_sets  WP filter via the Hook Bridge.
      *
      * @return array{ 0: array<string,array>, 1: array<string,array> }
      *              [ entity_types, entity_sets ]
@@ -380,24 +380,24 @@ XML;
     private function prepare_schema(): array {
         $all_defs = $this->registry->all();
 
-        // Dispatch internal event so subscribers (e.g. WPOS_Subscriber_Metadata_Build)
+        // Dispatch internal event so subscribers (e.g. ODAD_Subscriber_Metadata_Build)
         // can react before filters are applied.
-        $event = new WPOS_Event_Metadata_Build(
+        $event = new ODAD_Event_Metadata_Build(
             entity_types: $all_defs,
             entity_sets:  $all_defs,
         );
-        /** @var WPOS_Event_Metadata_Build $event */
+        /** @var ODAD_Event_Metadata_Build $event */
         $event = $this->event_bus->dispatch( $event );
 
         // Allow external plugins to modify entity type definitions.
         $entity_types = $this->bridge->filter(
-            'wpos_metadata_entity_types',
+            'ODAD_metadata_entity_types',
             $event->entity_types,
         );
 
         // Allow external plugins to modify entity set declarations.
         $entity_sets = $this->bridge->filter(
-            'wpos_metadata_entity_sets',
+            'ODAD_metadata_entity_sets',
             $event->entity_sets,
         );
 

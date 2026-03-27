@@ -4,23 +4,23 @@
  *
  * Two-layer permission model:
  *   1. Entity-level: can the user perform the operation at all?
- *      → Answered by can() via WPOS_Capability_Map + WP_User::has_cap().
+ *      → Answered by can() via ODAD_Capability_Map + WP_User::has_cap().
  *   2. Row-level: which rows may the user see?
  *      → Answered by apply_row_filter(), which adds WHERE fragments to
- *        WPOS_Query_Context::extra_conditions.
+ *        ODAD_Query_Context::extra_conditions.
  *
  * Pure domain service — no WP hook calls (apply_filters, add_filter).
- * WP filter overrides are the responsibility of WPOS_Subscriber_Permission_Check.
+ * WP filter overrides are the responsibility of ODAD_Subscriber_Permission_Check.
  *
  * @package WPOS
  */
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Permission_Engine {
+class ODAD_Permission_Engine {
 
     public function __construct(
-        private readonly WPOS_Capability_Map $capability_map,
+        private readonly ODAD_Capability_Map $capability_map,
     ) {}
 
     // -------------------------------------------------------------------------
@@ -103,14 +103,14 @@ class WPOS_Permission_Engine {
      *
      * @param string             $entity_set OData entity-set name.
      * @param \WP_User           $user       The requesting user.
-     * @param WPOS_Query_Context $ctx        Mutable query context.
-     * @return WPOS_Query_Context The (possibly modified) query context.
+     * @param ODAD_Query_Context $ctx        Mutable query context.
+     * @return ODAD_Query_Context The (possibly modified) query context.
      */
     public function apply_row_filter(
         string             $entity_set,
         \WP_User           $user,
-        WPOS_Query_Context $ctx
-    ): WPOS_Query_Context {
+        ODAD_Query_Context $ctx
+    ): ODAD_Query_Context {
         // Administrators see everything — no row-level restrictions.
         if ( $user->has_cap( 'administrator' ) ) {
             return $ctx;

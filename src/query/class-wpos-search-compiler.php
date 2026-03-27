@@ -7,7 +7,7 @@ defined( 'ABSPATH' ) || exit;
  * No WordPress calls are made in this class.  The returned `params` array
  * contains values ready to be passed to $wpdb->prepare() using %s placeholders.
  */
-class WPOS_Search_Compiler {
+class ODAD_Search_Compiler {
 
     /**
      * Compile a search term into a SQL LIKE fragment.

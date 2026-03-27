@@ -7,19 +7,19 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Subscriber_Permission_Check implements WPOS_Event_Listener {
+class ODAD_Subscriber_Permission_Check implements ODAD_Event_Listener {
 
     public function __construct(
-        private WPOS_Permission_Engine $permissions,
-        private WPOS_Hook_Bridge       $bridge,
+        private ODAD_Permission_Engine $permissions,
+        private ODAD_Hook_Bridge       $bridge,
     ) {}
 
     public function get_event(): string {
-        return WPOS_Event_Permission_Check::class;
+        return ODAD_Event_Permission_Check::class;
     }
 
-    public function handle( WPOS_Event $event ): void {
-        /** @var WPOS_Event_Permission_Check $event */
+    public function handle( ODAD_Event $event ): void {
+        /** @var ODAD_Event_Permission_Check $event */
 
         // 1. Domain logic: check WP capability
         $granted = $this->permissions->can(
@@ -29,8 +29,8 @@ class WPOS_Subscriber_Permission_Check implements WPOS_Event_Listener {
             $event->key
         );
 
-        // 2. Apply WP filter: wpos_can_read / wpos_can_insert / wpos_can_update / wpos_can_delete
-        $hook_name = "wpos_can_{$event->operation}";
+        // 2. Apply WP filter: ODAD_can_read / ODAD_can_insert / ODAD_can_update / ODAD_can_delete
+        $hook_name = "ODAD_can_{$event->operation}";
         $context   = match( $event->operation ) {
             'update', 'delete' => [ $event->entity_set, $event->key, $event->user ],
             default             => [ $event->entity_set, $event->user ],
@@ -38,7 +38,7 @@ class WPOS_Subscriber_Permission_Check implements WPOS_Event_Listener {
 
         $granted = (bool) $this->bridge->filter( $hook_name, $granted, $context );
 
-        // 3. Also apply wpos_allowed_properties filter for field-level permission
+        // 3. Also apply ODAD_allowed_properties filter for field-level permission
         //    (Result not used here — used by Field ACL. But fire it so plugins see it.)
 
         // 4. Write result back

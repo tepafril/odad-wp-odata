@@ -409,7 +409,7 @@ Built-in row-level rules:
 
 ### Default capability requirements
 
-If you haven't configured custom permissions, the plugin looks for WordPress capabilities named `wpos_{entityset}_{operation}` — for example, `wpos_posts_read` or `wpos_employees_delete`. Grant these capabilities to roles using a capability management plugin, or configure overrides in the Permissions admin page.
+If you haven't configured custom permissions, the plugin looks for WordPress capabilities named `ODAD_{entityset}_{operation}` — for example, `ODAD_posts_read` or `ODAD_employees_delete`. Grant these capabilities to roles using a capability management plugin, or configure overrides in the Permissions admin page.
 
 ### Field-level access control
 
@@ -432,11 +432,11 @@ See [custom-tables.md](custom-tables.md) for the full guide. Here is the short v
 Add this to your theme's `functions.php` or a small site plugin:
 
 ```php
-add_action( 'wpos_register_entity_sets', function (
-    WPOS_Schema_Registry  $registry,
-    WPOS_Adapter_Resolver $resolver
+add_action( 'ODAD_register_entity_sets', function (
+    ODAD_Schema_Registry  $registry,
+    ODAD_Adapter_Resolver $resolver
 ) {
-    $adapter = new WPOS_Adapter_Custom_Table(
+    $adapter = new ODAD_Adapter_Custom_Table(
         table_name:      'employees',   // without the $wpdb->prefix
         entity_set_name: 'Employees',   // OData name (PascalCase)
         key_column:      'id',
@@ -461,7 +461,7 @@ OData distinguishes between **functions** (read-only, called with GET) and **act
 ### Custom Function
 
 ```php
-add_action( 'wpos_register_functions', function ( $function_registry ) {
+add_action( 'ODAD_register_functions', function ( $function_registry ) {
     $function_registry->register(
         name:        'MyPlugin.GetPostCount',
         handler:     fn( $params, $user ) => wp_count_posts()->publish,
@@ -480,7 +480,7 @@ GET /wp-json/odata/v4/MyPlugin.GetPostCount()
 ### Custom Action
 
 ```php
-add_action( 'wpos_register_actions', function ( $action_registry ) {
+add_action( 'ODAD_register_actions', function ( $action_registry ) {
     $action_registry->register(
         name:        'MyPlugin.PublishPost',
         handler:     function ( $params, $user ) {

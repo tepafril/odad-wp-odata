@@ -1,17 +1,17 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
-interface WPOS_Adapter {
+interface ODAD_Adapter {
 
     // ── Reads ─────────────────────────────────────────────────────────────
     /** Return an array of entity rows matching the query context. */
-    public function get_collection( WPOS_Query_Context $ctx ): array;
+    public function get_collection( ODAD_Query_Context $ctx ): array;
 
     /** Return a single entity row by key, or null if not found. */
-    public function get_entity( mixed $key, WPOS_Query_Context $ctx ): ?array;
+    public function get_entity( mixed $key, ODAD_Query_Context $ctx ): ?array;
 
     /** Return the total count of rows matching $ctx (ignoring $top/$skip). */
-    public function get_count( WPOS_Query_Context $ctx ): int;
+    public function get_count( ODAD_Query_Context $ctx ): int;
 
     // ── Writes ────────────────────────────────────────────────────────────
     /** Insert a new entity. Returns the new key value. */

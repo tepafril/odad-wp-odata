@@ -1,11 +1,11 @@
 # Task 4.2 — Field ACL
 
 ## Dependencies
-- Task 4.1 (WPOS_Permission_Engine)
+- Task 4.1 (ODAD_Permission_Engine)
 - Task 2.1 (adapter interface — for property definitions with `required_capability`)
 
 ## Goal
-Build `WPOS_Field_ACL` which strips properties from query results that the
+Build `ODAD_Field_ACL` which strips properties from query results that the
 current user is not permitted to see, and validates write payloads to prevent
 writing to fields the user cannot modify.
 
@@ -16,10 +16,10 @@ writing to fields the user cannot modify.
 ### `src/permissions/class-wpos-field-acl.php`
 
 ```php
-class WPOS_Field_ACL {
+class ODAD_Field_ACL {
 
     public function __construct(
-        private WPOS_Permission_Engine $permission_engine,
+        private ODAD_Permission_Engine $permission_engine,
     ) {}
 
     /**
@@ -35,7 +35,7 @@ class WPOS_Field_ACL {
 
     /**
      * Get the list of allowed property names for this user + operation.
-     * This is what the wpos_allowed_properties filter starts from.
+     * This is what the ODAD_allowed_properties filter starts from.
      *
      * @return string[]
      */
@@ -43,7 +43,7 @@ class WPOS_Field_ACL {
 
     /**
      * Validate that a write payload only contains properties the user can write.
-     * Throws WPOS_Field_ACL_Exception if forbidden properties are present.
+     * Throws ODAD_Field_ACL_Exception if forbidden properties are present.
      *
      * @param array    $payload     Entity data being written
      * @param string   $entity_set
@@ -64,7 +64,7 @@ class WPOS_Field_ACL {
 2. `get_allowed_properties()` starts with all properties, then removes any that
    have a `required_capability` the user lacks.
 
-3. The result is passed through the `wpos_allowed_properties` WP filter
+3. The result is passed through the `ODAD_allowed_properties` WP filter
    (applied by the subscriber, not here) so external plugins can further restrict
    or grant fields.
 
@@ -88,7 +88,7 @@ Mark these in the entity type definition as `'read_only' => true`.
 ## Exception
 
 ```php
-class WPOS_Field_ACL_Exception extends \RuntimeException {
+class ODAD_Field_ACL_Exception extends \RuntimeException {
     public function __construct(
         string $message,
         public readonly string $entity_set,
@@ -105,7 +105,7 @@ class WPOS_Field_ACL_Exception extends \RuntimeException {
 
 - `apply()` on a Users result removes `Login` and `Email` for a subscriber user (lacks `list_users`).
 - `apply()` on a Users result keeps `Login` and `Email` for a user with `list_users`.
-- `validate_write(['ID' => 5, 'Title' => 'Hello'])` throws `WPOS_Field_ACL_Exception` (ID is read-only).
+- `validate_write(['ID' => 5, 'Title' => 'Hello'])` throws `ODAD_Field_ACL_Exception` (ID is read-only).
 - `apply()` never removes the key property from results.
 - `get_allowed_properties()` returns a superset of just the key property.
 - No WordPress hook calls in this file.

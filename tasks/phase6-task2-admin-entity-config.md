@@ -2,8 +2,8 @@
 
 ## Dependencies
 - Task 6.1 (admin dashboard + menu structure)
-- Task 1.2 (WPOS_Event_Admin_Entity_Config_Saved + WPOS_Event_Schema_Changed)
-- Task 1.3 (WPOS_Subscriber_Admin_Config_Saved stub)
+- Task 1.2 (ODAD_Event_Admin_Entity_Config_Saved + ODAD_Event_Schema_Changed)
+- Task 1.3 (ODAD_Subscriber_Admin_Config_Saved stub)
 
 ## Goal
 Build the entity configuration admin page where administrators can configure
@@ -17,11 +17,11 @@ The save flow must route through the event bus and trigger cache invalidation.
 ### `src/admin/class-wpos-admin-entity-config.php`
 
 ```php
-class WPOS_Admin_Entity_Config {
+class ODAD_Admin_Entity_Config {
 
     public function __construct(
-        private WPOS_Schema_Registry $registry,
-        private WPOS_Event_Bus       $event_bus,
+        private ODAD_Schema_Registry $registry,
+        private ODAD_Event_Bus       $event_bus,
     ) {}
 
     /** Render the entity configuration page. */
@@ -35,7 +35,7 @@ class WPOS_Admin_Entity_Config {
 
     /**
      * Get configuration for an entity set.
-     * Config stored in WP option 'wpos_entity_config_{entity_set}'.
+     * Config stored in WP option 'ODAD_entity_config_{entity_set}'.
      */
     public function get_config( string $entity_set ): array;
 }
@@ -62,8 +62,8 @@ class WPOS_Admin_Entity_Config {
 
 Store per-entity config as WP options:
 ```php
-get_option( 'wpos_entity_config_Posts' );
-update_option( 'wpos_entity_config_Posts', $config );
+get_option( 'ODAD_entity_config_Posts' );
+update_option( 'ODAD_entity_config_Posts', $config );
 ```
 
 ---
@@ -73,7 +73,7 @@ update_option( 'wpos_entity_config_Posts', $config );
 ```php
 public function save(): void {
     // 1. Verify nonce (CSRF protection)
-    check_admin_referer( 'wpos_entity_config_save' );
+    check_admin_referer( 'ODAD_entity_config_save' );
 
     // 2. Validate user capability
     if ( ! current_user_can( 'manage_options' ) ) {
@@ -85,10 +85,10 @@ public function save(): void {
     $config     = $this->sanitize_config( $_POST['config'] ?? [] );
 
     // 4. Persist
-    update_option( "wpos_entity_config_{$entity_set}", $config );
+    update_option( "ODAD_entity_config_{$entity_set}", $config );
 
     // 5. Dispatch event (triggers cache invalidation + WP action)
-    $this->event_bus->dispatch( new WPOS_Event_Admin_Entity_Config_Saved(
+    $this->event_bus->dispatch( new ODAD_Event_Admin_Entity_Config_Saved(
         entity_set: $entity_set,
         config:     $config,
     ));
@@ -106,28 +106,28 @@ public function save(): void {
 Flesh out the stub from Task 1.3:
 
 ```php
-class WPOS_Subscriber_Admin_Config_Saved implements WPOS_Event_Listener {
+class ODAD_Subscriber_Admin_Config_Saved implements ODAD_Event_Listener {
 
     public function __construct(
-        private WPOS_Hook_Bridge $bridge,
-        private WPOS_Event_Bus   $event_bus,
+        private ODAD_Hook_Bridge $bridge,
+        private ODAD_Event_Bus   $event_bus,
     ) {}
 
     public function get_event(): string {
-        return WPOS_Event_Admin_Entity_Config_Saved::class;
+        return ODAD_Event_Admin_Entity_Config_Saved::class;
     }
 
-    public function handle( WPOS_Event $event ): void {
-        /** @var WPOS_Event_Admin_Entity_Config_Saved $event */
+    public function handle( ODAD_Event $event ): void {
+        /** @var ODAD_Event_Admin_Entity_Config_Saved $event */
 
         // 1. Fire WP action so external plugins can react
-        $this->bridge->action( 'wpos_admin_entity_config_saved', [
+        $this->bridge->action( 'ODAD_admin_entity_config_saved', [
             $event->entity_set,
             $event->config,
         ]);
 
         // 2. Trigger schema change → metadata cache is busted automatically
-        $this->event_bus->dispatch( new WPOS_Event_Schema_Changed(
+        $this->event_bus->dispatch( new ODAD_Event_Schema_Changed(
             reason:     'config_updated',
             entity_set: $event->entity_set,
         ));
@@ -140,16 +140,16 @@ class WPOS_Subscriber_Admin_Config_Saved implements WPOS_Event_Listener {
 ## Bootstrapper Update
 
 ```php
-$c->singleton( WPOS_Admin_Entity_Config::class, fn($c) => new WPOS_Admin_Entity_Config(
-    $c->get(WPOS_Schema_Registry::class),
-    $c->get(WPOS_Event_Bus::class),
+$c->singleton( ODAD_Admin_Entity_Config::class, fn($c) => new ODAD_Admin_Entity_Config(
+    $c->get(ODAD_Schema_Registry::class),
+    $c->get(ODAD_Event_Bus::class),
 ));
 ```
 
-Add `admin_post_wpos_save_entity_config` hook in `WPOS_Hook_Bridge`:
+Add `admin_post_ODAD_save_entity_config` hook in `ODAD_Hook_Bridge`:
 ```php
-add_action( 'admin_post_wpos_save_entity_config',
-    fn() => wpos_container()->get(WPOS_Admin_Entity_Config::class)->save()
+add_action( 'admin_post_ODAD_save_entity_config',
+    fn() => ODAD_container()->get(ODAD_Admin_Entity_Config::class)->save()
 );
 ```
 
@@ -158,8 +158,8 @@ add_action( 'admin_post_wpos_save_entity_config',
 ## Acceptance Criteria
 
 - Entity config page lists all registered entity sets with their current settings.
-- Saving config updates the WP option and dispatches `WPOS_Event_Admin_Entity_Config_Saved`.
-- `wpos_admin_entity_config_saved` WP action fires after save.
+- Saving config updates the WP option and dispatches `ODAD_Event_Admin_Entity_Config_Saved`.
+- `ODAD_admin_entity_config_saved` WP action fires after save.
 - Metadata cache transients are deleted after save.
 - CSRF nonce is validated on save.
 - `manage_options` capability is checked before rendering and saving.

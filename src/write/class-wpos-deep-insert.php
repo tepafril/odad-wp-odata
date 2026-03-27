@@ -6,12 +6,12 @@ defined( 'ABSPATH' ) || exit;
  * property entities in a single operation, dispatching lifecycle events
  * for each nested entity.
  */
-class WPOS_Deep_Insert {
+class ODAD_Deep_Insert {
 
     public function __construct(
-        private WPOS_Adapter_Resolver $adapter_resolver,
-        private WPOS_Schema_Registry  $schema_registry,
-        private WPOS_Event_Bus        $event_bus,
+        private ODAD_Adapter_Resolver $adapter_resolver,
+        private ODAD_Schema_Registry  $schema_registry,
+        private ODAD_Event_Bus        $event_bus,
     ) {}
 
     /**
@@ -28,7 +28,7 @@ class WPOS_Deep_Insert {
         [ $root_payload, $nav_payloads ] = $this->split_payload( $entity_set, $payload );
 
         // 2. Dispatch before event — external plugins can modify or cancel.
-        $before          = new WPOS_Event_Deep_Insert_Before( $entity_set, $user, $payload );
+        $before          = new ODAD_Event_Deep_Insert_Before( $entity_set, $user, $payload );
         $this->event_bus->dispatch( $before );
 
         if ( $before->cancelled ) {
@@ -61,7 +61,7 @@ class WPOS_Deep_Insert {
 
                 foreach ( $items as $nested_payload ) {
                     // Dispatch nested before event.
-                    $nested_before = new WPOS_Event_Deep_Insert_Nested_Before(
+                    $nested_before = new ODAD_Event_Deep_Insert_Nested_Before(
                         $entity_set,
                         $nested_entity_set,
                         $nav_property,
@@ -102,11 +102,11 @@ class WPOS_Deep_Insert {
         }
 
         // 5. Re-fetch root entity to return complete representation.
-        $ctx    = new WPOS_Query_Context();
+        $ctx    = new ODAD_Query_Context();
         $result = $root_adapter->get_entity( $root_key, $ctx ) ?? [];
 
         // 6. Dispatch after event.
-        $after = new WPOS_Event_Deep_Insert_After( $entity_set, $user, $root_key, $result );
+        $after = new ODAD_Event_Deep_Insert_After( $entity_set, $user, $root_key, $result );
         $this->event_bus->dispatch( $after );
 
         return $result;

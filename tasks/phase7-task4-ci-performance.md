@@ -89,7 +89,7 @@ Add a development-mode query logger. When `WP_DEBUG` is true, log all adapter qu
 with execution time to a debug log. This helps identify slow queries.
 
 ```php
-// In WPOS_Adapter_WP_Posts::get_collection():
+// In ODAD_Adapter_WP_Posts::get_collection():
 if ( defined('WP_DEBUG') && WP_DEBUG ) {
     $start = microtime(true);
     // ... query ...
@@ -115,19 +115,19 @@ Document recommended database indexes in `docs/performance.md`:
 
 ### 3. `$top` Cap
 
-Default: 100. Maximum: 1000 (already enforced in `WPOS_Request`).
+Default: 100. Maximum: 1000 (already enforced in `ODAD_Request`).
 Make these configurable via WP options:
 
 ```php
-$default_top = (int) get_option('wpos_default_top', 100);
-$max_top     = (int) get_option('wpos_max_top',     1000);
+$default_top = (int) get_option('ODAD_default_top', 100);
+$max_top     = (int) get_option('ODAD_max_top',     1000);
 ```
 
 Allow admins to configure these on the dashboard page (Task 6.1).
 
 ### 4. Metadata Cache Tuning
 
-Default TTL: `DAY_IN_SECONDS`. Configurable via option `wpos_metadata_cache_ttl`.
+Default TTL: `DAY_IN_SECONDS`. Configurable via option `ODAD_metadata_cache_ttl`.
 On sites with many CPTs, metadata rebuilds are expensive — a longer TTL is better.
 
 ### 5. `$expand` Batch Loading

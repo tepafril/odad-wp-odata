@@ -1,18 +1,18 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Adapter_Resolver {
+class ODAD_Adapter_Resolver {
 
-    /** @var array<string, WPOS_Adapter> */
+    /** @var array<string, ODAD_Adapter> */
     private array $adapters = [];
 
-    public function register( string $entity_set, WPOS_Adapter $adapter ): void {
+    public function register( string $entity_set, ODAD_Adapter $adapter ): void {
         $this->adapters[ $entity_set ] = $adapter;
     }
 
-    public function resolve( string $entity_set ): WPOS_Adapter {
+    public function resolve( string $entity_set ): ODAD_Adapter {
         if ( ! isset( $this->adapters[ $entity_set ] ) ) {
-            throw new WPOS_Unknown_Entity_Exception(
+            throw new ODAD_Unknown_Entity_Exception(
                 "No adapter registered for entity set: {$entity_set}"
             );
         }

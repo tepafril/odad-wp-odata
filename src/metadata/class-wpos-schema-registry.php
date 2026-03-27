@@ -1,6 +1,6 @@
 <?php
 /**
- * WPOS_Schema_Registry — holds the canonical list of entity-set definitions.
+ * ODAD_Schema_Registry — holds the canonical list of entity-set definitions.
  *
  * External adapters (Phase 2+) call register() to contribute entity types,
  * properties, navigation properties, and adapter bindings. The metadata
@@ -18,7 +18,7 @@
  *     'Author' => [ 'type' => 'Users', 'collection' => false ],
  *     'Tags'   => [ 'type' => 'Tags',  'collection' => true  ],
  *   ],
- *   'adapter_class'  => WPOS_Adapter_WP_Posts::class,
+ *   'adapter_class'  => ODAD_Adapter_WP_Posts::class,
  * ]
  *
  * @package WPOS
@@ -26,7 +26,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Schema_Registry {
+class ODAD_Schema_Registry {
 
     /** @var array<string, array> entity_set_name → definition */
     private array $entity_sets = [];

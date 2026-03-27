@@ -1,4 +1,4 @@
-# Task 2.4 — WPOS_Adapter_WP_Terms
+# Task 2.4 — ODAD_Adapter_WP_Terms
 
 ## Dependencies
 - Task 2.1 (adapter interface + resolver)
@@ -15,7 +15,7 @@ Each taxonomy is a separate configured instance.
 ### `src/adapters/class-wpos-adapter-wp-terms.php`
 
 ```php
-class WPOS_Adapter_WP_Terms implements WPOS_Adapter {
+class ODAD_Adapter_WP_Terms implements ODAD_Adapter {
 
     public function __construct(
         private string $taxonomy,         // 'category' | 'post_tag'
@@ -78,8 +78,8 @@ Use `wp_delete_term( $term_id, $taxonomy )`. Return `true` on success.
 ## Bootstrapper Update
 
 ```php
-$c->singleton( 'adapter.categories', fn() => new WPOS_Adapter_WP_Terms('category', 'Categories') );
-$c->singleton( 'adapter.tags',       fn() => new WPOS_Adapter_WP_Terms('post_tag',  'Tags') );
+$c->singleton( 'adapter.categories', fn() => new ODAD_Adapter_WP_Terms('category', 'Categories') );
+$c->singleton( 'adapter.tags',       fn() => new ODAD_Adapter_WP_Terms('post_tag',  'Tags') );
 ```
 
 ---

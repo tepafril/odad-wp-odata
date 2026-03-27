@@ -1,6 +1,6 @@
 <?php
 /**
- * Integration tests for WPOS_Adapter_Custom_Table.
+ * Integration tests for ODAD_Adapter_Custom_Table.
  *
  * Creates a temporary table in setUp and drops it in tearDown.
  * Tests run inside WP's transaction wrapper so row data is rolled back,
@@ -14,10 +14,10 @@ class CustomTableAdapterTest extends WP_UnitTestCase {
     /**
      * Bare table name (without prefix) used across tests.
      */
-    private const TABLE = 'wpos_test_custom';
+    private const TABLE = 'ODAD_test_custom';
 
-    /** @var WPOS_Adapter_Custom_Table */
-    private WPOS_Adapter_Custom_Table $adapter;
+    /** @var ODAD_Adapter_Custom_Table */
+    private ODAD_Adapter_Custom_Table $adapter;
 
     public function setUp(): void {
         parent::setUp();
@@ -34,7 +34,7 @@ class CustomTableAdapterTest extends WP_UnitTestCase {
         );
 
         // Adapter uses the bare name; the class prepends $wpdb->prefix internally.
-        $this->adapter = new WPOS_Adapter_Custom_Table(
+        $this->adapter = new ODAD_Adapter_Custom_Table(
             self::TABLE,
             'WposTestCustom',
             'id',
@@ -51,8 +51,8 @@ class CustomTableAdapterTest extends WP_UnitTestCase {
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private function make_ctx(): WPOS_Query_Context {
-        $ctx      = new WPOS_Query_Context();
+    private function make_ctx(): ODAD_Query_Context {
+        $ctx      = new ODAD_Query_Context();
         $ctx->top = 100;
         return $ctx;
     }

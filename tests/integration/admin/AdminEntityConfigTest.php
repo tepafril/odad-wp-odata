@@ -1,6 +1,6 @@
 <?php
 /**
- * Integration tests for WPOS_Admin_Entity_Config.
+ * Integration tests for ODAD_Admin_Entity_Config.
  *
  * Requires the full bootstrapped container (available after plugins_loaded).
  *
@@ -9,11 +9,11 @@
 
 class AdminEntityConfigTest extends WP_UnitTestCase {
 
-    private WPOS_Admin_Entity_Config $config;
+    private ODAD_Admin_Entity_Config $config;
 
     public function setUp(): void {
         parent::setUp();
-        $this->config = wpos_container()->get( WPOS_Admin_Entity_Config::class );
+        $this->config = ODAD_container()->get( ODAD_Admin_Entity_Config::class );
     }
 
     // ── Tests ─────────────────────────────────────────────────────────────────
@@ -47,12 +47,12 @@ class AdminEntityConfigTest extends WP_UnitTestCase {
     }
 
     /**
-     * Dispatching WPOS_Event_Admin_Entity_Config_Saved on the event bus causes
-     * the WPOS_Subscriber_Admin_Config_Saved to fire the
-     * 'wpos_admin_entity_config_saved' WP action.
+     * Dispatching ODAD_Event_Admin_Entity_Config_Saved on the event bus causes
+     * the ODAD_Subscriber_Admin_Config_Saved to fire the
+     * 'ODAD_admin_entity_config_saved' WP action.
      */
     public function test_save_dispatches_event(): void {
-        $bus = wpos_container()->get( WPOS_Event_Bus::class );
+        $bus = ODAD_container()->get( ODAD_Event_Bus::class );
 
         $fired         = false;
         $captured_set  = null;
@@ -62,10 +62,10 @@ class AdminEntityConfigTest extends WP_UnitTestCase {
             $captured_set = $entity_set;
         };
 
-        add_action( 'wpos_admin_entity_config_saved', $listener, 10, 2 );
+        add_action( 'ODAD_admin_entity_config_saved', $listener, 10, 2 );
 
         try {
-            $event = new WPOS_Event_Admin_Entity_Config_Saved(
+            $event = new ODAD_Event_Admin_Entity_Config_Saved(
                 entity_set: 'Posts',
                 config:     [ 'enabled' => true, 'allow_insert' => false ],
             );
@@ -74,21 +74,21 @@ class AdminEntityConfigTest extends WP_UnitTestCase {
 
             $this->assertTrue(
                 $fired,
-                'wpos_admin_entity_config_saved WP action must fire after event dispatch.'
+                'ODAD_admin_entity_config_saved WP action must fire after event dispatch.'
             );
             $this->assertSame( 'Posts', $captured_set );
         } finally {
-            remove_action( 'wpos_admin_entity_config_saved', $listener, 10 );
+            remove_action( 'ODAD_admin_entity_config_saved', $listener, 10 );
         }
     }
 
     /**
-     * Dispatching WPOS_Event_Admin_Entity_Config_Saved causes the metadata cache
+     * Dispatching ODAD_Event_Admin_Entity_Config_Saved causes the metadata cache
      * to be busted (both transients deleted).
      */
     public function test_save_busts_metadata_cache(): void {
-        $bus   = wpos_container()->get( WPOS_Event_Bus::class );
-        $cache = wpos_container()->get( WPOS_Metadata_Cache::class );
+        $bus   = ODAD_container()->get( ODAD_Event_Bus::class );
+        $cache = ODAD_container()->get( ODAD_Metadata_Cache::class );
 
         // Prime the cache.
         $cache->set_xml( '<edmx:Edmx />' );
@@ -98,7 +98,7 @@ class AdminEntityConfigTest extends WP_UnitTestCase {
         $this->assertNotNull( $cache->get_json(), 'Cache must be warm before dispatch.' );
 
         // Dispatch the saved event; the subscriber chain should call cache->bust().
-        $bus->dispatch( new WPOS_Event_Admin_Entity_Config_Saved(
+        $bus->dispatch( new ODAD_Event_Admin_Entity_Config_Saved(
             entity_set: 'Posts',
             config:     [],
         ) );

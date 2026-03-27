@@ -1,13 +1,13 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Adapter_CPT extends WPOS_Adapter_WP_Posts {
+class ODAD_Adapter_CPT extends ODAD_Adapter_WP_Posts {
 
     /**
      * Auto-discovers all registered public non-builtin CPTs and returns one
-     * WPOS_Adapter_CPT instance per post type, keyed by entity set name.
+     * ODAD_Adapter_CPT instance per post type, keyed by entity set name.
      *
-     * @return WPOS_Adapter_CPT[]  keyed by entity set name
+     * @return ODAD_Adapter_CPT[]  keyed by entity set name
      */
     public static function discover_all(): array {
         $post_types = get_post_types( [ 'public' => true, '_builtin' => false ], 'objects' );

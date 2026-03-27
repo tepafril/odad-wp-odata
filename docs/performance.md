@@ -21,13 +21,13 @@ ALTER TABLE wp_posts ADD INDEX idx_date (post_date_gmt);
 ## Pagination (`$top` / `$skip`)
 
 Default `$top`: 100. Maximum: 1000. These can be configured via WP options:
-- `wpos_default_top` — default value for `$top` when not specified (default: 100)
-- `wpos_max_top` — hard cap on `$top` (default: 1000)
+- `ODAD_default_top` — default value for `$top` when not specified (default: 100)
+- `ODAD_max_top` — hard cap on `$top` (default: 1000)
 
 Example:
 ```php
-update_option('wpos_default_top', 50);
-update_option('wpos_max_top', 500);
+update_option('ODAD_default_top', 50);
+update_option('ODAD_max_top', 500);
 ```
 
 ## Metadata Cache
@@ -36,7 +36,7 @@ The `$metadata` response (CSDL XML and JSON) is cached as a WP transient for `DA
 
 On large sites with many CPTs, metadata rebuilds are expensive. Configure a longer TTL:
 ```php
-update_option('wpos_metadata_cache_ttl', WEEK_IN_SECONDS);
+update_option('ODAD_metadata_cache_ttl', WEEK_IN_SECONDS);
 ```
 
 The cache is automatically busted when:

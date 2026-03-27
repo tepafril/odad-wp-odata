@@ -24,13 +24,13 @@ DELETE /odata/v4/Posts/$filter=@f/$each?@f=Status eq 'auto-draft'
 ### `src/write/class-wpos-set-operations.php`
 
 ```php
-class WPOS_Set_Operations {
+class ODAD_Set_Operations {
 
     public function __construct(
-        private WPOS_Adapter_Resolver $adapter_resolver,
-        private WPOS_Filter_Parser    $filter_parser,
-        private WPOS_Filter_Compiler  $filter_compiler,
-        private WPOS_Event_Bus        $event_bus,
+        private ODAD_Adapter_Resolver $adapter_resolver,
+        private ODAD_Filter_Parser    $filter_parser,
+        private ODAD_Filter_Compiler  $filter_compiler,
+        private ODAD_Event_Bus        $event_bus,
     ) {}
 
     /**
@@ -71,10 +71,10 @@ class WPOS_Set_Operations {
 
 ```
 patch_each():
-  1. Build WPOS_Query_Context from filter_expression
-  2. dispatch(WPOS_Event_Set_Operation_Before, operation='patch')
-       → subscriber: check wpos_can_update on entity set
-       → subscriber: fire 'wpos_before_set_operation' filter (can modify filter_ctx or payload)
+  1. Build ODAD_Query_Context from filter_expression
+  2. dispatch(ODAD_Event_Set_Operation_Before, operation='patch')
+       → subscriber: check ODAD_can_update on entity set
+       → subscriber: fire 'ODAD_before_set_operation' filter (can modify filter_ctx or payload)
      If $event->cancelled: return 0
 
   3. Compile filter to SQL WHERE via filter_compiler
@@ -83,8 +83,8 @@ patch_each():
   5. Execute via $wpdb->query($wpdb->prepare(...))
      Wrap in $wpdb transaction if possible (BEGIN ... COMMIT)
 
-  6. dispatch(WPOS_Event_Set_Operation_After)
-       → subscriber fires 'wpos_set_operation_completed' action
+  6. dispatch(ODAD_Event_Set_Operation_After)
+       → subscriber fires 'ODAD_set_operation_completed' action
 
   7. Return $wpdb->rows_affected
 ```
@@ -98,7 +98,7 @@ patch_each():
 
 ## URL Pattern (Router)
 
-Add routes to `WPOS_Router`:
+Add routes to `ODAD_Router`:
 ```
 PATCH  /odata/v4/{entity}/$filter(@x)/$each?@x={expression}
 DELETE /odata/v4/{entity}/$filter(@x)/$each?@x={expression}
@@ -113,19 +113,19 @@ Parse `@x` from the URL alias and `?@x=...` from query params.
 Flesh out the stub from Task 1.3:
 
 ```php
-class WPOS_Subscriber_Set_Operation implements WPOS_Event_Listener {
+class ODAD_Subscriber_Set_Operation implements ODAD_Event_Listener {
 
     public function __construct(
-        private WPOS_Permission_Engine $permissions,
-        private WPOS_Hook_Bridge       $bridge,
+        private ODAD_Permission_Engine $permissions,
+        private ODAD_Hook_Bridge       $bridge,
     ) {}
 
     public function get_event(): string {
-        return WPOS_Event_Set_Operation_Before::class;
+        return ODAD_Event_Set_Operation_Before::class;
     }
 
-    public function handle( WPOS_Event $event ): void {
-        if ( $event instanceof WPOS_Event_Set_Operation_Before ) {
+    public function handle( ODAD_Event $event ): void {
+        if ( $event instanceof ODAD_Event_Set_Operation_Before ) {
             // Permission check
             $operation = $event->operation === 'patch' ? 'update' : 'delete';
             $granted = $this->permissions->can( $event->entity_set, $operation, $event->user );
@@ -135,14 +135,14 @@ class WPOS_Subscriber_Set_Operation implements WPOS_Event_Listener {
             }
             // Allow plugins to modify the filter context and payload
             $event->filter_ctx = $this->bridge->filter(
-                'wpos_before_set_operation',
+                'ODAD_before_set_operation',
                 $event->filter_ctx,
                 [ $event->entity_set, $event->operation, $event->user ]
             );
         }
 
-        if ( $event instanceof WPOS_Event_Set_Operation_After ) {
-            $this->bridge->action( 'wpos_set_operation_completed', [
+        if ( $event instanceof ODAD_Event_Set_Operation_After ) {
+            $this->bridge->action( 'ODAD_set_operation_completed', [
                 $event->entity_set, $event->operation, $event->affected_count,
             ]);
         }
@@ -157,7 +157,7 @@ class WPOS_Subscriber_Set_Operation implements WPOS_Event_Listener {
 - `PATCH /odata/v4/Posts/$filter(@f)/$each?@f=Status eq 'draft'` with body `{"Status":"publish"}` updates all draft posts in one SQL statement.
 - `DELETE /odata/v4/Posts/$filter(@f)/$each?@f=Status eq 'auto-draft'` deletes matching posts.
 - Only one SQL query is executed (not a loop of individual updates).
-- `wpos_before_set_operation` filter fires before the SQL executes.
-- `wpos_set_operation_completed` action fires with correct `$affected_count`.
-- Permission check uses `wpos_can_update`/`wpos_can_delete` on the entity set.
+- `ODAD_before_set_operation` filter fires before the SQL executes.
+- `ODAD_set_operation_completed` action fires with correct `$affected_count`.
+- Permission check uses `ODAD_can_update`/`ODAD_can_delete` on the entity set.
 - An invalid filter expression returns 400 with an OData error body.

@@ -91,22 +91,22 @@ document that is not in this table should be used.
 > See **Section 6** for the full canonical hook registry.
 
 Key resolutions:
-- `wpos_before_query` (action in Impl Plan) → replaced by `wpos_query_context` **(filter)** — filters are more useful than actions for query modification
-- `wpos_after_query` (action in Impl Plan) → replaced by `wpos_query_results` **(filter)**
-- `wpos_register_custom_table` (Impl Plan) → merged into `wpos_register_entity_sets` (Hooks doc) — one unified registration point
-- `wpos_allow_anonymous_access` (Impl Plan) → renamed `wpos_allow_public_access` (Hooks doc) — more precise wording
-- `wpos_can_read/insert/update/delete` filters (Hooks doc only) → **adopted**, added to canonical registry
-- `wpos_before_insert` / `wpos_before_update` (Hooks doc only) → **adopted**
-- `wpos_inserted` / `wpos_updated` / `wpos_deleted` (Hooks doc only) → **adopted**
+- `ODAD_before_query` (action in Impl Plan) → replaced by `ODAD_query_context` **(filter)** — filters are more useful than actions for query modification
+- `ODAD_after_query` (action in Impl Plan) → replaced by `ODAD_query_results` **(filter)**
+- `ODAD_register_custom_table` (Impl Plan) → merged into `ODAD_register_entity_sets` (Hooks doc) — one unified registration point
+- `ODAD_allow_anonymous_access` (Impl Plan) → renamed `ODAD_allow_public_access` (Hooks doc) — more precise wording
+- `ODAD_can_read/insert/update/delete` filters (Hooks doc only) → **adopted**, added to canonical registry
+- `ODAD_before_insert` / `ODAD_before_update` (Hooks doc only) → **adopted**
+- `ODAD_inserted` / `ODAD_updated` / `ODAD_deleted` (Hooks doc only) → **adopted**
 
 ---
 
 ### Resolution 3 — DI Container
 
-**Conflict:** Impl Plan had no DI container. Hooks doc introduced `WPOS_Container`
+**Conflict:** Impl Plan had no DI container. Hooks doc introduced `ODAD_Container`
 without placing it in the phase plan.
 
-**Decision:** `WPOS_Container` is a **Phase 1 deliverable**. It is the backbone
+**Decision:** `ODAD_Container` is a **Phase 1 deliverable**. It is the backbone
 of the three-layer architecture and must be built before any other component.
 See Section 12 for the canonical container design.
 
@@ -114,10 +114,10 @@ See Section 12 for the canonical container design.
 
 ### Resolution 4 — Adapter Resolver
 
-**Conflict:** Hooks doc referenced `WPOS_Adapter_Resolver` in code examples but
+**Conflict:** Hooks doc referenced `ODAD_Adapter_Resolver` in code examples but
 never defined it. Impl Plan had no adapter resolver at all.
 
-**Decision:** `WPOS_Adapter_Resolver` is defined in **Section 8** of this document.
+**Decision:** `ODAD_Adapter_Resolver` is defined in **Section 8** of this document.
 It is a Phase 2 deliverable, built alongside the adapters.
 
 ---
@@ -125,11 +125,11 @@ It is a Phase 2 deliverable, built alongside the adapters.
 ### Resolution 5 — Deep Insert / Deep Update / Set Operations Events
 
 **Conflict:** Impl Plan defined these as separate classes. Hooks doc only had a
-single generic `WPOS_Event_Write_Before/After`, insufficient for nested entity
+single generic `ODAD_Event_Write_Before/After`, insufficient for nested entity
 lifecycle and bulk operations.
 
 **Decision:** New dedicated events are defined in **Section 9**:
-`WPOS_Event_Deep_Insert_*`, `WPOS_Event_Deep_Update_*`, `WPOS_Event_Set_Operation_*`.
+`ODAD_Event_Deep_Insert_*`, `ODAD_Event_Deep_Update_*`, `ODAD_Event_Set_Operation_*`.
 
 ---
 
@@ -145,12 +145,12 @@ hooks are defined in **Section 10**.
 
 ### Resolution 7 — Metadata Cache Invalidation
 
-**Conflict:** Impl Plan defined `WPOS_Metadata_Cache` but had no invalidation
-strategy. Hooks doc exposed `wpos_metadata_entity_types/sets` filters but didn't
+**Conflict:** Impl Plan defined `ODAD_Metadata_Cache` but had no invalidation
+strategy. Hooks doc exposed `ODAD_metadata_entity_types/sets` filters but didn't
 address cache busting when schema changed via a hook.
 
 **Decision:** Cache invalidation strategy defined in **Section 11**.
-A `WPOS_Event_Schema_Changed` event triggers cache invalidation automatically.
+A `ODAD_Event_Schema_Changed` event triggers cache invalidation automatically.
 
 ---
 
@@ -159,28 +159,28 @@ A `WPOS_Event_Schema_Changed` event triggers cache invalidation automatically.
 ```
 ┌───────────────────────────────────────────────────────────────────────────┐
 │  External Plugins (WP-HR Suite, WooCommerce, etc.)                        │
-│  add_action('wpos_register_entity_sets', ...)                             │
-│  add_filter('wpos_can_read', ...)                                         │
+│  add_action('ODAD_register_entity_sets', ...)                             │
+│  add_filter('ODAD_can_read', ...)                                         │
 └──────────────────────────────┬────────────────────────────────────────────┘
                                │  WordPress hook system
                                ▼
 ┌───────────────────────────────────────────────────────────────────────────┐
 │  WordPress Layer                                                          │
-│  WP REST API  ──►  WPOS_Router  ──►  WPOS_Request / WPOS_Response        │
+│  WP REST API  ──►  ODAD_Router  ──►  ODAD_Request / ODAD_Response        │
 └──────────────────────────────┬────────────────────────────────────────────┘
                                │
                                ▼
 ┌───────────────────────────────────────────────────────────────────────────┐
 │  LAYER 1: Hook Bridge  (src/hooks/)                          [WP-aware]   │
-│  WPOS_Hook_Bridge   — ONLY class calling add_filter/apply_filters         │
-│  WPOS_Subscriber_*  — one per concern, thin bridge: WP ↔ Event Bus       │
+│  ODAD_Hook_Bridge   — ONLY class calling add_filter/apply_filters         │
+│  ODAD_Subscriber_*  — one per concern, thin bridge: WP ↔ Event Bus       │
 └──────────────────────────────┬────────────────────────────────────────────┘
                                │  dispatch(Event)
                                ▼
 ┌───────────────────────────────────────────────────────────────────────────┐
 │  LAYER 2: Internal Event Bus  (src/events/)               [Pure PHP]      │
-│  WPOS_Event_Bus    — pure PHP dispatcher                                  │
-│  WPOS_Event_*      — plain value objects (data carriers, no logic)        │
+│  ODAD_Event_Bus    — pure PHP dispatcher                                  │
+│  ODAD_Event_*      — plain value objects (data carriers, no logic)        │
 └──────────────────────────────┬────────────────────────────────────────────┘
                                │  calls methods on
                                ▼
@@ -188,17 +188,17 @@ A `WPOS_Event_Schema_Changed` event triggers cache invalidation automatically.
 │  LAYER 3: Domain Services  (src/query/, src/write/,       [Pure PHP]      │
 │                             src/permissions/, src/metadata/)              │
 │                                                                           │
-│  WPOS_Query_Engine      WPOS_Write_Handler    WPOS_Permission_Engine      │
-│  WPOS_Deep_Insert       WPOS_Deep_Update      WPOS_Set_Operations         │
-│  WPOS_Filter_Compiler   WPOS_Metadata_Builder WPOS_Field_ACL              │
+│  ODAD_Query_Engine      ODAD_Write_Handler    ODAD_Permission_Engine      │
+│  ODAD_Deep_Insert       ODAD_Deep_Update      ODAD_Set_Operations         │
+│  ODAD_Filter_Compiler   ODAD_Metadata_Builder ODAD_Field_ACL              │
 └──────────────────────────────┬────────────────────────────────────────────┘
                                │  resolved via
                                ▼
 ┌───────────────────────────────────────────────────────────────────────────┐
 │  Adapter Layer  (src/adapters/)                           [WP-aware]      │
-│  WPOS_Adapter_Resolver                                                    │
-│  WPOS_Adapter_WP_Posts   WPOS_Adapter_WP_Users   WPOS_Adapter_WP_Terms   │
-│  WPOS_Adapter_CPT        WPOS_Adapter_Taxonomy   WPOS_Adapter_Custom_Table│
+│  ODAD_Adapter_Resolver                                                    │
+│  ODAD_Adapter_WP_Posts   ODAD_Adapter_WP_Users   ODAD_Adapter_WP_Terms   │
+│  ODAD_Adapter_CPT        ODAD_Adapter_Taxonomy   ODAD_Adapter_Custom_Table│
 └──────────────────────────────┬────────────────────────────────────────────┘
                                │
                                ▼
@@ -345,8 +345,8 @@ wp-odata-suite/
 WordPress (outer) → Hook Bridge → Event Bus → Domain Services (inner)
 
 Lower layers NEVER know about upper layers.
-Domain services dispatch WPOS_Event objects, never WP hook functions.
-apply_filters() and add_filter() exist ONLY in WPOS_Hook_Bridge.
+Domain services dispatch ODAD_Event objects, never WP hook functions.
+apply_filters() and add_filter() exist ONLY in ODAD_Hook_Bridge.
 ```
 
 ### Layer 1 — WordPress Hook Bridge
@@ -357,9 +357,9 @@ The single WP boundary class. All `add_action`, `add_filter`, `apply_filters`,
 ```php
 // src/hooks/class-wpos-hook-bridge.php
 
-class WPOS_Hook_Bridge {
+class ODAD_Hook_Bridge {
 
-    public function __construct(private WPOS_Event_Bus $event_bus) {}
+    public function __construct(private ODAD_Event_Bus $event_bus) {}
 
     /**
      * Called once at plugins_loaded.
@@ -372,18 +372,18 @@ class WPOS_Hook_Bridge {
 
         // Plugin registration extension points
         // Priority 1 so external plugins at default priority 10 arrive after
-        add_action('wpos_register_entity_sets',  '__return_null', 1);
-        add_action('wpos_register_permissions',  '__return_null', 1);
-        add_action('wpos_register_functions',    '__return_null', 1);
-        add_action('wpos_register_actions',      '__return_null', 1);
+        add_action('ODAD_register_entity_sets',  '__return_null', 1);
+        add_action('ODAD_register_permissions',  '__return_null', 1);
+        add_action('ODAD_register_functions',    '__return_null', 1);
+        add_action('ODAD_register_actions',      '__return_null', 1);
     }
 
     public function on_wp_init(): void {
-        $this->event_bus->dispatch(new WPOS_Event_WP_Init());
+        $this->event_bus->dispatch(new ODAD_Event_WP_Init());
     }
 
     public function on_rest_api_init(): void {
-        $this->event_bus->dispatch(new WPOS_Event_REST_Init());
+        $this->event_bus->dispatch(new ODAD_Event_REST_Init());
     }
 
     /** Expose a WP filter as a public extension point. */
@@ -403,19 +403,19 @@ class WPOS_Hook_Bridge {
 ```php
 // src/events/class-wpos-event-bus.php
 
-class WPOS_Event_Bus {
+class ODAD_Event_Bus {
 
-    /** @var array<string, WPOS_Event_Listener[]> */
+    /** @var array<string, ODAD_Event_Listener[]> */
     private array $listeners = [];
 
-    public function subscribe(WPOS_Event_Listener $listener): void {
+    public function subscribe(ODAD_Event_Listener $listener): void {
         $this->listeners[$listener->get_event()][] = $listener;
     }
 
-    public function dispatch(WPOS_Event $event): WPOS_Event {
+    public function dispatch(ODAD_Event $event): ODAD_Event {
         foreach ($this->listeners[get_class($event)] ?? [] as $listener) {
             $listener->handle($event);
-            if ($event instanceof WPOS_Stoppable_Event && $event->is_stopped()) {
+            if ($event instanceof ODAD_Stoppable_Event && $event->is_stopped()) {
                 break;
             }
         }
@@ -431,32 +431,32 @@ Pure PHP. Dispatch internal events. Never call WP functions directly.
 ```php
 // Pattern all domain services follow:
 
-class WPOS_Query_Engine {
+class ODAD_Query_Engine {
     public function __construct(
-        private WPOS_Filter_Compiler  $filter_compiler,
-        private WPOS_Select_Compiler  $select_compiler,
-        private WPOS_Expand_Compiler  $expand_compiler,
-        private WPOS_Compute_Compiler $compute_compiler,
-        private WPOS_Adapter_Resolver $adapter_resolver,
-        private WPOS_Event_Bus        $event_bus,
+        private ODAD_Filter_Compiler  $filter_compiler,
+        private ODAD_Select_Compiler  $select_compiler,
+        private ODAD_Expand_Compiler  $expand_compiler,
+        private ODAD_Compute_Compiler $compute_compiler,
+        private ODAD_Adapter_Resolver $adapter_resolver,
+        private ODAD_Event_Bus        $event_bus,
     ) {}
 
-    public function execute(WPOS_Request $request, WP_User $user): WPOS_Result {
+    public function execute(ODAD_Request $request, WP_User $user): ODAD_Result {
         $adapter = $this->adapter_resolver->resolve($request->entity_set);
         $ctx     = $this->build_context($request);
 
         // Internal event — NO apply_filters() here
-        $before = new WPOS_Event_Query_Before($request->entity_set, $user, $ctx);
+        $before = new ODAD_Event_Query_Before($request->entity_set, $user, $ctx);
         $this->event_bus->dispatch($before);
         $ctx = $before->query_context;
 
         $rows  = $adapter->get_collection($ctx);
         $total = $request->count ? $adapter->get_count($ctx) : null;
 
-        $after = new WPOS_Event_Query_After($request->entity_set, $user, $ctx, $rows);
+        $after = new ODAD_Event_Query_After($request->entity_set, $user, $ctx, $rows);
         $this->event_bus->dispatch($after);
 
-        return new WPOS_Result(rows: $after->results, total_count: $total);
+        return new ODAD_Result(rows: $after->results, total_count: $total);
     }
 }
 ```
@@ -469,19 +469,19 @@ Each subscriber is a thin bridge class: one internal event → one domain call
 ```php
 // src/hooks/subscribers/class-wpos-subscriber-query-before.php
 
-class WPOS_Subscriber_Query_Before implements WPOS_Event_Listener {
+class ODAD_Subscriber_Query_Before implements ODAD_Event_Listener {
 
     public function __construct(
-        private WPOS_Permission_Engine $permissions,
-        private WPOS_Hook_Bridge       $bridge,
+        private ODAD_Permission_Engine $permissions,
+        private ODAD_Hook_Bridge       $bridge,
     ) {}
 
     public function get_event(): string {
-        return WPOS_Event_Query_Before::class;
+        return ODAD_Event_Query_Before::class;
     }
 
-    public function handle(WPOS_Event $event): void {
-        /** @var WPOS_Event_Query_Before $event */
+    public function handle(ODAD_Event $event): void {
+        /** @var ODAD_Event_Query_Before $event */
 
         // 1. Domain logic
         $ctx = $this->permissions->apply_row_filter(
@@ -490,7 +490,7 @@ class WPOS_Subscriber_Query_Before implements WPOS_Event_Listener {
 
         // 2. Public WP filter — external plugins can modify
         $ctx = $this->bridge->filter(
-            'wpos_query_context',
+            'ODAD_query_context',
             $ctx,
             [$event->entity_set, $event->user]
         );
@@ -512,67 +512,67 @@ No hook name outside this table should be used anywhere in the codebase.
 
 | Hook | Arguments | Purpose |
 |---|---|---|
-| `wpos_register_entity_sets` | `WPOS_Schema_Registry $registry` | Register custom entity sets / custom tables |
-| `wpos_register_permissions` | `WPOS_Capability_Map $map` | Register permission rules for entity sets |
-| `wpos_register_functions` | `WPOS_Function_Registry $registry` | Register OData bound/unbound functions |
-| `wpos_register_actions` | `WPOS_Action_Registry $registry` | Register OData bound/unbound actions |
+| `ODAD_register_entity_sets` | `ODAD_Schema_Registry $registry` | Register custom entity sets / custom tables |
+| `ODAD_register_permissions` | `ODAD_Capability_Map $map` | Register permission rules for entity sets |
+| `ODAD_register_functions` | `ODAD_Function_Registry $registry` | Register OData bound/unbound functions |
+| `ODAD_register_actions` | `ODAD_Action_Registry $registry` | Register OData bound/unbound actions |
 
 ### Actions — Lifecycle Notifications (fired after events)
 
 | Hook | Arguments | Purpose |
 |---|---|---|
-| `wpos_inserted` | `string $entity_set, mixed $key, array $payload` | React after entity is created |
-| `wpos_updated` | `string $entity_set, mixed $key, array $payload` | React after entity is updated |
-| `wpos_deleted` | `string $entity_set, mixed $key` | React after entity is deleted |
-| `wpos_deep_inserted` | `string $entity_set, mixed $key, array $payload` | React after deep insert completes |
-| `wpos_deep_updated` | `string $entity_set, mixed $key, array $payload` | React after deep update completes |
-| `wpos_set_operation_completed` | `string $entity_set, string $op, int $affected` | React after bulk set operation |
-| `wpos_admin_entity_config_saved` | `string $entity_set, array $config` | React after admin saves entity config |
-| `wpos_admin_permission_saved` | `string $entity_set, array $permissions` | React after admin saves permission config |
+| `ODAD_inserted` | `string $entity_set, mixed $key, array $payload` | React after entity is created |
+| `ODAD_updated` | `string $entity_set, mixed $key, array $payload` | React after entity is updated |
+| `ODAD_deleted` | `string $entity_set, mixed $key` | React after entity is deleted |
+| `ODAD_deep_inserted` | `string $entity_set, mixed $key, array $payload` | React after deep insert completes |
+| `ODAD_deep_updated` | `string $entity_set, mixed $key, array $payload` | React after deep update completes |
+| `ODAD_set_operation_completed` | `string $entity_set, string $op, int $affected` | React after bulk set operation |
+| `ODAD_admin_entity_config_saved` | `string $entity_set, array $config` | React after admin saves entity config |
+| `ODAD_admin_permission_saved` | `string $entity_set, array $permissions` | React after admin saves permission config |
 
 ### Filters — Permission Overrides
 
 | Hook | Value Type | Arguments | Purpose |
 |---|---|---|---|
-| `wpos_can_read` | `bool` | `$entity_set, WP_User $user` | Override read permission |
-| `wpos_can_insert` | `bool` | `$entity_set, WP_User $user` | Override insert permission |
-| `wpos_can_update` | `bool` | `$entity_set, mixed $key, WP_User $user` | Override update permission |
-| `wpos_can_delete` | `bool` | `$entity_set, mixed $key, WP_User $user` | Override delete permission |
-| `wpos_allowed_properties` | `array` | `$entity_set, WP_User $user, string $op` | Modify allowed fields for role |
-| `wpos_allow_public_access` | `bool` | `$entity_set, string $operation` | Allow unauthenticated access |
+| `ODAD_can_read` | `bool` | `$entity_set, WP_User $user` | Override read permission |
+| `ODAD_can_insert` | `bool` | `$entity_set, WP_User $user` | Override insert permission |
+| `ODAD_can_update` | `bool` | `$entity_set, mixed $key, WP_User $user` | Override update permission |
+| `ODAD_can_delete` | `bool` | `$entity_set, mixed $key, WP_User $user` | Override delete permission |
+| `ODAD_allowed_properties` | `array` | `$entity_set, WP_User $user, string $op` | Modify allowed fields for role |
+| `ODAD_allow_public_access` | `bool` | `$entity_set, string $operation` | Allow unauthenticated access |
 
 ### Filters — Query Pipeline
 
 | Hook | Value Type | Arguments | Purpose |
 |---|---|---|---|
-| `wpos_query_context` | `WPOS_Query_Context` | `$entity_set, WP_User $user` | Modify query context before execution |
-| `wpos_query_results` | `array` | `$entity_set, WP_User $user` | Modify results after execution |
-| `wpos_filter_sql` | `string` | `WPOS_Query_Context $ctx` | Modify compiled SQL WHERE clause |
+| `ODAD_query_context` | `ODAD_Query_Context` | `$entity_set, WP_User $user` | Modify query context before execution |
+| `ODAD_query_results` | `array` | `$entity_set, WP_User $user` | Modify results after execution |
+| `ODAD_filter_sql` | `string` | `ODAD_Query_Context $ctx` | Modify compiled SQL WHERE clause |
 
 ### Filters — Write Pipeline
 
 | Hook | Value Type | Arguments | Purpose |
 |---|---|---|---|
-| `wpos_before_insert` | `array $payload` | `$entity_set, WP_User $user` | Modify data before insert |
-| `wpos_before_update` | `array $payload` | `$entity_set, mixed $key, WP_User $user` | Modify data before update |
-| `wpos_before_deep_insert` | `array $payload` | `$entity_set, WP_User $user` | Modify full deep insert payload |
-| `wpos_before_deep_update` | `array $payload` | `$entity_set, mixed $key, WP_User $user` | Modify full deep update payload |
-| `wpos_before_set_operation` | `array $filter_ctx` | `$entity_set, string $op, WP_User $user` | Modify filter before bulk op |
-| `wpos_nested_entity_payload` | `array $payload` | `$parent_set, $nested_set, WP_User $user` | Modify individual nested entity payload |
+| `ODAD_before_insert` | `array $payload` | `$entity_set, WP_User $user` | Modify data before insert |
+| `ODAD_before_update` | `array $payload` | `$entity_set, mixed $key, WP_User $user` | Modify data before update |
+| `ODAD_before_deep_insert` | `array $payload` | `$entity_set, WP_User $user` | Modify full deep insert payload |
+| `ODAD_before_deep_update` | `array $payload` | `$entity_set, mixed $key, WP_User $user` | Modify full deep update payload |
+| `ODAD_before_set_operation` | `array $filter_ctx` | `$entity_set, string $op, WP_User $user` | Modify filter before bulk op |
+| `ODAD_nested_entity_payload` | `array $payload` | `$parent_set, $nested_set, WP_User $user` | Modify individual nested entity payload |
 
 ### Filters — Schema & Metadata
 
 | Hook | Value Type | Arguments | Purpose |
 |---|---|---|---|
-| `wpos_entity_type_definition` | `array` | `string $entity_set` | Modify entity type schema definition |
-| `wpos_metadata_entity_types` | `array` | *(none)* | Modify all entity types in CSDL output |
-| `wpos_metadata_entity_sets` | `array` | *(none)* | Modify all entity sets in CSDL output |
+| `ODAD_entity_type_definition` | `array` | `string $entity_set` | Modify entity type schema definition |
+| `ODAD_metadata_entity_types` | `array` | *(none)* | Modify all entity types in CSDL output |
+| `ODAD_metadata_entity_sets` | `array` | *(none)* | Modify all entity sets in CSDL output |
 
 ### Filters — Response
 
 | Hook | Value Type | Arguments | Purpose |
 |---|---|---|---|
-| `wpos_response_payload` | `array` | `WPOS_Request $request` | Modify final JSON payload before send |
+| `ODAD_response_payload` | `array` | `ODAD_Request $request` | Modify final JSON payload before send |
 
 ---
 
@@ -585,26 +585,26 @@ they use the WP filters/actions in Section 6.
 ### Schema Events
 
 ```php
-class WPOS_Event_WP_Init implements WPOS_Event {}
+class ODAD_Event_WP_Init implements ODAD_Event {}
 
-class WPOS_Event_REST_Init implements WPOS_Event {}
+class ODAD_Event_REST_Init implements ODAD_Event {}
 
-class WPOS_Event_Schema_Register implements WPOS_Event {
+class ODAD_Event_Schema_Register implements ODAD_Event {
     public function __construct(
-        public WPOS_Schema_Registry $registry,   // mutable
+        public ODAD_Schema_Registry $registry,   // mutable
     ) {}
 }
 
 // Fired whenever schema changes (entity added, config updated, etc.)
 // Triggers metadata cache invalidation automatically
-class WPOS_Event_Schema_Changed implements WPOS_Event {
+class ODAD_Event_Schema_Changed implements ODAD_Event {
     public function __construct(
         public string $reason,   // 'entity_registered' | 'config_updated' | 'entity_removed'
         public string $entity_set,
     ) {}
 }
 
-class WPOS_Event_Metadata_Build implements WPOS_Event {
+class ODAD_Event_Metadata_Build implements ODAD_Event {
     public function __construct(
         public array $entity_types,   // mutable
         public array $entity_sets,    // mutable
@@ -615,19 +615,19 @@ class WPOS_Event_Metadata_Build implements WPOS_Event {
 ### Query Events
 
 ```php
-class WPOS_Event_Query_Before implements WPOS_Event {
+class ODAD_Event_Query_Before implements ODAD_Event {
     public function __construct(
         public string             $entity_set,
         public WP_User            $user,
-        public WPOS_Query_Context $query_context,   // mutable
+        public ODAD_Query_Context $query_context,   // mutable
     ) {}
 }
 
-class WPOS_Event_Query_After implements WPOS_Event {
+class ODAD_Event_Query_After implements ODAD_Event {
     public function __construct(
         public string             $entity_set,
         public WP_User            $user,
-        public WPOS_Query_Context $query_context,
+        public ODAD_Query_Context $query_context,
         public array              $results,          // mutable
     ) {}
 }
@@ -636,7 +636,7 @@ class WPOS_Event_Query_After implements WPOS_Event {
 ### Standard Write Events
 
 ```php
-class WPOS_Event_Write_Before implements WPOS_Event {
+class ODAD_Event_Write_Before implements ODAD_Event {
     public bool $cancelled = false;
 
     public function __construct(
@@ -648,7 +648,7 @@ class WPOS_Event_Write_Before implements WPOS_Event {
     ) {}
 }
 
-class WPOS_Event_Write_After implements WPOS_Event {
+class ODAD_Event_Write_After implements ODAD_Event {
     public function __construct(
         public string  $entity_set,
         public string  $operation,
@@ -663,7 +663,7 @@ class WPOS_Event_Write_After implements WPOS_Event {
 
 ```php
 // Fired once before the entire deep insert begins
-class WPOS_Event_Deep_Insert_Before implements WPOS_Event {
+class ODAD_Event_Deep_Insert_Before implements ODAD_Event {
     public bool $cancelled = false;
 
     public function __construct(
@@ -674,7 +674,7 @@ class WPOS_Event_Deep_Insert_Before implements WPOS_Event {
 }
 
 // Fired for each nested entity before it is inserted
-class WPOS_Event_Deep_Insert_Nested_Before implements WPOS_Event {
+class ODAD_Event_Deep_Insert_Nested_Before implements ODAD_Event {
     public bool $cancelled = false;
 
     public function __construct(
@@ -687,7 +687,7 @@ class WPOS_Event_Deep_Insert_Nested_Before implements WPOS_Event {
 }
 
 // Fired once after the entire deep insert succeeds
-class WPOS_Event_Deep_Insert_After implements WPOS_Event {
+class ODAD_Event_Deep_Insert_After implements ODAD_Event {
     public function __construct(
         public string  $entity_set,
         public WP_User $user,
@@ -701,7 +701,7 @@ class WPOS_Event_Deep_Insert_After implements WPOS_Event {
 
 ```php
 // Fired once before the entire deep update begins
-class WPOS_Event_Deep_Update_Before implements WPOS_Event {
+class ODAD_Event_Deep_Update_Before implements ODAD_Event {
     public bool $cancelled = false;
 
     public function __construct(
@@ -713,7 +713,7 @@ class WPOS_Event_Deep_Update_Before implements WPOS_Event {
 }
 
 // Fired for each nested entity touched during deep update
-class WPOS_Event_Deep_Update_Nested_Before implements WPOS_Event {
+class ODAD_Event_Deep_Update_Nested_Before implements ODAD_Event {
     public bool $cancelled = false;
 
     public function __construct(
@@ -727,7 +727,7 @@ class WPOS_Event_Deep_Update_Nested_Before implements WPOS_Event {
 }
 
 // Fired once after the entire deep update succeeds
-class WPOS_Event_Deep_Update_After implements WPOS_Event {
+class ODAD_Event_Deep_Update_After implements ODAD_Event {
     public function __construct(
         public string  $entity_set,
         public mixed   $key,
@@ -741,20 +741,20 @@ class WPOS_Event_Deep_Update_After implements WPOS_Event {
 
 ```php
 // Fired before a bulk PATCH/$each or DELETE/$each
-class WPOS_Event_Set_Operation_Before implements WPOS_Event {
+class ODAD_Event_Set_Operation_Before implements ODAD_Event {
     public bool $cancelled = false;
 
     public function __construct(
         public string             $entity_set,
         public string             $operation,     // 'patch' | 'delete' | 'action'
         public WP_User            $user,
-        public WPOS_Query_Context $filter_ctx,    // defines which rows are affected, mutable
+        public ODAD_Query_Context $filter_ctx,    // defines which rows are affected, mutable
         public array              $payload,       // patch payload (empty for delete), mutable
     ) {}
 }
 
 // Fired after a bulk operation completes
-class WPOS_Event_Set_Operation_After implements WPOS_Event {
+class ODAD_Event_Set_Operation_After implements ODAD_Event {
     public function __construct(
         public string  $entity_set,
         public string  $operation,
@@ -767,7 +767,7 @@ class WPOS_Event_Set_Operation_After implements WPOS_Event {
 ### Permission Check Event
 
 ```php
-class WPOS_Event_Permission_Check implements WPOS_Event {
+class ODAD_Event_Permission_Check implements ODAD_Event {
     public function __construct(
         public string  $entity_set,
         public string  $operation,   // 'read' | 'insert' | 'update' | 'delete'
@@ -781,14 +781,14 @@ class WPOS_Event_Permission_Check implements WPOS_Event {
 ### Admin Events
 
 ```php
-class WPOS_Event_Admin_Entity_Config_Saved implements WPOS_Event {
+class ODAD_Event_Admin_Entity_Config_Saved implements ODAD_Event {
     public function __construct(
         public string $entity_set,
         public array  $config,
     ) {}
 }
 
-class WPOS_Event_Admin_Permission_Saved implements WPOS_Event {
+class ODAD_Event_Admin_Permission_Saved implements ODAD_Event {
     public function __construct(
         public string $entity_set,
         public array  $permissions,
@@ -800,7 +800,7 @@ class WPOS_Event_Admin_Permission_Saved implements WPOS_Event {
 
 ## 8. Adapter Resolver & Adapter Event Integration
 
-### WPOS_Adapter_Resolver
+### ODAD_Adapter_Resolver
 
 The resolver is a registry that maps entity set names to adapter instances.
 It lives in the adapter layer (WP-aware) and is injected into domain services.
@@ -808,18 +808,18 @@ It lives in the adapter layer (WP-aware) and is injected into domain services.
 ```php
 // src/adapters/class-wpos-adapter-resolver.php
 
-class WPOS_Adapter_Resolver {
+class ODAD_Adapter_Resolver {
 
-    /** @var array<string, WPOS_Adapter> */
+    /** @var array<string, ODAD_Adapter> */
     private array $adapters = [];
 
-    public function register(string $entity_set, WPOS_Adapter $adapter): void {
+    public function register(string $entity_set, ODAD_Adapter $adapter): void {
         $this->adapters[$entity_set] = $adapter;
     }
 
-    public function resolve(string $entity_set): WPOS_Adapter {
+    public function resolve(string $entity_set): ODAD_Adapter {
         if (!isset($this->adapters[$entity_set])) {
-            throw new WPOS_Unknown_Entity_Exception(
+            throw new ODAD_Unknown_Entity_Exception(
                 "No adapter registered for entity set: {$entity_set}"
             );
         }
@@ -842,12 +842,12 @@ class WPOS_Adapter_Resolver {
 ```php
 // src/adapters/interface-wpos-adapter.php
 
-interface WPOS_Adapter {
+interface ODAD_Adapter {
 
     // Reads
-    public function get_collection(WPOS_Query_Context $ctx): array;
-    public function get_entity(mixed $key, WPOS_Query_Context $ctx): ?array;
-    public function get_count(WPOS_Query_Context $ctx): int;
+    public function get_collection(ODAD_Query_Context $ctx): array;
+    public function get_entity(mixed $key, ODAD_Query_Context $ctx): ?array;
+    public function get_count(ODAD_Query_Context $ctx): int;
 
     // Writes
     public function insert(array $data): mixed;                    // returns new key
@@ -862,18 +862,18 @@ interface WPOS_Adapter {
 
 ### How Adapters Connect to the Schema Registry
 
-Adapters are registered into the resolver during the `WPOS_Event_Schema_Register`
-event, which the `WPOS_Subscriber_Schema_Init` subscriber triggers:
+Adapters are registered into the resolver during the `ODAD_Event_Schema_Register`
+event, which the `ODAD_Subscriber_Schema_Init` subscriber triggers:
 
 ```
 WP 'init' fires
-  → WPOS_Hook_Bridge::on_wp_init()
-      → dispatch(WPOS_Event_WP_Init)
-          → WPOS_Subscriber_Schema_Init::handle()
-              → do_action('wpos_register_entity_sets', $registry)   ← external plugins hook here
-              → dispatch(WPOS_Event_Schema_Register)
-                  → WPOS_Bootstrapper registers built-in adapters into WPOS_Adapter_Resolver
-                  → WPOS_Schema_Registry is populated from registered adapters
+  → ODAD_Hook_Bridge::on_wp_init()
+      → dispatch(ODAD_Event_WP_Init)
+          → ODAD_Subscriber_Schema_Init::handle()
+              → do_action('ODAD_register_entity_sets', $registry)   ← external plugins hook here
+              → dispatch(ODAD_Event_Schema_Register)
+                  → ODAD_Bootstrapper registers built-in adapters into ODAD_Adapter_Resolver
+                  → ODAD_Schema_Registry is populated from registered adapters
 ```
 
 ---
@@ -886,21 +886,21 @@ WP 'init' fires
 POST /odata/v4/Posts  { "Title": "...", "Tags": [...], "Meta": [...] }
   │
   ▼
-WPOS_Write_Handler::insert()
-  → dispatch(WPOS_Event_Write_Before, operation='insert')
-      → WPOS_Subscriber_Write_Before checks top-level permission
-  → WPOS_Deep_Insert::execute()
-      → dispatch(WPOS_Event_Deep_Insert_Before)        ← full payload exposed to WP filter
-          → WPOS_Subscriber_Deep_Insert: 'wpos_before_deep_insert' filter
+ODAD_Write_Handler::insert()
+  → dispatch(ODAD_Event_Write_Before, operation='insert')
+      → ODAD_Subscriber_Write_Before checks top-level permission
+  → ODAD_Deep_Insert::execute()
+      → dispatch(ODAD_Event_Deep_Insert_Before)        ← full payload exposed to WP filter
+          → ODAD_Subscriber_Deep_Insert: 'ODAD_before_deep_insert' filter
       → adapter->insert(root payload)                  ← insert root entity
       → for each navigation property with nested data:
-          → dispatch(WPOS_Event_Deep_Insert_Nested_Before)
-              → WPOS_Subscriber_Deep_Insert: check nested entity permission
-              → 'wpos_nested_entity_payload' filter
+          → dispatch(ODAD_Event_Deep_Insert_Nested_Before)
+              → ODAD_Subscriber_Deep_Insert: check nested entity permission
+              → 'ODAD_nested_entity_payload' filter
           → nested_adapter->insert(nested payload)
-      → dispatch(WPOS_Event_Deep_Insert_After)
-          → WPOS_Subscriber_Deep_Insert: 'wpos_deep_inserted' action
-  → dispatch(WPOS_Event_Write_After)
+      → dispatch(ODAD_Event_Deep_Insert_After)
+          → ODAD_Subscriber_Deep_Insert: 'ODAD_deep_inserted' action
+  → dispatch(ODAD_Event_Write_After)
 ```
 
 ### Deep Update Flow
@@ -909,20 +909,20 @@ WPOS_Write_Handler::insert()
 PATCH /odata/v4/Posts(42)  { "Title": "...", "Meta@delta": [...] }
   │
   ▼
-WPOS_Write_Handler::update()
-  → dispatch(WPOS_Event_Write_Before, operation='update')
-  → WPOS_Deep_Update::execute()
-      → dispatch(WPOS_Event_Deep_Update_Before)
-          → 'wpos_before_deep_update' filter
+ODAD_Write_Handler::update()
+  → dispatch(ODAD_Event_Write_Before, operation='update')
+  → ODAD_Deep_Update::execute()
+      → dispatch(ODAD_Event_Deep_Update_Before)
+          → 'ODAD_before_deep_update' filter
       → adapter->update(key, root payload)             ← update root entity
       → for each delta nested entity:
-          → dispatch(WPOS_Event_Deep_Update_Nested_Before, operation='insert'|'update'|'delete')
+          → dispatch(ODAD_Event_Deep_Update_Nested_Before, operation='insert'|'update'|'delete')
               → check permission for the specific nested operation
-              → 'wpos_nested_entity_payload' filter
+              → 'ODAD_nested_entity_payload' filter
           → nested_adapter->(insert|update|delete)(...)
-      → dispatch(WPOS_Event_Deep_Update_After)
-          → 'wpos_deep_updated' action
-  → dispatch(WPOS_Event_Write_After)
+      → dispatch(ODAD_Event_Deep_Update_After)
+          → 'ODAD_deep_updated' action
+  → dispatch(ODAD_Event_Write_After)
 ```
 
 ### Set-Based Operation Flow
@@ -931,15 +931,15 @@ WPOS_Write_Handler::update()
 PATCH /odata/v4/Posts/$filter=@f/$each?@f=Status eq 'draft'  { "Status": "publish" }
   │
   ▼
-WPOS_Set_Operations::patch_each()
-  → dispatch(WPOS_Event_Set_Operation_Before, operation='patch')
-      → WPOS_Subscriber_Set_Operation:
-          → check 'wpos_can_update' for the entity set
-          → 'wpos_before_set_operation' filter (can modify filter or payload)
+ODAD_Set_Operations::patch_each()
+  → dispatch(ODAD_Event_Set_Operation_Before, operation='patch')
+      → ODAD_Subscriber_Set_Operation:
+          → check 'ODAD_can_update' for the entity set
+          → 'ODAD_before_set_operation' filter (can modify filter or payload)
   → compile filter → single SQL UPDATE ... WHERE ...
   → execute atomically via $wpdb transaction
-  → dispatch(WPOS_Event_Set_Operation_After)
-      → 'wpos_set_operation_completed' action
+  → dispatch(ODAD_Event_Set_Operation_After)
+      → 'ODAD_set_operation_completed' action
 ```
 
 **Important:** Set operations compile to a single SQL statement for atomicity.
@@ -958,13 +958,13 @@ No `apply_filters()` calls in admin classes directly.
 
 ```
 Admin saves entity config in WP admin panel
-  → WPOS_Admin_Entity_Config::save()
+  → ODAD_Admin_Entity_Config::save()
       → validates input
       → updates WP option / config storage
-      → dispatch(WPOS_Event_Admin_Entity_Config_Saved)   ← internal event
-          → WPOS_Subscriber_Admin_Config_Saved::handle()
-              → do_action('wpos_admin_entity_config_saved', $entity_set, $config)  ← WP action
-              → dispatch(WPOS_Event_Schema_Changed)       ← triggers cache invalidation
+      → dispatch(ODAD_Event_Admin_Entity_Config_Saved)   ← internal event
+          → ODAD_Subscriber_Admin_Config_Saved::handle()
+              → do_action('ODAD_admin_entity_config_saved', $entity_set, $config)  ← WP action
+              → dispatch(ODAD_Event_Schema_Changed)       ← triggers cache invalidation
 ```
 
 ### Admin-Specific Subscribers
@@ -972,28 +972,28 @@ Admin saves entity config in WP admin panel
 ```php
 // src/hooks/subscribers/class-wpos-subscriber-admin-config-saved.php
 
-class WPOS_Subscriber_Admin_Config_Saved implements WPOS_Event_Listener {
+class ODAD_Subscriber_Admin_Config_Saved implements ODAD_Event_Listener {
 
     public function __construct(
-        private WPOS_Hook_Bridge  $bridge,
-        private WPOS_Event_Bus    $event_bus,
+        private ODAD_Hook_Bridge  $bridge,
+        private ODAD_Event_Bus    $event_bus,
     ) {}
 
     public function get_event(): string {
-        return WPOS_Event_Admin_Entity_Config_Saved::class;
+        return ODAD_Event_Admin_Entity_Config_Saved::class;
     }
 
-    public function handle(WPOS_Event $event): void {
-        /** @var WPOS_Event_Admin_Entity_Config_Saved $event */
+    public function handle(ODAD_Event $event): void {
+        /** @var ODAD_Event_Admin_Entity_Config_Saved $event */
 
         // 1. Fire WP action for external plugins to react
-        $this->bridge->action('wpos_admin_entity_config_saved', [
+        $this->bridge->action('ODAD_admin_entity_config_saved', [
             $event->entity_set,
             $event->config,
         ]);
 
         // 2. Trigger schema change → will bust metadata cache (see Section 11)
-        $this->event_bus->dispatch(new WPOS_Event_Schema_Changed(
+        $this->event_bus->dispatch(new ODAD_Event_Schema_Changed(
             reason:     'config_updated',
             entity_set: $event->entity_set,
         ));
@@ -1010,26 +1010,26 @@ class WPOS_Subscriber_Admin_Config_Saved implements WPOS_Event_Listener {
 `$metadata` CSDL output is expensive to build (it inspects all registered entity
 sets, their properties, navigation properties, and annotations). It must be cached.
 But when schema changes — whether via admin UI or via an external plugin calling
-`wpos_register_entity_sets` — the cache must be invalidated.
+`ODAD_register_entity_sets` — the cache must be invalidated.
 
 ### Solution: Schema Changed Event → Auto Bust
 
-`WPOS_Event_Schema_Changed` is dispatched any time the schema is modified.
-`WPOS_Subscriber_Schema_Changed` catches it and busts the transient cache.
+`ODAD_Event_Schema_Changed` is dispatched any time the schema is modified.
+`ODAD_Subscriber_Schema_Changed` catches it and busts the transient cache.
 
 ```php
 // src/hooks/subscribers/class-wpos-subscriber-schema-changed.php
 
-class WPOS_Subscriber_Schema_Changed implements WPOS_Event_Listener {
+class ODAD_Subscriber_Schema_Changed implements ODAD_Event_Listener {
 
     public function get_event(): string {
-        return WPOS_Event_Schema_Changed::class;
+        return ODAD_Event_Schema_Changed::class;
     }
 
-    public function handle(WPOS_Event $event): void {
+    public function handle(ODAD_Event $event): void {
         // Delete both XML and JSON cached metadata
-        delete_transient('wpos_metadata_xml');
-        delete_transient('wpos_metadata_json');
+        delete_transient('ODAD_metadata_xml');
+        delete_transient('ODAD_metadata_json');
     }
 }
 ```
@@ -1039,31 +1039,31 @@ class WPOS_Subscriber_Schema_Changed implements WPOS_Event_Listener {
 ```php
 // src/metadata/class-wpos-metadata-cache.php
 
-class WPOS_Metadata_Cache {
+class ODAD_Metadata_Cache {
 
     private const TTL = DAY_IN_SECONDS;
 
     public function get_xml(): ?string {
-        $cached = get_transient('wpos_metadata_xml');
+        $cached = get_transient('ODAD_metadata_xml');
         return $cached !== false ? $cached : null;
     }
 
     public function set_xml(string $csdl): void {
-        set_transient('wpos_metadata_xml', $csdl, self::TTL);
+        set_transient('ODAD_metadata_xml', $csdl, self::TTL);
     }
 
     public function get_json(): ?string {
-        $cached = get_transient('wpos_metadata_json');
+        $cached = get_transient('ODAD_metadata_json');
         return $cached !== false ? $cached : null;
     }
 
     public function set_json(string $csdl): void {
-        set_transient('wpos_metadata_json', $csdl, self::TTL);
+        set_transient('ODAD_metadata_json', $csdl, self::TTL);
     }
 
     public function bust(): void {
-        delete_transient('wpos_metadata_xml');
-        delete_transient('wpos_metadata_json');
+        delete_transient('ODAD_metadata_xml');
+        delete_transient('ODAD_metadata_json');
     }
 }
 ```
@@ -1072,10 +1072,10 @@ class WPOS_Metadata_Cache {
 
 | Trigger | Dispatched by |
 |---|---|
-| External plugin registers new entity set | `WPOS_Subscriber_Schema_Init` after `wpos_register_entity_sets` fires |
-| Admin saves entity config | `WPOS_Subscriber_Admin_Config_Saved` |
-| Admin saves permission config | `WPOS_Subscriber_Admin_Config_Saved` |
-| Plugin activation/deactivation | `WPOS_Hook_Bridge::register()` hooks on `activated_plugin` / `deactivated_plugin` |
+| External plugin registers new entity set | `ODAD_Subscriber_Schema_Init` after `ODAD_register_entity_sets` fires |
+| Admin saves entity config | `ODAD_Subscriber_Admin_Config_Saved` |
+| Admin saves permission config | `ODAD_Subscriber_Admin_Config_Saved` |
+| Plugin activation/deactivation | `ODAD_Hook_Bridge::register()` hooks on `activated_plugin` / `deactivated_plugin` |
 
 ---
 
@@ -1087,7 +1087,7 @@ entire three-layer architecture. Without it, the separation of concerns collapse
 ```php
 // src/bootstrap/class-wpos-container.php
 
-class WPOS_Container {
+class ODAD_Container {
 
     private array $factories  = [];
     private array $singletons = [];
@@ -1111,134 +1111,134 @@ class WPOS_Container {
 ```php
 // src/bootstrap/class-wpos-bootstrapper.php
 
-class WPOS_Bootstrapper {
+class ODAD_Bootstrapper {
 
-    public static function build(): WPOS_Container {
-        $c = new WPOS_Container();
+    public static function build(): ODAD_Container {
+        $c = new ODAD_Container();
 
         // ── Core infrastructure ─────────────────────────────────────────
-        $c->singleton(WPOS_Event_Bus::class,
-            fn() => new WPOS_Event_Bus()
+        $c->singleton(ODAD_Event_Bus::class,
+            fn() => new ODAD_Event_Bus()
         );
 
-        $c->singleton(WPOS_Hook_Bridge::class,
-            fn($c) => new WPOS_Hook_Bridge($c->get(WPOS_Event_Bus::class))
+        $c->singleton(ODAD_Hook_Bridge::class,
+            fn($c) => new ODAD_Hook_Bridge($c->get(ODAD_Event_Bus::class))
         );
 
         // ── Schema & metadata ────────────────────────────────────────────
-        $c->singleton(WPOS_Schema_Registry::class,
-            fn() => new WPOS_Schema_Registry()
+        $c->singleton(ODAD_Schema_Registry::class,
+            fn() => new ODAD_Schema_Registry()
         );
 
-        $c->singleton(WPOS_Metadata_Cache::class,
-            fn() => new WPOS_Metadata_Cache()
+        $c->singleton(ODAD_Metadata_Cache::class,
+            fn() => new ODAD_Metadata_Cache()
         );
 
-        $c->singleton(WPOS_Metadata_Builder::class,
-            fn($c) => new WPOS_Metadata_Builder(
-                $c->get(WPOS_Schema_Registry::class),
-                $c->get(WPOS_Metadata_Cache::class),
-                $c->get(WPOS_Event_Bus::class),
+        $c->singleton(ODAD_Metadata_Builder::class,
+            fn($c) => new ODAD_Metadata_Builder(
+                $c->get(ODAD_Schema_Registry::class),
+                $c->get(ODAD_Metadata_Cache::class),
+                $c->get(ODAD_Event_Bus::class),
             )
         );
 
         // ── Adapters ─────────────────────────────────────────────────────
-        $c->singleton(WPOS_Adapter_Resolver::class,
-            fn() => new WPOS_Adapter_Resolver()
+        $c->singleton(ODAD_Adapter_Resolver::class,
+            fn() => new ODAD_Adapter_Resolver()
         );
 
-        $c->singleton(WPOS_Adapter_WP_Posts::class,
-            fn() => new WPOS_Adapter_WP_Posts()
+        $c->singleton(ODAD_Adapter_WP_Posts::class,
+            fn() => new ODAD_Adapter_WP_Posts()
         );
-        $c->singleton(WPOS_Adapter_WP_Users::class,
-            fn() => new WPOS_Adapter_WP_Users()
+        $c->singleton(ODAD_Adapter_WP_Users::class,
+            fn() => new ODAD_Adapter_WP_Users()
         );
-        $c->singleton(WPOS_Adapter_WP_Terms::class,
-            fn() => new WPOS_Adapter_WP_Terms()
+        $c->singleton(ODAD_Adapter_WP_Terms::class,
+            fn() => new ODAD_Adapter_WP_Terms()
         );
-        $c->singleton(WPOS_Adapter_CPT::class,
-            fn() => new WPOS_Adapter_CPT()
+        $c->singleton(ODAD_Adapter_CPT::class,
+            fn() => new ODAD_Adapter_CPT()
         );
-        $c->singleton(WPOS_Adapter_Custom_Table::class,
-            fn() => new WPOS_Adapter_Custom_Table()
+        $c->singleton(ODAD_Adapter_Custom_Table::class,
+            fn() => new ODAD_Adapter_Custom_Table()
         );
 
         // ── Permissions ──────────────────────────────────────────────────
-        $c->singleton(WPOS_Capability_Map::class,
-            fn() => new WPOS_Capability_Map()
+        $c->singleton(ODAD_Capability_Map::class,
+            fn() => new ODAD_Capability_Map()
         );
 
-        $c->singleton(WPOS_Permission_Engine::class,
-            fn($c) => new WPOS_Permission_Engine(
-                $c->get(WPOS_Capability_Map::class)
+        $c->singleton(ODAD_Permission_Engine::class,
+            fn($c) => new ODAD_Permission_Engine(
+                $c->get(ODAD_Capability_Map::class)
             )
         );
 
-        $c->singleton(WPOS_Field_ACL::class,
-            fn($c) => new WPOS_Field_ACL(
-                $c->get(WPOS_Permission_Engine::class)
+        $c->singleton(ODAD_Field_ACL::class,
+            fn($c) => new ODAD_Field_ACL(
+                $c->get(ODAD_Permission_Engine::class)
             )
         );
 
         // ── Query compilers ──────────────────────────────────────────────
-        $c->singleton(WPOS_Filter_Compiler::class,  fn() => new WPOS_Filter_Compiler());
-        $c->singleton(WPOS_Select_Compiler::class,  fn() => new WPOS_Select_Compiler());
-        $c->singleton(WPOS_Expand_Compiler::class,  fn() => new WPOS_Expand_Compiler());
-        $c->singleton(WPOS_Compute_Compiler::class, fn() => new WPOS_Compute_Compiler());
-        $c->singleton(WPOS_Orderby_Compiler::class, fn() => new WPOS_Orderby_Compiler());
-        $c->singleton(WPOS_Search_Compiler::class,  fn() => new WPOS_Search_Compiler());
+        $c->singleton(ODAD_Filter_Compiler::class,  fn() => new ODAD_Filter_Compiler());
+        $c->singleton(ODAD_Select_Compiler::class,  fn() => new ODAD_Select_Compiler());
+        $c->singleton(ODAD_Expand_Compiler::class,  fn() => new ODAD_Expand_Compiler());
+        $c->singleton(ODAD_Compute_Compiler::class, fn() => new ODAD_Compute_Compiler());
+        $c->singleton(ODAD_Orderby_Compiler::class, fn() => new ODAD_Orderby_Compiler());
+        $c->singleton(ODAD_Search_Compiler::class,  fn() => new ODAD_Search_Compiler());
 
         // ── Domain services ──────────────────────────────────────────────
-        $c->singleton(WPOS_Query_Engine::class,
-            fn($c) => new WPOS_Query_Engine(
-                $c->get(WPOS_Filter_Compiler::class),
-                $c->get(WPOS_Select_Compiler::class),
-                $c->get(WPOS_Expand_Compiler::class),
-                $c->get(WPOS_Compute_Compiler::class),
-                $c->get(WPOS_Adapter_Resolver::class),
-                $c->get(WPOS_Event_Bus::class),
+        $c->singleton(ODAD_Query_Engine::class,
+            fn($c) => new ODAD_Query_Engine(
+                $c->get(ODAD_Filter_Compiler::class),
+                $c->get(ODAD_Select_Compiler::class),
+                $c->get(ODAD_Expand_Compiler::class),
+                $c->get(ODAD_Compute_Compiler::class),
+                $c->get(ODAD_Adapter_Resolver::class),
+                $c->get(ODAD_Event_Bus::class),
             )
         );
 
-        $c->singleton(WPOS_Deep_Insert::class,
-            fn($c) => new WPOS_Deep_Insert(
-                $c->get(WPOS_Adapter_Resolver::class),
-                $c->get(WPOS_Event_Bus::class),
+        $c->singleton(ODAD_Deep_Insert::class,
+            fn($c) => new ODAD_Deep_Insert(
+                $c->get(ODAD_Adapter_Resolver::class),
+                $c->get(ODAD_Event_Bus::class),
             )
         );
 
-        $c->singleton(WPOS_Deep_Update::class,
-            fn($c) => new WPOS_Deep_Update(
-                $c->get(WPOS_Adapter_Resolver::class),
-                $c->get(WPOS_Event_Bus::class),
+        $c->singleton(ODAD_Deep_Update::class,
+            fn($c) => new ODAD_Deep_Update(
+                $c->get(ODAD_Adapter_Resolver::class),
+                $c->get(ODAD_Event_Bus::class),
             )
         );
 
-        $c->singleton(WPOS_Set_Operations::class,
-            fn($c) => new WPOS_Set_Operations(
-                $c->get(WPOS_Adapter_Resolver::class),
-                $c->get(WPOS_Filter_Compiler::class),
-                $c->get(WPOS_Event_Bus::class),
+        $c->singleton(ODAD_Set_Operations::class,
+            fn($c) => new ODAD_Set_Operations(
+                $c->get(ODAD_Adapter_Resolver::class),
+                $c->get(ODAD_Filter_Compiler::class),
+                $c->get(ODAD_Event_Bus::class),
             )
         );
 
-        $c->singleton(WPOS_Write_Handler::class,
-            fn($c) => new WPOS_Write_Handler(
-                $c->get(WPOS_Adapter_Resolver::class),
-                $c->get(WPOS_Deep_Insert::class),
-                $c->get(WPOS_Deep_Update::class),
-                $c->get(WPOS_Set_Operations::class),
-                $c->get(WPOS_Event_Bus::class),
+        $c->singleton(ODAD_Write_Handler::class,
+            fn($c) => new ODAD_Write_Handler(
+                $c->get(ODAD_Adapter_Resolver::class),
+                $c->get(ODAD_Deep_Insert::class),
+                $c->get(ODAD_Deep_Update::class),
+                $c->get(ODAD_Set_Operations::class),
+                $c->get(ODAD_Event_Bus::class),
             )
         );
 
         // ── HTTP layer ───────────────────────────────────────────────────
-        $c->singleton(WPOS_Router::class,
-            fn($c) => new WPOS_Router(
-                $c->get(WPOS_Query_Engine::class),
-                $c->get(WPOS_Write_Handler::class),
-                $c->get(WPOS_Metadata_Builder::class),
-                $c->get(WPOS_Permission_Engine::class),
+        $c->singleton(ODAD_Router::class,
+            fn($c) => new ODAD_Router(
+                $c->get(ODAD_Query_Engine::class),
+                $c->get(ODAD_Write_Handler::class),
+                $c->get(ODAD_Metadata_Builder::class),
+                $c->get(ODAD_Permission_Engine::class),
             )
         );
 
@@ -1248,54 +1248,54 @@ class WPOS_Bootstrapper {
         return $c;
     }
 
-    private static function register_subscribers(WPOS_Container $c): void {
-        $bus    = $c->get(WPOS_Event_Bus::class);
-        $bridge = $c->get(WPOS_Hook_Bridge::class);
+    private static function register_subscribers(ODAD_Container $c): void {
+        $bus    = $c->get(ODAD_Event_Bus::class);
+        $bridge = $c->get(ODAD_Hook_Bridge::class);
 
         $subscribers = [
             // Schema
-            new WPOS_Subscriber_Schema_Init(
-                $c->get(WPOS_Schema_Registry::class),
-                $c->get(WPOS_Adapter_Resolver::class),
+            new ODAD_Subscriber_Schema_Init(
+                $c->get(ODAD_Schema_Registry::class),
+                $c->get(ODAD_Adapter_Resolver::class),
                 $bridge
             ),
-            new WPOS_Subscriber_Schema_Changed(
-                $c->get(WPOS_Metadata_Cache::class)
+            new ODAD_Subscriber_Schema_Changed(
+                $c->get(ODAD_Metadata_Cache::class)
             ),
-            new WPOS_Subscriber_Metadata_Build(
-                $c->get(WPOS_Metadata_Builder::class), $bridge
+            new ODAD_Subscriber_Metadata_Build(
+                $c->get(ODAD_Metadata_Builder::class), $bridge
             ),
 
             // Query
-            new WPOS_Subscriber_Query_Before(
-                $c->get(WPOS_Permission_Engine::class), $bridge
+            new ODAD_Subscriber_Query_Before(
+                $c->get(ODAD_Permission_Engine::class), $bridge
             ),
-            new WPOS_Subscriber_Query_After(
-                $c->get(WPOS_Field_ACL::class), $bridge
+            new ODAD_Subscriber_Query_After(
+                $c->get(ODAD_Field_ACL::class), $bridge
             ),
 
             // Permissions
-            new WPOS_Subscriber_Permission_Check(
-                $c->get(WPOS_Permission_Engine::class), $bridge
+            new ODAD_Subscriber_Permission_Check(
+                $c->get(ODAD_Permission_Engine::class), $bridge
             ),
 
             // Writes
-            new WPOS_Subscriber_Write_Before(
-                $c->get(WPOS_Permission_Engine::class), $bridge
+            new ODAD_Subscriber_Write_Before(
+                $c->get(ODAD_Permission_Engine::class), $bridge
             ),
-            new WPOS_Subscriber_Write_After($bridge),
-            new WPOS_Subscriber_Deep_Insert(
-                $c->get(WPOS_Permission_Engine::class), $bridge
+            new ODAD_Subscriber_Write_After($bridge),
+            new ODAD_Subscriber_Deep_Insert(
+                $c->get(ODAD_Permission_Engine::class), $bridge
             ),
-            new WPOS_Subscriber_Deep_Update(
-                $c->get(WPOS_Permission_Engine::class), $bridge
+            new ODAD_Subscriber_Deep_Update(
+                $c->get(ODAD_Permission_Engine::class), $bridge
             ),
-            new WPOS_Subscriber_Set_Operation(
-                $c->get(WPOS_Permission_Engine::class), $bridge
+            new ODAD_Subscriber_Set_Operation(
+                $c->get(ODAD_Permission_Engine::class), $bridge
             ),
 
             // Admin
-            new WPOS_Subscriber_Admin_Config_Saved($bridge, $bus),
+            new ODAD_Subscriber_Admin_Config_Saved($bridge, $bus),
         ];
 
         foreach ($subscribers as $subscriber) {
@@ -1311,16 +1311,16 @@ class WPOS_Bootstrapper {
 // wp-odata-suite.php
 
 add_action('plugins_loaded', function() {
-    $container = WPOS_Bootstrapper::build();
-    $container->get(WPOS_Hook_Bridge::class)->register();
+    $container = ODAD_Bootstrapper::build();
+    $container->get(ODAD_Hook_Bridge::class)->register();
 
     // Make container accessible for testing / advanced use
     // (never used for internal wiring — use constructor injection instead)
-    $GLOBALS['wpos_container'] = $container;
+    $GLOBALS['ODAD_container'] = $container;
 }, 5);
 
-function wpos_container(): WPOS_Container {
-    return $GLOBALS['wpos_container'];
+function ODAD_container(): ODAD_Container {
+    return $GLOBALS['ODAD_container'];
 }
 ```
 
@@ -1332,12 +1332,12 @@ function wpos_container(): WPOS_Container {
 **Duration: 3–4 weeks**
 
 Deliverables:
-- `WPOS_Container` + `WPOS_Bootstrapper` (DI container — first thing built)
-- `WPOS_Event_Bus` + all event interfaces + all event value objects
-- `WPOS_Hook_Bridge` + subscriber scaffolding (empty implementations)
-- `WPOS_Router`, `WPOS_Request`, `WPOS_Response`, `WPOS_Error`
-- `WPOS_Schema_Registry`
-- `WPOS_Metadata_Cache`
+- `ODAD_Container` + `ODAD_Bootstrapper` (DI container — first thing built)
+- `ODAD_Event_Bus` + all event interfaces + all event value objects
+- `ODAD_Hook_Bridge` + subscriber scaffolding (empty implementations)
+- `ODAD_Router`, `ODAD_Request`, `ODAD_Response`, `ODAD_Error`
+- `ODAD_Schema_Registry`
+- `ODAD_Metadata_Cache`
 - Plugin entry point wiring
 - OData header handling (`OData-Version`, `Prefer`, `Content-Type`)
 - `$metadata` endpoint returning minimal valid CSDL (XML)
@@ -1348,16 +1348,16 @@ Deliverables:
 **Duration: 4–5 weeks**
 
 Deliverables:
-- `WPOS_Adapter` interface (canonical, from Section 8)
-- `WPOS_Adapter_Resolver`
-- `WPOS_Adapter_WP_Posts` — wp_posts, full property + navigation map
-- `WPOS_Adapter_WP_Users` — wp_users + wp_usermeta
-- `WPOS_Adapter_WP_Terms` — wp_terms + taxonomies
-- `WPOS_Adapter_CPT` — auto-discovers registered CPTs
-- `WPOS_Adapter_Taxonomy` — auto-discovers registered taxonomies
-- `WPOS_Adapter_Custom_Table` — generic, schema from `DESCRIBE` or manual config
-- `WPOS_Subscriber_Schema_Init` — wires adapters via `wpos_register_entity_sets`
-- `WPOS_Event_Schema_Changed` + `WPOS_Subscriber_Schema_Changed` — cache bust
+- `ODAD_Adapter` interface (canonical, from Section 8)
+- `ODAD_Adapter_Resolver`
+- `ODAD_Adapter_WP_Posts` — wp_posts, full property + navigation map
+- `ODAD_Adapter_WP_Users` — wp_users + wp_usermeta
+- `ODAD_Adapter_WP_Terms` — wp_terms + taxonomies
+- `ODAD_Adapter_CPT` — auto-discovers registered CPTs
+- `ODAD_Adapter_Taxonomy` — auto-discovers registered taxonomies
+- `ODAD_Adapter_Custom_Table` — generic, schema from `DESCRIBE` or manual config
+- `ODAD_Subscriber_Schema_Init` — wires adapters via `ODAD_register_entity_sets`
+- `ODAD_Event_Schema_Changed` + `ODAD_Subscriber_Schema_Changed` — cache bust
 
 ---
 
@@ -1365,15 +1365,15 @@ Deliverables:
 **Duration: 5–6 weeks**
 
 Deliverables:
-- `WPOS_Filter_Parser` — tokenizer → AST (all v4.01 operators + functions)
-- `WPOS_Filter_Compiler` — AST → SQL WHERE (with `$wpdb->prepare()`)
-- `WPOS_Select_Compiler` — property → column map
-- `WPOS_Expand_Compiler` — navigation expansion
-- `WPOS_Compute_Compiler` — computed virtual columns
-- `WPOS_Orderby_Compiler`, `WPOS_Search_Compiler`
-- `WPOS_Query_Engine` — orchestrates all compilers + dispatches events
-- `WPOS_Subscriber_Query_Before` — row ACL + `wpos_query_context` filter
-- `WPOS_Subscriber_Query_After` — field ACL + `wpos_query_results` filter
+- `ODAD_Filter_Parser` — tokenizer → AST (all v4.01 operators + functions)
+- `ODAD_Filter_Compiler` — AST → SQL WHERE (with `$wpdb->prepare()`)
+- `ODAD_Select_Compiler` — property → column map
+- `ODAD_Expand_Compiler` — navigation expansion
+- `ODAD_Compute_Compiler` — computed virtual columns
+- `ODAD_Orderby_Compiler`, `ODAD_Search_Compiler`
+- `ODAD_Query_Engine` — orchestrates all compilers + dispatches events
+- `ODAD_Subscriber_Query_Before` — row ACL + `ODAD_query_context` filter
+- `ODAD_Subscriber_Query_After` — field ACL + `ODAD_query_results` filter
 - `/$query` endpoint (POST body query)
 - Server-driven pagination (`$top`, `$skip`, `@odata.nextLink`)
 
@@ -1383,14 +1383,14 @@ Deliverables:
 **Duration: 3–4 weeks**
 
 Deliverables:
-- `WPOS_Capability_Map` — WP capability → OData operation mapping
-- `WPOS_Permission_Engine` — entity-level + row-level checks
-- `WPOS_Field_ACL` — field-level property stripping
-- `WPOS_Subscriber_Permission_Check` — bridges to `wpos_can_*` filters
-- `WPOS_Subscriber_Write_Before` — permission check before writes
+- `ODAD_Capability_Map` — WP capability → OData operation mapping
+- `ODAD_Permission_Engine` — entity-level + row-level checks
+- `ODAD_Field_ACL` — field-level property stripping
+- `ODAD_Subscriber_Permission_Check` — bridges to `ODAD_can_*` filters
+- `ODAD_Subscriber_Write_Before` — permission check before writes
 - Row-level security via query context injection
-- Custom capability convention (`wpos_{entity_set}_{operation}`)
-- Unauthenticated access via `wpos_allow_public_access` filter
+- Custom capability convention (`ODAD_{entity_set}_{operation}`)
+- Unauthenticated access via `ODAD_allow_public_access` filter
 
 ---
 
@@ -1398,9 +1398,9 @@ Deliverables:
 **Duration: 4–5 weeks** *(extended from original 3–4 to account for new event coverage)*
 
 Deliverables:
-- `WPOS_Deep_Insert` + deep insert events + subscribers
-- `WPOS_Deep_Update` + deep update events + subscribers
-- `WPOS_Set_Operations` + set operation events + subscribers
+- `ODAD_Deep_Insert` + deep insert events + subscribers
+- `ODAD_Deep_Update` + deep update events + subscribers
+- `ODAD_Set_Operations` + set operation events + subscribers
 - Alternate keys support
 - Key-as-segment URL convention
 - `$expand` with POST/PATCH (`Prefer: return=representation`)
@@ -1417,12 +1417,12 @@ Deliverables:
 **Duration: 2–3 weeks**
 
 Deliverables:
-- `WPOS_Admin` — dashboard page, WP admin menu
-- `WPOS_Admin_Entity_Config` — entity set configuration UI
-- `WPOS_Admin_Permission_Config` — role × entity × operation grid
-- `WPOS_Subscriber_Admin_Config_Saved` — hooks admin saves into event bus
-- Admin save fires `WPOS_Event_Schema_Changed` → cache invalidated automatically
-- Admin-specific WP actions: `wpos_admin_entity_config_saved`, `wpos_admin_permission_saved`
+- `ODAD_Admin` — dashboard page, WP admin menu
+- `ODAD_Admin_Entity_Config` — entity set configuration UI
+- `ODAD_Admin_Permission_Config` — role × entity × operation grid
+- `ODAD_Subscriber_Admin_Config_Saved` — hooks admin saves into event bus
+- Admin save fires `ODAD_Event_Schema_Changed` → cache invalidated automatically
+- Admin-specific WP actions: `ODAD_admin_entity_config_saved`, `ODAD_admin_permission_saved`
 
 ---
 
@@ -1445,39 +1445,39 @@ Deliverables:
 
 | Feature | Priority | Phase | Covered by Hook |
 |---|---|---|---|
-| `$filter` basic operators | P0 | 3 | `wpos_filter_sql` |
-| `$select` | P0 | 3 | `wpos_allowed_properties` |
+| `$filter` basic operators | P0 | 3 | `ODAD_filter_sql` |
+| `$select` | P0 | 3 | `ODAD_allowed_properties` |
 | `$orderby` | P0 | 3 | — |
 | `$top` / `$skip` | P0 | 3 | — |
 | `$count` | P0 | 3 | — |
 | `$expand` (single level) | P0 | 3 | — |
-| CRUD operations | P0 | 2–3 | `wpos_can_*`, `wpos_before_insert`, `wpos_before_update` |
-| `$metadata` XML CSDL | P0 | 1 | `wpos_metadata_entity_types/sets` |
-| Role/Permission enforcement | P0 | 4 | `wpos_can_*`, `wpos_allowed_properties` |
+| CRUD operations | P0 | 2–3 | `ODAD_can_*`, `ODAD_before_insert`, `ODAD_before_update` |
+| `$metadata` XML CSDL | P0 | 1 | `ODAD_metadata_entity_types/sets` |
+| Role/Permission enforcement | P0 | 4 | `ODAD_can_*`, `ODAD_allowed_properties` |
 | Key-as-segment URLs | P1 | 5 | — |
 | Alternate keys | P1 | 5 | — |
-| `in` operator | P1 | 3 | `wpos_filter_sql` |
-| `divby` operator | P1 | 3 | `wpos_filter_sql` |
-| `matchesPattern` function | P1 | 3 | `wpos_filter_sql` |
-| `hassubset` / `hassubsequence` | P1 | 3 | `wpos_filter_sql` |
+| `in` operator | P1 | 3 | `ODAD_filter_sql` |
+| `divby` operator | P1 | 3 | `ODAD_filter_sql` |
+| `matchesPattern` function | P1 | 3 | `ODAD_filter_sql` |
+| `hassubset` / `hassubsequence` | P1 | 3 | `ODAD_filter_sql` |
 | `$compute` | P1 | 3 | — |
 | `/$query` endpoint | P1 | 3 | — |
-| `omit-values` preference | P1 | 1 | `wpos_response_payload` |
-| Deep Insert | P1 | 5 | `wpos_before_deep_insert`, `wpos_nested_entity_payload`, `wpos_deep_inserted` |
-| Deep Update | P1 | 5 | `wpos_before_deep_update`, `wpos_nested_entity_payload`, `wpos_deep_updated` |
-| Set-based PATCH / DELETE | P1 | 5 | `wpos_before_set_operation`, `wpos_set_operation_completed` |
+| `omit-values` preference | P1 | 1 | `ODAD_response_payload` |
+| Deep Insert | P1 | 5 | `ODAD_before_deep_insert`, `ODAD_nested_entity_payload`, `ODAD_deep_inserted` |
+| Deep Update | P1 | 5 | `ODAD_before_deep_update`, `ODAD_nested_entity_payload`, `ODAD_deep_updated` |
+| Set-based PATCH / DELETE | P1 | 5 | `ODAD_before_set_operation`, `ODAD_set_operation_completed` |
 | `$search` | P1 | 3 | — |
-| `$metadata` JSON CSDL | P2 | 5 | `wpos_metadata_entity_types/sets` |
+| `$metadata` JSON CSDL | P2 | 5 | `ODAD_metadata_entity_types/sets` |
 | JSON Batch requests | P2 | 5 | — |
 | Multipart Batch requests | P2 | 5 | — |
 | Delta responses | P2 | 5 | — |
 | Async responses | P2 | 5 | — |
-| OData Functions | P2 | 5 | `wpos_register_functions` |
-| OData Actions | P2 | 5 | `wpos_register_actions` |
+| OData Functions | P2 | 5 | `ODAD_register_functions` |
+| OData Actions | P2 | 5 | `ODAD_register_actions` |
 | `$expand` (nested) | P2 | 3 | — |
 | Schema versioning | P2 | 1 | — |
 | `$index` ordered collections | P3 | 3 | — |
-| `case` function | P3 | 3 | `wpos_filter_sql` |
+| `case` function | P3 | 3 | `ODAD_filter_sql` |
 | `substring` negative index | P3 | 3 | — |
 | AsyncResult header | P3 | 5 | — |
 | ETag in batch | P3 | 5 | — |
@@ -1487,25 +1487,25 @@ Deliverables:
 ## 15. Data Source Strategy
 
 ```
-/odata/v4/Posts              → WPOS_Adapter_WP_Posts (post_type='post')
-/odata/v4/Pages              → WPOS_Adapter_WP_Posts (post_type='page')
-/odata/v4/{CPT}              → WPOS_Adapter_CPT (auto-discovered)
-/odata/v4/Users              → WPOS_Adapter_WP_Users
-/odata/v4/Categories         → WPOS_Adapter_WP_Terms (taxonomy='category')
-/odata/v4/Tags               → WPOS_Adapter_WP_Terms (taxonomy='post_tag')
-/odata/v4/{Taxonomy}         → WPOS_Adapter_Taxonomy (auto-discovered)
-/odata/v4/Employees          → WPOS_Adapter_Custom_Table (wp_employees)
-/odata/v4/Comments           → WPOS_Adapter_WP_Posts (wp_comments)
-/odata/v4/Attachments        → WPOS_Adapter_WP_Posts (post_type='attachment')
+/odata/v4/Posts              → ODAD_Adapter_WP_Posts (post_type='post')
+/odata/v4/Pages              → ODAD_Adapter_WP_Posts (post_type='page')
+/odata/v4/{CPT}              → ODAD_Adapter_CPT (auto-discovered)
+/odata/v4/Users              → ODAD_Adapter_WP_Users
+/odata/v4/Categories         → ODAD_Adapter_WP_Terms (taxonomy='category')
+/odata/v4/Tags               → ODAD_Adapter_WP_Terms (taxonomy='post_tag')
+/odata/v4/{Taxonomy}         → ODAD_Adapter_Taxonomy (auto-discovered)
+/odata/v4/Employees          → ODAD_Adapter_Custom_Table (wp_employees)
+/odata/v4/Comments           → ODAD_Adapter_WP_Posts (wp_comments)
+/odata/v4/Attachments        → ODAD_Adapter_WP_Posts (post_type='attachment')
 ```
 
 Navigation properties resolve cross-adapter:
 ```
-Post.Author     → WPOS_Adapter_WP_Users
-Post.Tags       → WPOS_Adapter_WP_Terms
-Post.Meta       → WPOS_Adapter_WP_Posts (postmeta)
-Employee.Dept   → WPOS_Adapter_Custom_Table (wp_departments)
-Employee.User   → WPOS_Adapter_WP_Users (linked by meta)
+Post.Author     → ODAD_Adapter_WP_Users
+Post.Tags       → ODAD_Adapter_WP_Terms
+Post.Meta       → ODAD_Adapter_WP_Posts (postmeta)
+Employee.Dept   → ODAD_Adapter_Custom_Table (wp_departments)
+Employee.User   → ODAD_Adapter_WP_Users (linked by meta)
 ```
 
 ---
@@ -1552,10 +1552,10 @@ GET    /odata/v4/{EntitySet}/NS.Function(param=value)      → Bound function
 XML CSDL served by default. JSON CSDL served when `?$format=application/json`
 or `Accept: application/json` is sent.
 
-Both formats are built by `WPOS_Metadata_Builder`, cached by `WPOS_Metadata_Cache`,
-and cache-busted via `WPOS_Event_Schema_Changed`.
+Both formats are built by `ODAD_Metadata_Builder`, cached by `ODAD_Metadata_Cache`,
+and cache-busted via `ODAD_Event_Schema_Changed`.
 
-Both expose `wpos_metadata_entity_types` and `wpos_metadata_entity_sets` WP filters
+Both expose `ODAD_metadata_entity_types` and `ODAD_metadata_entity_sets` WP filters
 so external plugins can add/modify schema declarations.
 
 ---
@@ -1581,13 +1581,13 @@ so external plugins can add/modify schema declarations.
 ### Custom Table Capability Convention
 
 ```
-wpos_{entity_set_lowercase}_{operation}
+ODAD_{entity_set_lowercase}_{operation}
 
-wpos_employees_read
-wpos_employees_insert
-wpos_employees_update
-wpos_employees_delete
-wpos_salary_read       ← field-level
+ODAD_employees_read
+ODAD_employees_insert
+ODAD_employees_update
+ODAD_employees_delete
+ODAD_salary_read       ← field-level
 ```
 
 ### Permission Request Flow
@@ -1596,26 +1596,26 @@ wpos_salary_read       ← field-level
 Incoming OData Request
   │
   ├─ Is user authenticated?
-  │     No  → check wpos_allow_public_access filter
+  │     No  → check ODAD_allow_public_access filter
   │     Yes ↓
   │
-  ├─ dispatch(WPOS_Event_Permission_Check)
-  │     → WPOS_Subscriber_Permission_Check
-  │         → WPOS_Permission_Engine::can_{operation}()
-  │         → bridge->filter('wpos_can_{operation}', $granted, [...])
+  ├─ dispatch(ODAD_Event_Permission_Check)
+  │     → ODAD_Subscriber_Permission_Check
+  │         → ODAD_Permission_Engine::can_{operation}()
+  │         → bridge->filter('ODAD_can_{operation}', $granted, [...])
   │     Denied? → 403 Forbidden
   │
-  ├─ dispatch(WPOS_Event_Query_Before)
-  │     → WPOS_Subscriber_Query_Before
-  │         → WPOS_Permission_Engine::apply_row_filter()  ← row-level security
-  │         → bridge->filter('wpos_query_context', $ctx, [...])
+  ├─ dispatch(ODAD_Event_Query_Before)
+  │     → ODAD_Subscriber_Query_Before
+  │         → ODAD_Permission_Engine::apply_row_filter()  ← row-level security
+  │         → bridge->filter('ODAD_query_context', $ctx, [...])
   │
   ├─ Execute query / write
   │
-  └─ dispatch(WPOS_Event_Query_After)
-        → WPOS_Subscriber_Query_After
-            → WPOS_Field_ACL::apply()                     ← field-level stripping
-            → bridge->filter('wpos_query_results', $results, [...])
+  └─ dispatch(ODAD_Event_Query_After)
+        → ODAD_Subscriber_Query_After
+            → ODAD_Field_ACL::apply()                     ← field-level stripping
+            → bridge->filter('ODAD_query_results', $results, [...])
 ```
 
 ---
@@ -1628,10 +1628,10 @@ Incoming OData Request
 | Unauthorized data exposure | Entity-level + field-level ACL; row-level filter injection |
 | PII leakage | `user_pass` permanently excluded; `user_email` / `user_login` require `list_users` |
 | Over-fetching / DoS | Default `$top=100`; max `$top=1000`; max filter depth; 8KB URL limit |
-| Privilege escalation via deep insert | Each nested entity permission checked individually via `WPOS_Event_Deep_Insert_Nested_Before` |
-| Set-based operation abuse | `wpos_can_update` / `wpos_can_delete` checked on entity set before bulk op executes |
+| Privilege escalation via deep insert | Each nested entity permission checked individually via `ODAD_Event_Deep_Insert_Nested_Before` |
+| Set-based operation abuse | `ODAD_can_update` / `ODAD_can_delete` checked on entity set before bulk op executes |
 | CSRF (cookie auth) | WP nonce on all non-GET requests |
-| Schema disclosure | `$metadata` requires auth unless `wpos_allow_public_access` returns true |
+| Schema disclosure | `$metadata` requires auth unless `ODAD_allow_public_access` returns true |
 | Hook injection by malicious plugins | Subscribers validate event data; domain services validate all inputs |
 
 ---
@@ -1641,11 +1641,11 @@ Incoming OData Request
 | Component | Technology | Reason |
 |---|---|---|
 | Plugin framework | WordPress Plugin API | Native WP integration |
-| DI Container | Custom `WPOS_Container` | Lightweight; no external deps |
+| DI Container | Custom `ODAD_Container` | Lightweight; no external deps |
 | REST routing | `WP_REST_Server` + custom handler | WP REST API foundation |
 | Database | `$wpdb` with `prepare()` | WP standard; SQL injection safe |
 | Filter parser | Custom recursive descent parser | Full OData grammar control |
-| Event bus | Custom `WPOS_Event_Bus` | Pure PHP; zero WP dependency |
+| Event bus | Custom `ODAD_Event_Bus` | Pure PHP; zero WP dependency |
 | JSON serialization | Native `json_encode` | Performance |
 | Metadata cache | WP Transients API | Works with any object cache backend |
 | Admin UI | WP Settings API (+ React optional) | WP admin standards |
@@ -1689,7 +1689,7 @@ Incoming OData Request
 | wp_users PII sensitivity | High | High | Strict defaults; field ACL enforced before response |
 | Performance on large datasets | Medium | High | `$top` cap; query analysis; transient cache |
 | Plugin name conflicts (same CPT name) | Medium | Medium | Namespace detection on schema registry |
-| Admin saves firing excessive cache busts | Low | Medium | Debounce `WPOS_Event_Schema_Changed` in admin subscriber |
+| Admin saves firing excessive cache busts | Low | Medium | Debounce `ODAD_Event_Schema_Changed` in admin subscriber |
 | WP core updates breaking internal hooks | Low | High | CI matrix across WP versions |
 
 ---
@@ -1699,7 +1699,7 @@ Incoming OData Request
 ### How another plugin registers a custom table
 
 ```php
-add_action('wpos_register_entity_sets', function(WPOS_Schema_Registry $registry) {
+add_action('ODAD_register_entity_sets', function(ODAD_Schema_Registry $registry) {
     $registry->register_entity_set('Employees', [
         'adapter'     => 'custom_table',
         'table'       => 'wp_employees',
@@ -1722,8 +1722,8 @@ add_action('wpos_register_entity_sets', function(WPOS_Schema_Registry $registry)
 
 ```php
 // Deny all reads of Employees for non-HR users
-add_filter('wpos_can_read', function(bool $granted, string $entity_set, WP_User $user): bool {
-    if ($entity_set === 'Employees' && !user_can($user, 'wpos_employees_read')) {
+add_filter('ODAD_can_read', function(bool $granted, string $entity_set, WP_User $user): bool {
+    if ($entity_set === 'Employees' && !user_can($user, 'ODAD_employees_read')) {
         return false;
     }
     return $granted;
@@ -1733,7 +1733,7 @@ add_filter('wpos_can_read', function(bool $granted, string $entity_set, WP_User 
 ### How another plugin adds a computed field to results
 
 ```php
-add_filter('wpos_query_results', function(array $results, string $entity_set): array {
+add_filter('ODAD_query_results', function(array $results, string $entity_set): array {
     if ($entity_set !== 'Employees') return $results;
     return array_map(function($row) {
         $row['FullName'] = $row['first_name'] . ' ' . $row['last_name'];
@@ -1745,7 +1745,7 @@ add_filter('wpos_query_results', function(array $results, string $entity_set): a
 ### How another plugin reacts to a new entity being created
 
 ```php
-add_action('wpos_inserted', function(string $entity_set, mixed $key, array $payload) {
+add_action('ODAD_inserted', function(string $entity_set, mixed $key, array $payload) {
     if ($entity_set === 'Employees') {
         // Send welcome email, provision accounts, etc.
         my_plugin_on_employee_created($key, $payload);
@@ -1825,14 +1825,14 @@ Content-Type: application/json
 
 | Rule | Reason |
 |---|---|
-| `apply_filters()` and `do_action()` only in `WPOS_Hook_Bridge` | One place to audit all WP extension points |
-| `add_action()` and `add_filter()` only in `WPOS_Hook_Bridge::register()` | One place to audit all WP hook registrations |
-| Domain services dispatch `WPOS_Event`, never WP functions | Domain logic testable without WordPress bootstrap |
+| `apply_filters()` and `do_action()` only in `ODAD_Hook_Bridge` | One place to audit all WP extension points |
+| `add_action()` and `add_filter()` only in `ODAD_Hook_Bridge::register()` | One place to audit all WP hook registrations |
+| Domain services dispatch `ODAD_Event`, never WP functions | Domain logic testable without WordPress bootstrap |
 | Subscribers: one event → one domain call → one WP filter | Thin, traceable, individually testable |
 | Events are pure value objects — no logic | Events carry data; logic lives in services |
 | Container built once at `plugins_loaded` priority 5 | Single wiring point before anything else runs |
 | All public hooks in canonical Section 6 table | No undocumented or scattered hook names |
-| `WPOS_Event_Schema_Changed` busts metadata cache | Admin saves and external registrations auto-invalidate |
+| `ODAD_Event_Schema_Changed` busts metadata cache | Admin saves and external registrations auto-invalidate |
 | Set operations compile to single SQL, no per-row events | Performance: bulk ops stay atomic and fast |
 | `user_pass` always excluded from responses | Security: no circumstance leaks password hashes |
 

@@ -1,17 +1,17 @@
 <?php
 /**
- * Unit tests for WPOS_Field_ACL.
+ * Unit tests for ODAD_Field_ACL.
  */
 
 use PHPUnit\Framework\TestCase;
 
 class FieldACLTest extends TestCase {
 
-    private WPOS_Schema_Registry $registry;
-    private WPOS_Field_ACL       $acl;
+    private ODAD_Schema_Registry $registry;
+    private ODAD_Field_ACL       $acl;
 
     protected function setUp(): void {
-        $this->registry = new WPOS_Schema_Registry();
+        $this->registry = new ODAD_Schema_Registry();
 
         // Register a minimal Users entity set with Email gated by 'list_users'.
         $this->registry->register( 'Users', [
@@ -28,7 +28,7 @@ class FieldACLTest extends TestCase {
             ],
         ] );
 
-        $this->acl = new WPOS_Field_ACL(
+        $this->acl = new ODAD_Field_ACL(
             permission_engine: null,
             schema_registry:   $this->registry,
         );
@@ -84,7 +84,7 @@ class FieldACLTest extends TestCase {
     public function test_validate_write_throws_on_always_read_only_field(): void {
         $user = $this->make_user( 4, [ 'list_users' => true, 'edit_users' => true ] );
 
-        $this->expectException( WPOS_Field_ACL_Exception::class );
+        $this->expectException( ODAD_Field_ACL_Exception::class );
 
         // 'ID' is in ALWAYS_READ_ONLY.
         $this->acl->validate_write( [ 'ID' => 99, 'Name' => 'Dave' ], 'Users', $user, 'update' );
@@ -93,7 +93,7 @@ class FieldACLTest extends TestCase {
     public function test_validate_write_throws_on_schema_read_only_field(): void {
         $user = $this->make_user( 5, [ 'list_users' => true, 'edit_users' => true ] );
 
-        $this->expectException( WPOS_Field_ACL_Exception::class );
+        $this->expectException( ODAD_Field_ACL_Exception::class );
 
         // 'Status' is marked read_only in the schema.
         $this->acl->validate_write( [ 'Name' => 'Eve', 'Status' => 'active' ], 'Users', $user, 'update' );
@@ -103,7 +103,7 @@ class FieldACLTest extends TestCase {
         // User does not have 'list_users', so writing 'Email' is forbidden.
         $user = $this->make_user( 6, [ 'read' => true ] );
 
-        $this->expectException( WPOS_Field_ACL_Exception::class );
+        $this->expectException( ODAD_Field_ACL_Exception::class );
 
         $this->acl->validate_write( [ 'Name' => 'Frank', 'Email' => 'frank@example.com' ], 'Users', $user, 'update' );
     }

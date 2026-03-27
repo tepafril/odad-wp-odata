@@ -17,16 +17,16 @@ directly in admin classes.
 ### `src/admin/class-wpos-admin.php`
 
 ```php
-class WPOS_Admin {
+class ODAD_Admin {
 
     public function __construct(
-        private WPOS_Schema_Registry $registry,
-        private WPOS_Event_Bus       $event_bus,
+        private ODAD_Schema_Registry $registry,
+        private ODAD_Event_Bus       $event_bus,
     ) {}
 
     /**
      * Register admin menu pages.
-     * Called via WP 'admin_menu' action (registered in WPOS_Hook_Bridge).
+     * Called via WP 'admin_menu' action (registered in ODAD_Hook_Bridge).
      */
     public function register_menu(): void;
 
@@ -64,7 +64,7 @@ The dashboard should display:
 
 ## Hook Bridge Update
 
-Add admin hooks to `WPOS_Hook_Bridge::register()`:
+Add admin hooks to `ODAD_Hook_Bridge::register()`:
 
 ```php
 if ( is_admin() ) {
@@ -74,7 +74,7 @@ if ( is_admin() ) {
 
 ```php
 public function on_admin_menu(): void {
-    $admin = wpos_container()->get( WPOS_Admin::class );
+    $admin = ODAD_container()->get( ODAD_Admin::class );
     $admin->register_menu();
 }
 ```
@@ -91,9 +91,9 @@ The dashboard is server-rendered HTML (WP Settings API). React is optional.
 ## Bootstrapper Update
 
 ```php
-$c->singleton( WPOS_Admin::class, fn($c) => new WPOS_Admin(
-    $c->get(WPOS_Schema_Registry::class),
-    $c->get(WPOS_Event_Bus::class),
+$c->singleton( ODAD_Admin::class, fn($c) => new ODAD_Admin(
+    $c->get(ODAD_Schema_Registry::class),
+    $c->get(ODAD_Event_Bus::class),
 ));
 ```
 
@@ -104,5 +104,5 @@ $c->singleton( WPOS_Admin::class, fn($c) => new WPOS_Admin(
 - "WP-OData Suite" menu item appears in WP admin for users with `manage_options`.
 - Dashboard page lists all registered entity sets.
 - Each entity set row shows its OData URL.
-- No `apply_filters()` / `do_action()` calls inside `WPOS_Admin` — all WP hooks go through `WPOS_Hook_Bridge`.
+- No `apply_filters()` / `do_action()` calls inside `ODAD_Admin` — all WP hooks go through `ODAD_Hook_Bridge`.
 - Admin pages are only accessible to users with `manage_options` capability.

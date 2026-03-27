@@ -2,13 +2,13 @@
 
 ## Dependencies
 - Task 1.1 (DI container)
-- Task 1.2 (event bus — specifically `WPOS_Event_REST_Init`)
+- Task 1.2 (event bus — specifically `ODAD_Event_REST_Init`)
 - Task 1.3 (hook bridge)
 
 ## Goal
 Build the WordPress REST API boundary layer. This layer registers OData routes with
 `WP_REST_Server` and translates between WordPress REST request objects and the plugin's
-internal `WPOS_Request` / `WPOS_Response` types.
+internal `ODAD_Request` / `ODAD_Response` types.
 
 The router is WP-aware. Everything it calls below it (query engine, write handler) is
 pure PHP via injected services.
@@ -32,7 +32,7 @@ Parses an incoming `WP_REST_Request` into a typed OData request object.
 
 Properties to expose:
 ```php
-class WPOS_Request {
+class ODAD_Request {
     public readonly string  $entity_set;     // e.g. 'Posts'
     public readonly string  $method;         // 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
     public readonly ?mixed  $key;            // entity key, null for collection
@@ -63,7 +63,7 @@ Enforce: `$top` default = 100, max = 1000. If client requests > 1000, cap silent
 Formats the response as OData-compliant JSON.
 
 ```php
-class WPOS_Response {
+class ODAD_Response {
     // OData JSON response with @odata.context, @odata.count, value array
     public static function collection(
         array   $rows,
@@ -99,7 +99,7 @@ Response must set:
 OData error format: `{"error": {"code": "...", "message": "..."}}`.
 
 ```php
-class WPOS_Error {
+class ODAD_Error {
     public static function not_found( string $message = '' ): WP_REST_Response;        // 404
     public static function forbidden( string $message = '' ): WP_REST_Response;        // 403
     public static function bad_request( string $code, string $message ): WP_REST_Response; // 400
@@ -113,15 +113,15 @@ class WPOS_Error {
 
 Registers all OData routes with `WP_REST_Server`. Dispatches to injected services.
 At Phase 1, only the `$metadata` and service document endpoints need real implementations.
-All other routes return `WPOS_Error::not_found()` stubs until later phases wire them up.
+All other routes return `ODAD_Error::not_found()` stubs until later phases wire them up.
 
 Constructor:
 ```php
 public function __construct(
-    private WPOS_Query_Engine    $query_engine,    // injected, may be null stub in Phase 1
-    private WPOS_Write_Handler   $write_handler,   // injected, may be null stub in Phase 1
-    private WPOS_Metadata_Builder $metadata_builder,
-    private WPOS_Permission_Engine $permission_engine, // may be null stub in Phase 1
+    private ODAD_Query_Engine    $query_engine,    // injected, may be null stub in Phase 1
+    private ODAD_Write_Handler   $write_handler,   // injected, may be null stub in Phase 1
+    private ODAD_Metadata_Builder $metadata_builder,
+    private ODAD_Permission_Engine $permission_engine, // may be null stub in Phase 1
 ) {}
 ```
 
@@ -158,11 +158,11 @@ Content-Type: application/xml
 
 ## Bootstrapper Update
 
-In `class-wpos-bootstrapper.php`, register `WPOS_Router` as a singleton and update
-`WPOS_Subscriber_Rest_Init` (or create the REST init wiring in `WPOS_Hook_Bridge`)
+In `class-wpos-bootstrapper.php`, register `ODAD_Router` as a singleton and update
+`ODAD_Subscriber_Rest_Init` (or create the REST init wiring in `ODAD_Hook_Bridge`)
 to call `$router->register_routes()` when `rest_api_init` fires.
 
-The `WPOS_Event_REST_Init` event should be caught by a listener that calls
+The `ODAD_Event_REST_Init` event should be caught by a listener that calls
 `$router->register_routes()`.
 
 ---

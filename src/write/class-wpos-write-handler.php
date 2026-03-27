@@ -3,19 +3,19 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Orchestrates all write operations: insert, update, delete.
- * Routes to WPOS_Deep_Insert / WPOS_Deep_Update for nested payloads,
+ * Routes to ODAD_Deep_Insert / ODAD_Deep_Update for nested payloads,
  * or direct adapter calls for simple payloads.
- * Dispatches WPOS_Event_Write_Before and WPOS_Event_Write_After.
+ * Dispatches ODAD_Event_Write_Before and ODAD_Event_Write_After.
  */
-class WPOS_Write_Handler {
+class ODAD_Write_Handler {
 
     public function __construct(
-        private WPOS_Adapter_Resolver $adapter_resolver,
-        private WPOS_Schema_Registry  $schema_registry,
-        private WPOS_Deep_Insert      $deep_insert,
-        private WPOS_Deep_Update      $deep_update,
-        private WPOS_Set_Operations   $set_operations,
-        private WPOS_Event_Bus        $event_bus,
+        private ODAD_Adapter_Resolver $adapter_resolver,
+        private ODAD_Schema_Registry  $schema_registry,
+        private ODAD_Deep_Insert      $deep_insert,
+        private ODAD_Deep_Update      $deep_update,
+        private ODAD_Set_Operations   $set_operations,
+        private ODAD_Event_Bus        $event_bus,
     ) {}
 
     /**
@@ -28,7 +28,7 @@ class WPOS_Write_Handler {
      */
     public function insert( string $entity_set, array $payload, \WP_User $user ): array {
         // Dispatch write-before event (permission check + payload filter happen in subscriber).
-        $before = new WPOS_Event_Write_Before( $entity_set, 'insert', $user, $payload );
+        $before = new ODAD_Event_Write_Before( $entity_set, 'insert', $user, $payload );
         $this->event_bus->dispatch( $before );
 
         if ( $before->cancelled ) {
@@ -43,13 +43,13 @@ class WPOS_Write_Handler {
         } else {
             $adapter = $this->adapter_resolver->resolve( $entity_set );
             $key     = $adapter->insert( $payload );
-            $ctx     = new WPOS_Query_Context();
+            $ctx     = new ODAD_Query_Context();
             $result  = $adapter->get_entity( $key, $ctx ) ?? [];
         }
 
         // Dispatch write-after event.
         $key   = $result[ $this->get_key_property( $entity_set ) ] ?? null;
-        $after = new WPOS_Event_Write_After( $entity_set, 'insert', $user, $key, $result );
+        $after = new ODAD_Event_Write_After( $entity_set, 'insert', $user, $key, $result );
         $this->event_bus->dispatch( $after );
 
         return $result;
@@ -65,7 +65,7 @@ class WPOS_Write_Handler {
      * @return array   The updated entity.
      */
     public function update( string $entity_set, mixed $key, array $payload, \WP_User $user ): array {
-        $before = new WPOS_Event_Write_Before( $entity_set, 'update', $user, $payload, $key );
+        $before = new ODAD_Event_Write_Before( $entity_set, 'update', $user, $payload, $key );
         $this->event_bus->dispatch( $before );
 
         if ( $before->cancelled ) {
@@ -80,11 +80,11 @@ class WPOS_Write_Handler {
         } else {
             $adapter = $this->adapter_resolver->resolve( $entity_set );
             $adapter->update( $key, $payload );
-            $ctx    = new WPOS_Query_Context();
+            $ctx    = new ODAD_Query_Context();
             $result = $adapter->get_entity( $key, $ctx ) ?? [];
         }
 
-        $after = new WPOS_Event_Write_After( $entity_set, 'update', $user, $key, $result );
+        $after = new ODAD_Event_Write_After( $entity_set, 'update', $user, $key, $result );
         $this->event_bus->dispatch( $after );
 
         return $result;
@@ -98,7 +98,7 @@ class WPOS_Write_Handler {
      * @param \WP_User $user
      */
     public function delete( string $entity_set, mixed $key, \WP_User $user ): void {
-        $before = new WPOS_Event_Write_Before( $entity_set, 'delete', $user, [], $key );
+        $before = new ODAD_Event_Write_Before( $entity_set, 'delete', $user, [], $key );
         $this->event_bus->dispatch( $before );
 
         if ( $before->cancelled ) {
@@ -108,7 +108,7 @@ class WPOS_Write_Handler {
         $adapter = $this->adapter_resolver->resolve( $entity_set );
         $adapter->delete( $key );
 
-        $after = new WPOS_Event_Write_After( $entity_set, 'delete', $user, $key, [] );
+        $after = new ODAD_Event_Write_After( $entity_set, 'delete', $user, $key, [] );
         $this->event_bus->dispatch( $after );
     }
 

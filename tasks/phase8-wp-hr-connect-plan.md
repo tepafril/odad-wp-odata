@@ -171,7 +171,7 @@ register_deactivation_hook( __FILE__, [ 'WPHR_Installer', 'deactivate' ] );
 
 add_action( 'plugins_loaded', function (): void {
     // Abort gracefully if WP-OData Suite is not active.
-    if ( ! function_exists( 'wpos_container' ) ) {
+    if ( ! function_exists( 'ODAD_container' ) ) {
         add_action( 'admin_notices', function () {
             echo '<div class="notice notice-error"><p>';
             esc_html_e( 'WP HR Connect requires WP-OData Suite to be installed and active.', 'wp-hr-connect' );
@@ -191,7 +191,7 @@ function wphr_container(): WPHR_Container {
 
 **File:** `src/bootstrap/class-wphr-container.php`
 
-Identical pattern to `WPOS_Container`. Methods: `singleton(string, Closure)`, `get(string)`, `has(string)`. Throws `\RuntimeException` on missing binding.
+Identical pattern to `ODAD_Container`. Methods: `singleton(string, Closure)`, `get(string)`, `has(string)`. Throws `\RuntimeException` on missing binding.
 
 #### Task 1.3 — DB installer
 
@@ -243,8 +243,8 @@ class WPHR_Bootstrapper {
         // Register REST routes + WP-OData Suite hooks
         add_action( 'rest_api_init',        [ WPHR_Auth_Controller::class, 'register_routes' ] );
         add_filter( 'determine_current_user', [ WPHR_JWT_Auth_Handler::class, 'resolve_user' ], 20 );
-        add_action( 'wpos_register_entity_sets', [ WPHR_OData_Registrar::class, 'register' ], 10, 2 );
-        add_action( 'wpos_register_permissions', [ WPHR_OData_Registrar::class, 'register_permissions' ] );
+        add_action( 'ODAD_register_entity_sets', [ WPHR_OData_Registrar::class, 'register' ], 10, 2 );
+        add_action( 'ODAD_register_permissions', [ WPHR_OData_Registrar::class, 'register_permissions' ] );
 
         if ( is_admin() ) {
             add_action( 'admin_menu', fn() => wphr_container()->get( WPHR_Admin::class )->register_menu() );
@@ -460,8 +460,8 @@ Simple exception class. Properties: `$code_slug` (e.g. `'token_expired'`, `'toke
 class WPHR_OData_Registrar {
 
     public static function register(
-        WPOS_Schema_Registry  $registry,
-        WPOS_Adapter_Resolver $resolver,
+        ODAD_Schema_Registry  $registry,
+        ODAD_Adapter_Resolver $resolver,
     ): void {
         $adapters = [
             wphr_container()->get( WPHR_Employee_Adapter::class ),
@@ -475,7 +475,7 @@ class WPHR_OData_Registrar {
         }
     }
 
-    public static function register_permissions( WPOS_Capability_Map $map ): void {
+    public static function register_permissions( ODAD_Capability_Map $map ): void {
         $map->register( 'Employees',     [ 'read' => 'read',               'insert' => 'manage_options', 'update' => 'manage_options', 'delete' => 'manage_options' ] );
         $map->register( 'CheckIns',      [ 'read' => 'wphr_checkin',       'insert' => 'wphr_checkin',   'update' => 'wphr_checkin',   'delete' => 'manage_options' ] );
         $map->register( 'LeaveRequests', [ 'read' => 'wphr_request_leave', 'insert' => 'wphr_request_leave', 'update' => 'wphr_request_leave', 'delete' => 'manage_options' ] );
@@ -487,7 +487,7 @@ class WPHR_OData_Registrar {
 
 **File:** `src/adapters/class-wphr-employee-adapter.php`
 
-Implements `WPOS_Adapter`. Uses `WPOS_Adapter_Custom_Table` internally or implements directly against `{prefix}hr_employees`.
+Implements `ODAD_Adapter`. Uses `ODAD_Adapter_Custom_Table` internally or implements directly against `{prefix}hr_employees`.
 
 **Schema:**
 ```php

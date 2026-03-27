@@ -5,7 +5,7 @@
  * @package WPOS
  */
 
-class WPOS_Event_Deep_Update_After implements WPOS_Event {
+class ODAD_Event_Deep_Update_After implements ODAD_Event {
     public function __construct(
         public string   $entity_set,
         public mixed    $key,

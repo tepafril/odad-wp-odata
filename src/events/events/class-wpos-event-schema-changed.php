@@ -5,7 +5,7 @@
  * @package WPOS
  */
 
-class WPOS_Event_Schema_Changed implements WPOS_Event {
+class ODAD_Event_Schema_Changed implements ODAD_Event {
     // $reason: 'entity_registered' | 'config_updated' | 'entity_removed'
     public function __construct(
         public string $reason,

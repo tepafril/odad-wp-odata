@@ -78,7 +78,7 @@ require_once dirname(__DIR__, 2) . '/wp-odata-suite.php';
 - `null` literal
 - DateTime literal
 - Nested parens
-- Invalid expression → `WPOS_Filter_Parse_Exception`
+- Invalid expression → `ODAD_Filter_Parse_Exception`
 - Parse exception includes position
 
 ---
@@ -91,7 +91,7 @@ require_once dirname(__DIR__, 2) . '/wp-odata-suite.php';
 - `contains` → `LIKE CONCAT('%', %s, '%')`
 - `startswith` → `LIKE CONCAT(%s, '%')`
 - `and` / `or` → parenthesized SQL
-- Unknown property → `WPOS_Filter_Compile_Exception`
+- Unknown property → `ODAD_Filter_Compile_Exception`
 - Output is safe for `$wpdb->prepare()` (no unescaped values)
 
 ---
@@ -147,11 +147,11 @@ Tests:
 
 ### Metadata Builder (`tests/unit/metadata/MetadataBuilderTest.php`)
 
-Use a fake/in-memory `WPOS_Metadata_Cache` and `WPOS_Schema_Registry`:
+Use a fake/in-memory `ODAD_Metadata_Cache` and `ODAD_Schema_Registry`:
 - Returns cached XML on second call (cache hit)
-- Cache is busted when `WPOS_Event_Schema_Changed` dispatched
+- Cache is busted when `ODAD_Event_Schema_Changed` dispatched
 - XML output contains registered entity type names
-- `wpos_metadata_entity_types` filter result is used in output
+- `ODAD_metadata_entity_types` filter result is used in output
 
 ---
 

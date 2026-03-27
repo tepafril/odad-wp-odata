@@ -1,6 +1,6 @@
 <?php
 /**
- * Integration tests for WPOS_Adapter_WP_Users.
+ * Integration tests for ODAD_Adapter_WP_Users.
  *
  * Requires a live WordPress test database (WP_UnitTestCase).
  * Each test runs inside a transaction that is rolled back on tearDown.
@@ -10,17 +10,17 @@
 
 class WPUsersAdapterTest extends WP_UnitTestCase {
 
-    private WPOS_Adapter_WP_Users $adapter;
+    private ODAD_Adapter_WP_Users $adapter;
 
     public function setUp(): void {
         parent::setUp();
-        $this->adapter = new WPOS_Adapter_WP_Users();
+        $this->adapter = new ODAD_Adapter_WP_Users();
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private function make_ctx(): WPOS_Query_Context {
-        $ctx      = new WPOS_Query_Context();
+    private function make_ctx(): ODAD_Query_Context {
+        $ctx      = new ODAD_Query_Context();
         $ctx->top = 100;
         return $ctx;
     }
@@ -32,8 +32,8 @@ class WPUsersAdapterTest extends WP_UnitTestCase {
         $rand = mt_rand( 10000, 99999 );
         return [
             'DisplayName' => 'Test User ' . $rand,
-            'Login'       => 'wpos_test_user_' . $rand,
-            'Email'       => 'wpos_' . $rand . '@test.com',
+            'Login'       => 'ODAD_test_user_' . $rand,
+            'Email'       => 'ODAD_' . $rand . '@test.com',
             'Password'    => 'secret123',
         ];
     }

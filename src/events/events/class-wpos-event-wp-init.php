@@ -5,4 +5,4 @@
  * @package WPOS
  */
 
-class WPOS_Event_WP_Init implements WPOS_Event {}
+class ODAD_Event_WP_Init implements ODAD_Event {}

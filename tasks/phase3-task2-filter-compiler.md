@@ -2,11 +2,11 @@
 
 ## Dependencies
 - Task 3.1 (filter parser + AST node classes)
-- Task 2.1 (WPOS_Query_Context — for column mapping)
+- Task 2.1 (ODAD_Query_Context — for column mapping)
 - Task 2.2–2.5 (adapters — for property → column name mapping)
 
 ## Goal
-Walk the AST produced by `WPOS_Filter_Parser` and compile it into a parameterized
+Walk the AST produced by `ODAD_Filter_Parser` and compile it into a parameterized
 SQL `WHERE` clause using `$wpdb->prepare()`. This is a security-critical component:
 **never use string interpolation for user-supplied values**.
 
@@ -17,16 +17,16 @@ SQL `WHERE` clause using `$wpdb->prepare()`. This is a security-critical compone
 ### `src/query/class-wpos-filter-compiler.php`
 
 ```php
-class WPOS_Filter_Compiler {
+class ODAD_Filter_Compiler {
 
     /**
      * Compile an AST into a SQL WHERE fragment.
      *
-     * @param WPOS_AST_Node        $ast         Root node from WPOS_Filter_Parser
+     * @param ODAD_AST_Node        $ast         Root node from ODAD_Filter_Parser
      * @param array<string,string> $column_map  OData property name → SQL column name
      * @return array{sql: string, params: array}
      */
-    public function compile( WPOS_AST_Node $ast, array $column_map ): array;
+    public function compile( ODAD_AST_Node $ast, array $column_map ): array;
 }
 ```
 
@@ -133,7 +133,7 @@ The `$column_map` array is provided by the caller (built from the adapter's
 ```
 
 If a property in the filter is NOT in the column map, throw
-`WPOS_Filter_Compile_Exception` (create this class) with message
+`ODAD_Filter_Compile_Exception` (create this class) with message
 `"Unknown property: {property_name}"`.
 
 **Never allow arbitrary column names** — they must exist in the column map.
@@ -151,10 +151,10 @@ This prevents SQL injection via property name injection.
 
 ---
 
-## `wpos_filter_sql` Filter
+## `ODAD_filter_sql` Filter
 
 After compiling the full WHERE clause, the subscriber (Task 3.6) applies the
-`wpos_filter_sql` WP filter. The compiler itself does NOT call `apply_filters` —
+`ODAD_filter_sql` WP filter. The compiler itself does NOT call `apply_filters` —
 that is the subscriber's job. The compiler just returns the raw SQL + params array.
 
 ---
@@ -165,6 +165,6 @@ that is the subscriber's job. The compiler just returns the raw SQL + params arr
 - `compile(AST(Status in ('draft', 'publish')))` returns correct `IN (%s, %s)` with params.
 - `compile(AST(contains(Title, 'news')))` returns `p.post_title LIKE CONCAT('%', %s, '%')`.
 - Null comparison `Title eq null` produces `p.post_title IS NULL` with no placeholder.
-- Unknown property throws `WPOS_Filter_Compile_Exception`.
+- Unknown property throws `ODAD_Filter_Compile_Exception`.
 - Passing the returned `['sql', 'params']` through `$wpdb->prepare($sql, ...$params)` produces valid SQL with no injection risk.
 - No WordPress calls in this file (no `$wpdb` access — that is done by callers).

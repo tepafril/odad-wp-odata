@@ -7,20 +7,20 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Subscriber_Write_Before implements WPOS_Event_Listener {
+class ODAD_Subscriber_Write_Before implements ODAD_Event_Listener {
 
     public function __construct(
-        private WPOS_Permission_Engine $permissions,
-        private WPOS_Field_ACL         $field_acl,
-        private WPOS_Hook_Bridge       $bridge,
+        private ODAD_Permission_Engine $permissions,
+        private ODAD_Field_ACL         $field_acl,
+        private ODAD_Hook_Bridge       $bridge,
     ) {}
 
     public function get_event(): string {
-        return WPOS_Event_Write_Before::class;
+        return ODAD_Event_Write_Before::class;
     }
 
-    public function handle( WPOS_Event $event ): void {
-        /** @var WPOS_Event_Write_Before $event */
+    public function handle( ODAD_Event $event ): void {
+        /** @var ODAD_Event_Write_Before $event */
 
         // 1. Check entity-level permission
         $granted = $this->permissions->can(
@@ -40,8 +40,8 @@ class WPOS_Subscriber_Write_Before implements WPOS_Event_Listener {
 
         // 3. Apply WP filter to allow payload modification
         $hook = match( $event->operation ) {
-            'insert' => 'wpos_before_insert',
-            'update' => 'wpos_before_update',
+            'insert' => 'ODAD_before_insert',
+            'update' => 'ODAD_before_update',
             default  => null,
         };
 

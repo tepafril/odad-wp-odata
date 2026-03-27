@@ -16,12 +16,12 @@ no WordPress dependencies.
 Marker interface. All event value objects implement this.
 
 ```php
-interface WPOS_Event {}
+interface ODAD_Event {}
 ```
 
 ### `src/events/interface-wpos-stoppable-event.php`
 ```php
-interface WPOS_Stoppable_Event extends WPOS_Event {
+interface ODAD_Stoppable_Event extends ODAD_Event {
     public function is_stopped(): bool;
     public function stop_propagation(): void;
 }
@@ -29,27 +29,27 @@ interface WPOS_Stoppable_Event extends WPOS_Event {
 
 ### `src/events/interface-wpos-event-listener.php`
 ```php
-interface WPOS_Event_Listener {
+interface ODAD_Event_Listener {
     /** Return the fully-qualified class name of the event this listener handles. */
     public function get_event(): string;
-    public function handle( WPOS_Event $event ): void;
+    public function handle( ODAD_Event $event ): void;
 }
 ```
 
 ### `src/events/class-wpos-event-bus.php`
 ```php
-class WPOS_Event_Bus {
-    /** @var array<string, WPOS_Event_Listener[]> */
+class ODAD_Event_Bus {
+    /** @var array<string, ODAD_Event_Listener[]> */
     private array $listeners = [];
 
-    public function subscribe( WPOS_Event_Listener $listener ): void {
+    public function subscribe( ODAD_Event_Listener $listener ): void {
         $this->listeners[ $listener->get_event() ][] = $listener;
     }
 
-    public function dispatch( WPOS_Event $event ): WPOS_Event {
+    public function dispatch( ODAD_Event $event ): ODAD_Event {
         foreach ( $this->listeners[ get_class( $event ) ] ?? [] as $listener ) {
             $listener->handle( $event );
-            if ( $event instanceof WPOS_Stoppable_Event && $event->is_stopped() ) {
+            if ( $event instanceof ODAD_Stoppable_Event && $event->is_stopped() ) {
                 break;
             }
         }
@@ -68,26 +68,26 @@ All files live in `src/events/events/`.
 
 **`class-wpos-event-wp-init.php`**
 ```php
-class WPOS_Event_WP_Init implements WPOS_Event {}
+class ODAD_Event_WP_Init implements ODAD_Event {}
 ```
 
 **`class-wpos-event-rest-init.php`**
 ```php
-class WPOS_Event_REST_Init implements WPOS_Event {}
+class ODAD_Event_REST_Init implements ODAD_Event {}
 ```
 
 **`class-wpos-event-schema-register.php`**
 ```php
-class WPOS_Event_Schema_Register implements WPOS_Event {
+class ODAD_Event_Schema_Register implements ODAD_Event {
     public function __construct(
-        public WPOS_Schema_Registry $registry,
+        public ODAD_Schema_Registry $registry,
     ) {}
 }
 ```
 
 **`class-wpos-event-schema-changed.php`**
 ```php
-class WPOS_Event_Schema_Changed implements WPOS_Event {
+class ODAD_Event_Schema_Changed implements ODAD_Event {
     // $reason: 'entity_registered' | 'config_updated' | 'entity_removed'
     public function __construct(
         public string $reason,
@@ -98,7 +98,7 @@ class WPOS_Event_Schema_Changed implements WPOS_Event {
 
 **`class-wpos-event-metadata-build.php`**
 ```php
-class WPOS_Event_Metadata_Build implements WPOS_Event {
+class ODAD_Event_Metadata_Build implements ODAD_Event {
     public function __construct(
         public array $entity_types,   // mutable
         public array $entity_sets,    // mutable
@@ -112,22 +112,22 @@ class WPOS_Event_Metadata_Build implements WPOS_Event {
 
 **`class-wpos-event-query-before.php`**
 ```php
-class WPOS_Event_Query_Before implements WPOS_Event {
+class ODAD_Event_Query_Before implements ODAD_Event {
     public function __construct(
         public string             $entity_set,
         public \WP_User           $user,
-        public WPOS_Query_Context $query_context,   // mutable
+        public ODAD_Query_Context $query_context,   // mutable
     ) {}
 }
 ```
 
 **`class-wpos-event-query-after.php`**
 ```php
-class WPOS_Event_Query_After implements WPOS_Event {
+class ODAD_Event_Query_After implements ODAD_Event {
     public function __construct(
         public string             $entity_set,
         public \WP_User           $user,
-        public WPOS_Query_Context $query_context,
+        public ODAD_Query_Context $query_context,
         public array              $results,          // mutable
     ) {}
 }
@@ -139,7 +139,7 @@ class WPOS_Event_Query_After implements WPOS_Event {
 
 **`class-wpos-event-write-before.php`**
 ```php
-class WPOS_Event_Write_Before implements WPOS_Event {
+class ODAD_Event_Write_Before implements ODAD_Event {
     public bool $cancelled = false;
 
     public function __construct(
@@ -154,7 +154,7 @@ class WPOS_Event_Write_Before implements WPOS_Event {
 
 **`class-wpos-event-write-after.php`**
 ```php
-class WPOS_Event_Write_After implements WPOS_Event {
+class ODAD_Event_Write_After implements ODAD_Event {
     public function __construct(
         public string   $entity_set,
         public string   $operation,
@@ -171,7 +171,7 @@ class WPOS_Event_Write_After implements WPOS_Event {
 
 **`class-wpos-event-deep-insert-before.php`**
 ```php
-class WPOS_Event_Deep_Insert_Before implements WPOS_Event {
+class ODAD_Event_Deep_Insert_Before implements ODAD_Event {
     public bool $cancelled = false;
 
     public function __construct(
@@ -184,7 +184,7 @@ class WPOS_Event_Deep_Insert_Before implements WPOS_Event {
 
 **`class-wpos-event-deep-insert-nested-before.php`**
 ```php
-class WPOS_Event_Deep_Insert_Nested_Before implements WPOS_Event {
+class ODAD_Event_Deep_Insert_Nested_Before implements ODAD_Event {
     public bool $cancelled = false;
 
     public function __construct(
@@ -199,7 +199,7 @@ class WPOS_Event_Deep_Insert_Nested_Before implements WPOS_Event {
 
 **`class-wpos-event-deep-insert-after.php`**
 ```php
-class WPOS_Event_Deep_Insert_After implements WPOS_Event {
+class ODAD_Event_Deep_Insert_After implements ODAD_Event {
     public function __construct(
         public string   $entity_set,
         public \WP_User $user,
@@ -215,7 +215,7 @@ class WPOS_Event_Deep_Insert_After implements WPOS_Event {
 
 **`class-wpos-event-deep-update-before.php`**
 ```php
-class WPOS_Event_Deep_Update_Before implements WPOS_Event {
+class ODAD_Event_Deep_Update_Before implements ODAD_Event {
     public bool $cancelled = false;
 
     public function __construct(
@@ -229,7 +229,7 @@ class WPOS_Event_Deep_Update_Before implements WPOS_Event {
 
 **`class-wpos-event-deep-update-nested-before.php`**
 ```php
-class WPOS_Event_Deep_Update_Nested_Before implements WPOS_Event {
+class ODAD_Event_Deep_Update_Nested_Before implements ODAD_Event {
     public bool $cancelled = false;
 
     public function __construct(
@@ -245,7 +245,7 @@ class WPOS_Event_Deep_Update_Nested_Before implements WPOS_Event {
 
 **`class-wpos-event-deep-update-after.php`**
 ```php
-class WPOS_Event_Deep_Update_After implements WPOS_Event {
+class ODAD_Event_Deep_Update_After implements ODAD_Event {
     public function __construct(
         public string   $entity_set,
         public mixed    $key,
@@ -261,14 +261,14 @@ class WPOS_Event_Deep_Update_After implements WPOS_Event {
 
 **`class-wpos-event-set-operation-before.php`**
 ```php
-class WPOS_Event_Set_Operation_Before implements WPOS_Event {
+class ODAD_Event_Set_Operation_Before implements ODAD_Event {
     public bool $cancelled = false;
 
     public function __construct(
         public string             $entity_set,
         public string             $operation,     // 'patch' | 'delete' | 'action'
         public \WP_User           $user,
-        public WPOS_Query_Context $filter_ctx,    // mutable
+        public ODAD_Query_Context $filter_ctx,    // mutable
         public array              $payload,       // mutable
     ) {}
 }
@@ -276,7 +276,7 @@ class WPOS_Event_Set_Operation_Before implements WPOS_Event {
 
 **`class-wpos-event-set-operation-after.php`**
 ```php
-class WPOS_Event_Set_Operation_After implements WPOS_Event {
+class ODAD_Event_Set_Operation_After implements ODAD_Event {
     public function __construct(
         public string   $entity_set,
         public string   $operation,
@@ -292,7 +292,7 @@ class WPOS_Event_Set_Operation_After implements WPOS_Event {
 
 **`class-wpos-event-permission-check.php`**
 ```php
-class WPOS_Event_Permission_Check implements WPOS_Event {
+class ODAD_Event_Permission_Check implements ODAD_Event {
     public function __construct(
         public string   $entity_set,
         public string   $operation,   // 'read' | 'insert' | 'update' | 'delete'
@@ -309,7 +309,7 @@ class WPOS_Event_Permission_Check implements WPOS_Event {
 
 **`class-wpos-event-admin-entity-config-saved.php`**
 ```php
-class WPOS_Event_Admin_Entity_Config_Saved implements WPOS_Event {
+class ODAD_Event_Admin_Entity_Config_Saved implements ODAD_Event {
     public function __construct(
         public string $entity_set,
         public array  $config,
@@ -319,7 +319,7 @@ class WPOS_Event_Admin_Entity_Config_Saved implements WPOS_Event {
 
 **`class-wpos-event-admin-permission-saved.php`**
 ```php
-class WPOS_Event_Admin_Permission_Saved implements WPOS_Event {
+class ODAD_Event_Admin_Permission_Saved implements ODAD_Event {
     public function __construct(
         public string $entity_set,
         public array  $permissions,
@@ -333,7 +333,7 @@ class WPOS_Event_Admin_Permission_Saved implements WPOS_Event {
 
 - Event classes are **value objects**: no methods other than a constructor.
 - No WordPress function calls inside any event class.
-- `WPOS_Query_Context` referenced in events is built in Phase 3 (Task 3.5).
+- `ODAD_Query_Context` referenced in events is built in Phase 3 (Task 3.5).
   Use a forward-declared stub class for now if needed, or just use `array` typed
   properties until Phase 3 lands. Prefer the typed class — it will be created then.
 - The event bus dispatches by `get_class($event)` — listener must return the exact
@@ -344,6 +344,6 @@ class WPOS_Event_Admin_Permission_Saved implements WPOS_Event {
 ## Acceptance Criteria
 
 - All event files load without errors.
-- `WPOS_Event_Bus::dispatch()` calls every registered listener for the event class.
-- `WPOS_Event_Bus` stops dispatch when a `WPOS_Stoppable_Event` returns `is_stopped() === true`.
+- `ODAD_Event_Bus::dispatch()` calls every registered listener for the event class.
+- `ODAD_Event_Bus` stops dispatch when a `ODAD_Stoppable_Event` returns `is_stopped() === true`.
 - No WordPress API calls in any of these files.

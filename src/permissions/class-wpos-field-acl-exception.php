@@ -1,13 +1,13 @@
 <?php
 /**
- * WPOS_Field_ACL_Exception — thrown when a write payload contains forbidden fields.
+ * ODAD_Field_ACL_Exception — thrown when a write payload contains forbidden fields.
  *
  * @package WPOS
  */
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Field_ACL_Exception extends \RuntimeException {
+class ODAD_Field_ACL_Exception extends \RuntimeException {
 
     /**
      * @param string   $message

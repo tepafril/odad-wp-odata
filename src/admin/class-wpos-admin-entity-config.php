@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Admin_Entity_Config {
+class ODAD_Admin_Entity_Config {
 
     /** Default configuration values. */
     private const DEFAULTS = [
@@ -22,8 +22,8 @@ class WPOS_Admin_Entity_Config {
     ];
 
     public function __construct(
-        private WPOS_Schema_Registry $registry,
-        private WPOS_Event_Bus       $event_bus,
+        private ODAD_Schema_Registry $registry,
+        private ODAD_Event_Bus       $event_bus,
     ) {}
 
     /**
@@ -56,8 +56,8 @@ class WPOS_Admin_Entity_Config {
                     <div class="wpos-card">
                         <h2><?php echo esc_html( $entity_set_name ); ?></h2>
                         <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-                            <?php wp_nonce_field( 'wpos_entity_config_save' ); ?>
-                            <input type="hidden" name="action"     value="wpos_save_entity_config">
+                            <?php wp_nonce_field( 'ODAD_entity_config_save' ); ?>
+                            <input type="hidden" name="action"     value="ODAD_save_entity_config">
                             <input type="hidden" name="entity_set" value="<?php echo esc_attr( $entity_set_name ); ?>">
 
                             <table class="form-table">
@@ -156,7 +156,7 @@ class WPOS_Admin_Entity_Config {
      * Handle form submission (admin-post hook).
      */
     public function save(): void {
-        check_admin_referer( 'wpos_entity_config_save' );
+        check_admin_referer( 'ODAD_entity_config_save' );
 
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_die( esc_html__( 'Unauthorized', 'wp-odata-suite' ) );
@@ -171,9 +171,9 @@ class WPOS_Admin_Entity_Config {
         $raw_config = $_POST['config'] ?? [];
         $config     = $this->sanitize_config( is_array( $raw_config ) ? $raw_config : [] );
 
-        update_option( "wpos_entity_config_{$entity_set}", $config );
+        update_option( "ODAD_entity_config_{$entity_set}", $config );
 
-        $this->event_bus->dispatch( new WPOS_Event_Admin_Entity_Config_Saved(
+        $this->event_bus->dispatch( new ODAD_Event_Admin_Entity_Config_Saved(
             entity_set: $entity_set,
             config:     $config,
         ) );
@@ -185,10 +185,10 @@ class WPOS_Admin_Entity_Config {
 
     /**
      * Get configuration for an entity set.
-     * Config stored in WP option 'wpos_entity_config_{entity_set}'.
+     * Config stored in WP option 'ODAD_entity_config_{entity_set}'.
      */
     public function get_config( string $entity_set ): array {
-        $saved = get_option( "wpos_entity_config_{$entity_set}", [] );
+        $saved = get_option( "ODAD_entity_config_{$entity_set}", [] );
         return array_merge( self::DEFAULTS, is_array( $saved ) ? $saved : [] );
     }
 

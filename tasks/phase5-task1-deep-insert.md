@@ -26,12 +26,12 @@ POST /odata/v4/Posts
 ## File 1: `src/write/class-wpos-deep-insert.php`
 
 ```php
-class WPOS_Deep_Insert {
+class ODAD_Deep_Insert {
 
     public function __construct(
-        private WPOS_Adapter_Resolver  $adapter_resolver,
-        private WPOS_Schema_Registry   $schema_registry,
-        private WPOS_Event_Bus         $event_bus,
+        private ODAD_Adapter_Resolver  $adapter_resolver,
+        private ODAD_Schema_Registry   $schema_registry,
+        private ODAD_Event_Bus         $event_bus,
     ) {}
 
     /**
@@ -56,8 +56,8 @@ execute():
   1. Separate $payload into root properties vs. navigation properties
      (nav properties are those that match nav_properties in the entity type definition)
 
-  2. dispatch(WPOS_Event_Deep_Insert_Before)
-       → subscriber fires 'wpos_before_deep_insert' WP filter
+  2. dispatch(ODAD_Event_Deep_Insert_Before)
+       → subscriber fires 'ODAD_before_deep_insert' WP filter
      If $event->cancelled: throw \RuntimeException('Deep insert cancelled')
 
   3. Insert root entity:
@@ -65,17 +65,17 @@ execute():
        root_key = root_adapter->insert(root_payload)
 
   4. For each navigation property with nested data:
-       a. dispatch(WPOS_Event_Deep_Insert_Nested_Before)
+       a. dispatch(ODAD_Event_Deep_Insert_Nested_Before)
             → subscriber checks nested entity permission
-            → subscriber fires 'wpos_nested_entity_payload' WP filter
+            → subscriber fires 'ODAD_nested_entity_payload' WP filter
           If $event->cancelled: rollback root + all previous nested inserts, throw
 
        b. Resolve nested adapter from nav property definition
        c. nested_adapter->insert(nested_payload)
        d. Create the relationship (e.g. for Tags: insert into wp_term_relationships)
 
-  5. dispatch(WPOS_Event_Deep_Insert_After)
-       → subscriber fires 'wpos_deep_inserted' WP action
+  5. dispatch(ODAD_Event_Deep_Insert_After)
+       → subscriber fires 'ODAD_deep_inserted' WP action
 
   6. Return full root entity (re-fetched from adapter to include generated fields)
 ```
@@ -98,19 +98,19 @@ The relationship strategy is defined in the nav property definition under a
 
 ---
 
-## `WPOS_Write_Handler` Update
+## `ODAD_Write_Handler` Update
 
 Create `src/write/class-wpos-write-handler.php` if not yet created:
 
 ```php
-class WPOS_Write_Handler {
+class ODAD_Write_Handler {
 
     public function __construct(
-        private WPOS_Adapter_Resolver $adapter_resolver,
-        private WPOS_Deep_Insert      $deep_insert,
-        private WPOS_Deep_Update      $deep_update,
-        private WPOS_Set_Operations   $set_operations,
-        private WPOS_Event_Bus        $event_bus,
+        private ODAD_Adapter_Resolver $adapter_resolver,
+        private ODAD_Deep_Insert      $deep_insert,
+        private ODAD_Deep_Update      $deep_update,
+        private ODAD_Set_Operations   $set_operations,
+        private ODAD_Event_Bus        $event_bus,
     ) {}
 
     public function insert( string $entity_set, array $payload, \WP_User $user ): array;
@@ -129,29 +129,29 @@ whether to call `deep_insert->execute()` or a simple `adapter->insert()`.
 Flesh out the stub from Task 1.3:
 
 ```php
-class WPOS_Subscriber_Deep_Insert implements WPOS_Event_Listener {
+class ODAD_Subscriber_Deep_Insert implements ODAD_Event_Listener {
 
     public function __construct(
-        private WPOS_Permission_Engine $permissions,
-        private WPOS_Hook_Bridge       $bridge,
+        private ODAD_Permission_Engine $permissions,
+        private ODAD_Hook_Bridge       $bridge,
     ) {}
 
     public function get_event(): string {
-        return WPOS_Event_Deep_Insert_Before::class;
+        return ODAD_Event_Deep_Insert_Before::class;
     }
 
-    public function handle( WPOS_Event $event ): void {
-        // Handle both WPOS_Event_Deep_Insert_Before and WPOS_Event_Deep_Insert_Nested_Before
+    public function handle( ODAD_Event $event ): void {
+        // Handle both ODAD_Event_Deep_Insert_Before and ODAD_Event_Deep_Insert_Nested_Before
         // (register this subscriber for both events)
-        if ( $event instanceof WPOS_Event_Deep_Insert_Before ) {
+        if ( $event instanceof ODAD_Event_Deep_Insert_Before ) {
             $event->payload = $this->bridge->filter(
-                'wpos_before_deep_insert',
+                'ODAD_before_deep_insert',
                 $event->payload,
                 [ $event->entity_set, $event->user ]
             );
         }
 
-        if ( $event instanceof WPOS_Event_Deep_Insert_Nested_Before ) {
+        if ( $event instanceof ODAD_Event_Deep_Insert_Nested_Before ) {
             // Check nested entity permission
             $can = $this->permissions->can_insert( $event->nested_entity_set, $event->user );
             if ( ! $can ) {
@@ -160,14 +160,14 @@ class WPOS_Subscriber_Deep_Insert implements WPOS_Event_Listener {
             }
             // Apply per-nested-entity filter
             $event->nested_payload = $this->bridge->filter(
-                'wpos_nested_entity_payload',
+                'ODAD_nested_entity_payload',
                 $event->nested_payload,
                 [ $event->parent_entity_set, $event->nested_entity_set, $event->user ]
             );
         }
 
-        if ( $event instanceof WPOS_Event_Deep_Insert_After ) {
-            $this->bridge->action( 'wpos_deep_inserted', [
+        if ( $event instanceof ODAD_Event_Deep_Insert_After ) {
+            $this->bridge->action( 'ODAD_deep_inserted', [
                 $event->entity_set, $event->key, $event->result,
             ]);
         }
@@ -182,9 +182,9 @@ Register this subscriber for all three deep insert event types.
 ## Acceptance Criteria
 
 - `POST /odata/v4/Posts` with `Tags` array creates post + term relationships atomically.
-- `wpos_before_deep_insert` filter fires before any insert.
-- `wpos_nested_entity_payload` filter fires for each nested entity.
+- `ODAD_before_deep_insert` filter fires before any insert.
+- `ODAD_nested_entity_payload` filter fires for each nested entity.
 - If inserting a nested entity fails, the root entity insert is rolled back (or the response reflects the error).
-- `wpos_deep_inserted` action fires after full success.
+- `ODAD_deep_inserted` action fires after full success.
 - Nested entity permission is checked per entity set.
 - If nested entity permission is denied, the whole operation is cancelled with 403.

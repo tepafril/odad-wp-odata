@@ -50,21 +50,21 @@ Security schemes: **Bearer JWT** and **HTTP Basic**.
 ## Architecture
 
 ```
-WPOS_Schema_Registry
+ODAD_Schema_Registry
         │
         ▼
-WPOS_OpenAPI_Generator ──→ OpenAPI 3.0 array
+ODAD_OpenAPI_Generator ──→ OpenAPI 3.0 array
         │
         ▼
-WPOS_OpenAPI_Cache (transient: 'wpos_openapi_json')
+ODAD_OpenAPI_Cache (transient: 'ODAD_openapi_json')
         │
-        ├──→ GET /odata/v4/openapi.json   (WPOS_Router)
+        ├──→ GET /odata/v4/openapi.json   (ODAD_Router)
         │
-        └──→ Admin Swagger UI page        (WPOS_Admin_API_Docs)
+        └──→ Admin Swagger UI page        (ODAD_Admin_API_Docs)
                   └── Swagger UI assets (bundled in assets/swagger-ui/)
 ```
 
-The cache is busted by `WPOS_Event_Schema_Changed` — same event that busts
+The cache is busted by `ODAD_Event_Schema_Changed` — same event that busts
 `$metadata`. No extra bust logic needed.
 
 ---
@@ -76,10 +76,10 @@ The cache is busted by `WPOS_Event_Schema_Changed` — same event that busts
 **File:** `src/openapi/class-wpos-openapi-generator.php`
 
 ```php
-class WPOS_OpenAPI_Generator {
+class ODAD_OpenAPI_Generator {
 
     public function __construct(
-        private WPOS_Schema_Registry $registry,
+        private ODAD_Schema_Registry $registry,
     ) {}
 
     /**
@@ -130,7 +130,7 @@ class WPOS_OpenAPI_Generator {
     'info'    => [
         'title'       => 'WP-OData Suite API',
         'description' => 'OData v4.01 REST API for WordPress data.',
-        'version'     => WPOS_VERSION,
+        'version'     => ODAD_VERSION,
     ],
     'servers' => [
         [ 'url' => rest_url('odata/v4'), 'description' => 'OData endpoint' ],
@@ -257,8 +257,8 @@ Properties with `'read_only' => true` in the definition are excluded from
 **File:** `src/openapi/class-wpos-openapi-cache.php`
 
 ```php
-class WPOS_OpenAPI_Cache {
-    private const TRANSIENT = 'wpos_openapi_json';
+class ODAD_OpenAPI_Cache {
+    private const TRANSIENT = 'ODAD_openapi_json';
 
     public function get(): ?string;           // returns cached JSON string or null
     public function set( string $json ): void; // store_transient with same TTL as metadata
@@ -266,24 +266,24 @@ class WPOS_OpenAPI_Cache {
 }
 ```
 
-Wire bust into the existing `WPOS_Subscriber_Schema_Changed`:
+Wire bust into the existing `ODAD_Subscriber_Schema_Changed`:
 
 ```php
 // In class-wpos-subscriber-schema-changed.php — add openapi cache bust
-public function handle( WPOS_Event $event ): void {
+public function handle( ODAD_Event $event ): void {
     $this->metadata_cache->bust();
     $this->openapi_cache->bust();  // ADD THIS
 }
 ```
 
-Update `WPOS_Subscriber_Schema_Changed` constructor to accept optional `WPOS_OpenAPI_Cache`.
+Update `ODAD_Subscriber_Schema_Changed` constructor to accept optional `ODAD_OpenAPI_Cache`.
 Update bootstrapper to inject it.
 
 ---
 
 ### Task 1.3 — Router route
 
-Add to `WPOS_Router::register_routes()`:
+Add to `ODAD_Router::register_routes()`:
 
 ```php
 register_rest_route( 'odata/v4', '/openapi.json', [
@@ -306,7 +306,7 @@ public function handle_openapi( WP_REST_Request $request ): WP_REST_Response {
 }
 ```
 
-Update `WPOS_Router` constructor to accept `WPOS_OpenAPI_Generator` and `WPOS_OpenAPI_Cache`.
+Update `ODAD_Router` constructor to accept `ODAD_OpenAPI_Generator` and `ODAD_OpenAPI_Cache`.
 Update bootstrapper accordingly.
 
 ---
@@ -337,7 +337,7 @@ No `swagger-ui-standalone-preset.js` needed (we embed the spec URL directly).
 
 **File:** `src/admin/class-wpos-admin-api-docs.php`
 
-Add submenu to existing `WPOS_Admin::register_menu()`:
+Add submenu to existing `ODAD_Admin::register_menu()`:
 
 ```php
 add_submenu_page(
@@ -346,7 +346,7 @@ add_submenu_page(
     __( 'API Docs', 'wp-odata-suite' ),
     'manage_options',
     'wpos-api-docs',
-    fn() => wpos_container()->get( WPOS_Admin_API_Docs::class )->render()
+    fn() => ODAD_container()->get( ODAD_Admin_API_Docs::class )->render()
 );
 ```
 
@@ -357,8 +357,8 @@ public function render(): void {
     if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Unauthorized' );
 
     $spec_url = rest_url( 'odata/v4/openapi.json' );
-    wp_enqueue_style(  'wpos-swagger-ui', WPOS_PLUGIN_URL . 'assets/swagger-ui/swagger-ui.css', [], WPOS_VERSION );
-    wp_enqueue_script( 'wpos-swagger-ui', WPOS_PLUGIN_URL . 'assets/swagger-ui/swagger-ui-bundle.js', [], WPOS_VERSION, true );
+    wp_enqueue_style(  'wpos-swagger-ui', ODAD_PLUGIN_URL . 'assets/swagger-ui/swagger-ui.css', [], ODAD_VERSION );
+    wp_enqueue_script( 'wpos-swagger-ui', ODAD_PLUGIN_URL . 'assets/swagger-ui/swagger-ui-bundle.js', [], ODAD_VERSION, true );
     ?>
     <div class="wrap">
         <h1><?php esc_html_e( 'API Documentation', 'wp-odata-suite' ); ?></h1>
@@ -391,25 +391,25 @@ public function render(): void {
 
 ### Task 2.3 — Bootstrapper updates
 
-Add to `WPOS_Bootstrapper::build()`:
+Add to `ODAD_Bootstrapper::build()`:
 
 ```php
-$container->singleton( WPOS_OpenAPI_Cache::class, fn() => new WPOS_OpenAPI_Cache() );
+$container->singleton( ODAD_OpenAPI_Cache::class, fn() => new ODAD_OpenAPI_Cache() );
 
-$container->singleton( WPOS_OpenAPI_Generator::class, fn( WPOS_Container $c ) => new WPOS_OpenAPI_Generator(
-    $c->get( WPOS_Schema_Registry::class ),
+$container->singleton( ODAD_OpenAPI_Generator::class, fn( ODAD_Container $c ) => new ODAD_OpenAPI_Generator(
+    $c->get( ODAD_Schema_Registry::class ),
 ) );
 
-$container->singleton( WPOS_Admin_API_Docs::class, fn() => new WPOS_Admin_API_Docs() );
+$container->singleton( ODAD_Admin_API_Docs::class, fn() => new ODAD_Admin_API_Docs() );
 ```
 
-Update `WPOS_Router` singleton to add the two new constructor args:
+Update `ODAD_Router` singleton to add the two new constructor args:
 ```php
-openapi_generator: $c->get( WPOS_OpenAPI_Generator::class ),
-openapi_cache:     $c->get( WPOS_OpenAPI_Cache::class ),
+openapi_generator: $c->get( ODAD_OpenAPI_Generator::class ),
+openapi_cache:     $c->get( ODAD_OpenAPI_Cache::class ),
 ```
 
-Update `WPOS_Subscriber_Schema_Changed` singleton to inject `WPOS_OpenAPI_Cache`.
+Update `ODAD_Subscriber_Schema_Changed` singleton to inject `ODAD_OpenAPI_Cache`.
 
 ---
 
@@ -422,10 +422,10 @@ Update `WPOS_Subscriber_Schema_Changed` singleton to inject `WPOS_OpenAPI_Cache`
 ```php
 class OpenAPIGeneratorTest extends PHPUnit\Framework\TestCase {
 
-    private WPOS_OpenAPI_Generator $generator;
+    private ODAD_OpenAPI_Generator $generator;
 
     protected function setUp(): void {
-        $registry = new WPOS_Schema_Registry();
+        $registry = new ODAD_Schema_Registry();
         $registry->register( 'Posts', [
             'key'        => 'ID',
             'properties' => [
@@ -433,7 +433,7 @@ class OpenAPIGeneratorTest extends PHPUnit\Framework\TestCase {
                 'Title' => [ 'column' => 'post_title', 'type' => 'Edm.String' ],
             ],
         ]);
-        $this->generator = new WPOS_OpenAPI_Generator( $registry );
+        $this->generator = new ODAD_OpenAPI_Generator( $registry );
     }
 
     public function test_generates_valid_openapi_version(): void;

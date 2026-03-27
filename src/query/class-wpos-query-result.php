@@ -1,13 +1,13 @@
 <?php
 /**
- * WPOS_Query_Result — immutable value object returned by WPOS_Query_Engine.
+ * ODAD_Query_Result — immutable value object returned by ODAD_Query_Engine.
  *
  * @package WPOS
  */
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Query_Result {
+class ODAD_Query_Result {
 
     /**
      * @param array       $rows        Array of entity row arrays (OData property names as keys).

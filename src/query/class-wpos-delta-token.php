@@ -1,6 +1,6 @@
 <?php
 /**
- * WPOS_Delta_Token — encode and decode OData delta tokens.
+ * ODAD_Delta_Token — encode and decode OData delta tokens.
  *
  * Delta tokens are base64url-encoded JSON objects:
  *   { "since": "2024-01-15T10:30:00Z" }
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Delta_Token {
+class ODAD_Delta_Token {
 
     // -------------------------------------------------------------------------
     // Public API

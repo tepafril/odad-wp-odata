@@ -9,13 +9,13 @@ defined( 'ABSPATH' ) || exit;
  * Compiles to a SINGLE SQL statement for atomicity.
  * Does NOT loop over individual entities or fire per-row write events.
  */
-class WPOS_Set_Operations {
+class ODAD_Set_Operations {
 
     public function __construct(
-        private WPOS_Adapter_Resolver $adapter_resolver,
-        private WPOS_Filter_Parser    $filter_parser,
-        private WPOS_Filter_Compiler  $filter_compiler,
-        private WPOS_Event_Bus        $event_bus,
+        private ODAD_Adapter_Resolver $adapter_resolver,
+        private ODAD_Filter_Parser    $filter_parser,
+        private ODAD_Filter_Compiler  $filter_compiler,
+        private ODAD_Event_Bus        $event_bus,
     ) {}
 
     /**
@@ -33,11 +33,11 @@ class WPOS_Set_Operations {
         array    $payload,
         \WP_User $user
     ): int {
-        $ctx = new WPOS_Query_Context();
+        $ctx = new ODAD_Query_Context();
         $ctx->filter = $filter_expression;
 
         // Dispatch before event.
-        $before = new WPOS_Event_Set_Operation_Before( $entity_set, 'patch', $user, $ctx, $payload );
+        $before = new ODAD_Event_Set_Operation_Before( $entity_set, 'patch', $user, $ctx, $payload );
         $this->event_bus->dispatch( $before );
 
         if ( $before->cancelled ) {
@@ -73,7 +73,7 @@ class WPOS_Set_Operations {
         $affected = (int) $wpdb->rows_affected;
 
         // Dispatch after event.
-        $after = new WPOS_Event_Set_Operation_After( $entity_set, 'patch', $user, $affected );
+        $after = new ODAD_Event_Set_Operation_After( $entity_set, 'patch', $user, $affected );
         $this->event_bus->dispatch( $after );
 
         return $affected;
@@ -92,10 +92,10 @@ class WPOS_Set_Operations {
         string   $filter_expression,
         \WP_User $user
     ): int {
-        $ctx = new WPOS_Query_Context();
+        $ctx = new ODAD_Query_Context();
         $ctx->filter = $filter_expression;
 
-        $before = new WPOS_Event_Set_Operation_Before( $entity_set, 'delete', $user, $ctx, [] );
+        $before = new ODAD_Event_Set_Operation_Before( $entity_set, 'delete', $user, $ctx, [] );
         $this->event_bus->dispatch( $before );
 
         if ( $before->cancelled ) {
@@ -120,7 +120,7 @@ class WPOS_Set_Operations {
 
         $affected = (int) $wpdb->rows_affected;
 
-        $after = new WPOS_Event_Set_Operation_After( $entity_set, 'delete', $user, $affected );
+        $after = new ODAD_Event_Set_Operation_After( $entity_set, 'delete', $user, $affected );
         $this->event_bus->dispatch( $after );
 
         return $affected;
@@ -150,7 +150,7 @@ class WPOS_Set_Operations {
         return [ implode( ', ', $parts ), $params ];
     }
 
-    private function build_column_map( WPOS_Adapter $adapter ): array {
+    private function build_column_map( ODAD_Adapter $adapter ): array {
         $def = $adapter->get_entity_type_definition();
         $map = [];
         foreach ( $def['properties'] ?? [] as $prop => $info ) {

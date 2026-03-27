@@ -6,7 +6,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * No WordPress calls are made in this class.
  */
-class WPOS_Orderby_Compiler {
+class ODAD_Orderby_Compiler {
 
     /**
      * Compile an OData $orderby string into a SQL ORDER BY clause.
@@ -16,7 +16,7 @@ class WPOS_Orderby_Compiler {
      * @return string SQL ORDER BY clause (without the "ORDER BY" keyword),
      *                e.g. "p.post_date_gmt DESC, p.post_title ASC".
      *                Returns an empty string when $orderby is blank.
-     * @throws WPOS_Orderby_Exception If any property name is not found in $column_map.
+     * @throws ODAD_Orderby_Exception If any property name is not found in $column_map.
      */
     public function compile( string $orderby, array $column_map ): string {
         $orderby = trim( $orderby );
@@ -48,7 +48,7 @@ class WPOS_Orderby_Compiler {
 
             // Validate property against the column map.
             if ( ! array_key_exists( $property, $column_map ) ) {
-                throw new WPOS_Orderby_Exception(
+                throw new ODAD_Orderby_Exception(
                     sprintf( 'Unknown $orderby property: "%s"', $property )
                 );
             }

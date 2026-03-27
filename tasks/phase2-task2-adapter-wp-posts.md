@@ -1,4 +1,4 @@
-# Task 2.2 — WPOS_Adapter_WP_Posts
+# Task 2.2 — ODAD_Adapter_WP_Posts
 
 ## Dependencies
 - Task 2.1 (adapter interface + resolver + query context stub)
@@ -19,7 +19,7 @@ Each entity set is a separate configured instance of the same adapter class.
 ### `src/adapters/class-wpos-adapter-wp-posts.php`
 
 ```php
-class WPOS_Adapter_WP_Posts implements WPOS_Adapter {
+class ODAD_Adapter_WP_Posts implements ODAD_Adapter {
 
     public function __construct(
         private string  $post_type,        // 'post' | 'page' | 'attachment'
@@ -63,14 +63,14 @@ The adapter must map these OData properties to `wp_posts` columns:
 | `Meta` | `PostMeta` | `*` | `wp_postmeta.post_id` |
 | `Comments` | `Comments` | `*` | `wp_comments.comment_post_ID` |
 
-(Full navigation expansion is implemented in Phase 3 `WPOS_Expand_Compiler`.)
+(Full navigation expansion is implemented in Phase 3 `ODAD_Expand_Compiler`.)
 
 ---
 
 ## Implementation Notes
 
 ### `get_collection()`
-Use `$wpdb->get_results()` with a `SELECT` built from `WPOS_Query_Context`.
+Use `$wpdb->get_results()` with a `SELECT` built from `ODAD_Query_Context`.
 At Phase 2, apply only `$top`, `$skip`, `post_type`, and `post_status != 'auto-draft'` filters.
 Return rows as associative arrays with OData property names (not raw column names).
 
@@ -93,14 +93,14 @@ Return the full property map for the schema registry.
 
 ## Bootstrapper Update
 
-Register three instances in `WPOS_Bootstrapper`:
+Register three instances in `ODAD_Bootstrapper`:
 ```php
-$c->singleton( 'adapter.posts', fn() => new WPOS_Adapter_WP_Posts('post',       'Posts') );
-$c->singleton( 'adapter.pages', fn() => new WPOS_Adapter_WP_Posts('page',       'Pages') );
-$c->singleton( 'adapter.attachments', fn() => new WPOS_Adapter_WP_Posts('attachment', 'Attachments') );
+$c->singleton( 'adapter.posts', fn() => new ODAD_Adapter_WP_Posts('post',       'Posts') );
+$c->singleton( 'adapter.pages', fn() => new ODAD_Adapter_WP_Posts('page',       'Pages') );
+$c->singleton( 'adapter.attachments', fn() => new ODAD_Adapter_WP_Posts('attachment', 'Attachments') );
 ```
 
-These are later registered into `WPOS_Adapter_Resolver` by the Schema Init subscriber (Task 2.6).
+These are later registered into `ODAD_Adapter_Resolver` by the Schema Init subscriber (Task 2.6).
 
 ---
 

@@ -7,7 +7,7 @@ defined( 'ABSPATH' ) || exit;
  * Supported arithmetic operators: add, sub, mul, divby.
  * No WordPress calls are made in this class.
  */
-class WPOS_Compute_Compiler {
+class ODAD_Compute_Compiler {
 
     /**
      * Map of OData arithmetic operator tokens to their SQL equivalents.

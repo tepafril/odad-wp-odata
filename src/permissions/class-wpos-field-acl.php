@@ -1,6 +1,6 @@
 <?php
 /**
- * WPOS_Field_ACL — strips or validates entity properties based on user permissions.
+ * ODAD_Field_ACL — strips or validates entity properties based on user permissions.
  *
  * Responsibilities:
  *   - Strip unreadable properties from query result rows (apply).
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Field_ACL {
+class ODAD_Field_ACL {
 
     /**
      * Properties that can never be written via the API, regardless of user capability.
@@ -28,16 +28,16 @@ class WPOS_Field_ACL {
     private const ALWAYS_READ_ONLY = [ 'ID', 'CommentCount', 'Count', 'RegisteredDate' ];
 
     /**
-     * @param WPOS_Permission_Engine|null $permission_engine  Row-level permission engine (injected
+     * @param ODAD_Permission_Engine|null $permission_engine  Row-level permission engine (injected
      *                                                        once Task 4.1 is complete; nullable
      *                                                        until then).
-     * @param WPOS_Schema_Registry|null   $schema_registry    Registry that holds property
+     * @param ODAD_Schema_Registry|null   $schema_registry    Registry that holds property
      *                                                        definitions including required_capability
      *                                                        and read_only flags.
      */
     public function __construct(
-        private readonly ?WPOS_Permission_Engine $permission_engine = null,
-        private readonly ?WPOS_Schema_Registry $schema_registry = null,
+        private readonly ?ODAD_Permission_Engine $permission_engine = null,
+        private readonly ?ODAD_Schema_Registry $schema_registry = null,
     ) {}
 
     // -------------------------------------------------------------------------
@@ -75,7 +75,7 @@ class WPOS_Field_ACL {
      *   2. Remove properties whose required_capability the user lacks.
      *   3. Always keep the key property (it must never be stripped from read results).
      *
-     * Note: The wpos_allowed_properties filter is intentionally NOT applied here.
+     * Note: The ODAD_allowed_properties filter is intentionally NOT applied here.
      * That filter is applied by the subscriber layer so that hook calls remain
      * outside this class (per acceptance criterion "No WordPress hook calls in this file").
      *
@@ -114,7 +114,7 @@ class WPOS_Field_ACL {
     /**
      * Validate that a write payload only contains fields the user is permitted to write.
      *
-     * Throws WPOS_Field_ACL_Exception when:
+     * Throws ODAD_Field_ACL_Exception when:
      *   - The payload includes a read-only field (ID, CommentCount, Count, RegisteredDate),
      *     OR any property marked 'read_only' => true in the entity definition.
      *   - The payload includes a field whose required_capability the user lacks.
@@ -123,7 +123,7 @@ class WPOS_Field_ACL {
      * @param string   $entity_set
      * @param \WP_User $user
      * @param string   $operation   'insert' | 'update'
-     * @throws WPOS_Field_ACL_Exception
+     * @throws ODAD_Field_ACL_Exception
      */
     public function validate_write( array $payload, string $entity_set, \WP_User $user, string $operation ): void {
         $definition  = $this->get_definition( $entity_set );
@@ -152,7 +152,7 @@ class WPOS_Field_ACL {
         }
 
         if ( ! empty( $forbidden ) ) {
-            throw new WPOS_Field_ACL_Exception(
+            throw new ODAD_Field_ACL_Exception(
                 sprintf(
                     'Write to %s rejected: forbidden field(s): %s.',
                     $entity_set,

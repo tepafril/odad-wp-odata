@@ -5,18 +5,18 @@
  * @package WPOS
  */
 
-class WPOS_Event_Bus {
-    /** @var array<string, WPOS_Event_Listener[]> */
+class ODAD_Event_Bus {
+    /** @var array<string, ODAD_Event_Listener[]> */
     private array $listeners = [];
 
-    public function subscribe( WPOS_Event_Listener $listener ): void {
+    public function subscribe( ODAD_Event_Listener $listener ): void {
         $this->listeners[ $listener->get_event() ][] = $listener;
     }
 
-    public function dispatch( WPOS_Event $event ): WPOS_Event {
+    public function dispatch( ODAD_Event $event ): ODAD_Event {
         foreach ( $this->listeners[ get_class( $event ) ] ?? [] as $listener ) {
             $listener->handle( $event );
-            if ( $event instanceof WPOS_Stoppable_Event && $event->is_stopped() ) {
+            if ( $event instanceof ODAD_Stoppable_Event && $event->is_stopped() ) {
                 break;
             }
         }

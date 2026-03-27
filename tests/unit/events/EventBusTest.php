@@ -1,17 +1,17 @@
 <?php
 /**
- * Unit tests for WPOS_Event_Bus.
+ * Unit tests for ODAD_Event_Bus.
  */
 
 use PHPUnit\Framework\TestCase;
 
 // ── Concrete event classes used only in this test ─────────────────────────────
 
-class Test_Simple_Event implements WPOS_Event {}
+class Test_Simple_Event implements ODAD_Event {}
 
-class Test_Other_Event implements WPOS_Event {}
+class Test_Other_Event implements ODAD_Event {}
 
-class Test_Stoppable_Event implements WPOS_Stoppable_Event {
+class Test_Stoppable_Event implements ODAD_Stoppable_Event {
     private bool $stopped = false;
 
     public function is_stopped(): bool {
@@ -25,7 +25,7 @@ class Test_Stoppable_Event implements WPOS_Stoppable_Event {
 
 // ── Concrete listener helper ──────────────────────────────────────────────────
 
-class Test_Capturing_Listener implements WPOS_Event_Listener {
+class Test_Capturing_Listener implements ODAD_Event_Listener {
     public int   $call_count  = 0;
     public array $received    = [];
     private bool $should_stop = false;
@@ -41,11 +41,11 @@ class Test_Capturing_Listener implements WPOS_Event_Listener {
         return $this->event_class;
     }
 
-    public function handle( WPOS_Event $event ): void {
+    public function handle( ODAD_Event $event ): void {
         $this->call_count++;
         $this->received[] = $event;
 
-        if ( $this->should_stop && $event instanceof WPOS_Stoppable_Event ) {
+        if ( $this->should_stop && $event instanceof ODAD_Stoppable_Event ) {
             $event->stop_propagation();
         }
     }
@@ -55,10 +55,10 @@ class Test_Capturing_Listener implements WPOS_Event_Listener {
 
 class EventBusTest extends TestCase {
 
-    private WPOS_Event_Bus $bus;
+    private ODAD_Event_Bus $bus;
 
     protected function setUp(): void {
-        $this->bus = new WPOS_Event_Bus();
+        $this->bus = new ODAD_Event_Bus();
     }
 
     /**
@@ -109,23 +109,23 @@ class EventBusTest extends TestCase {
      */
     public function test_multiple_listeners_called_in_registration_order(): void {
         $order  = [];
-        $first  = new class ( Test_Simple_Event::class, $order, 'first' ) implements WPOS_Event_Listener {
+        $first  = new class ( Test_Simple_Event::class, $order, 'first' ) implements ODAD_Event_Listener {
             public function __construct(
                 private string $event_class,
                 private array &$order,
                 private string $label
             ) {}
             public function get_event(): string { return $this->event_class; }
-            public function handle( WPOS_Event $event ): void { $this->order[] = $this->label; }
+            public function handle( ODAD_Event $event ): void { $this->order[] = $this->label; }
         };
-        $second = new class ( Test_Simple_Event::class, $order, 'second' ) implements WPOS_Event_Listener {
+        $second = new class ( Test_Simple_Event::class, $order, 'second' ) implements ODAD_Event_Listener {
             public function __construct(
                 private string $event_class,
                 private array &$order,
                 private string $label
             ) {}
             public function get_event(): string { return $this->event_class; }
-            public function handle( WPOS_Event $event ): void { $this->order[] = $this->label; }
+            public function handle( ODAD_Event $event ): void { $this->order[] = $this->label; }
         };
 
         $this->bus->subscribe( $first );

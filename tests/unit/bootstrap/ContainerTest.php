@@ -1,16 +1,16 @@
 <?php
 /**
- * Unit tests for WPOS_Container.
+ * Unit tests for ODAD_Container.
  */
 
 use PHPUnit\Framework\TestCase;
 
 class ContainerTest extends TestCase {
 
-    private WPOS_Container $container;
+    private ODAD_Container $container;
 
     protected function setUp(): void {
-        $this->container = new WPOS_Container();
+        $this->container = new ODAD_Container();
     }
 
     // ── Singleton behaviour ───────────────────────────────────────────────────

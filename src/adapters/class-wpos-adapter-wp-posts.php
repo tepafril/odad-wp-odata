@@ -1,7 +1,7 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Adapter_WP_Posts implements WPOS_Adapter {
+class ODAD_Adapter_WP_Posts implements ODAD_Adapter {
 
     /**
      * Map from OData property names to wp_posts column names.
@@ -84,7 +84,7 @@ class WPOS_Adapter_WP_Posts implements WPOS_Adapter {
 
     // ── Reads ─────────────────────────────────────────────────────────────
 
-    public function get_collection( WPOS_Query_Context $ctx ): array {
+    public function get_collection( ODAD_Query_Context $ctx ): array {
         global $wpdb;
 
         $sql = $wpdb->prepare(
@@ -110,7 +110,7 @@ class WPOS_Adapter_WP_Posts implements WPOS_Adapter {
         return array_map( [ $this, 'map_row_to_odata' ], $rows );
     }
 
-    public function get_entity( mixed $key, WPOS_Query_Context $ctx ): ?array {
+    public function get_entity( mixed $key, ODAD_Query_Context $ctx ): ?array {
         global $wpdb;
 
         $sql = $wpdb->prepare(
@@ -135,7 +135,7 @@ class WPOS_Adapter_WP_Posts implements WPOS_Adapter {
         return $this->map_row_to_odata( $row );
     }
 
-    public function get_count( WPOS_Query_Context $ctx ): int {
+    public function get_count( ODAD_Query_Context $ctx ): int {
         global $wpdb;
 
         $sql = $wpdb->prepare(
@@ -160,7 +160,7 @@ class WPOS_Adapter_WP_Posts implements WPOS_Adapter {
 
         if ( is_wp_error( $result ) ) {
             throw new RuntimeException(
-                'WPOS_Adapter_WP_Posts::insert() failed: ' . $result->get_error_message()
+                'ODAD_Adapter_WP_Posts::insert() failed: ' . $result->get_error_message()
             );
         }
 
@@ -177,7 +177,7 @@ class WPOS_Adapter_WP_Posts implements WPOS_Adapter {
 
         if ( is_wp_error( $result ) ) {
             throw new RuntimeException(
-                'WPOS_Adapter_WP_Posts::update() failed: ' . $result->get_error_message()
+                'ODAD_Adapter_WP_Posts::update() failed: ' . $result->get_error_message()
             );
         }
 

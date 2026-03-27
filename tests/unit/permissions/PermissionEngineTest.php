@@ -1,18 +1,18 @@
 <?php
 /**
- * Unit tests for WPOS_Permission_Engine.
+ * Unit tests for ODAD_Permission_Engine.
  */
 
 use PHPUnit\Framework\TestCase;
 
 class PermissionEngineTest extends TestCase {
 
-    private WPOS_Capability_Map    $capability_map;
-    private WPOS_Permission_Engine $engine;
+    private ODAD_Capability_Map    $capability_map;
+    private ODAD_Permission_Engine $engine;
 
     protected function setUp(): void {
-        $this->capability_map = new WPOS_Capability_Map();
-        $this->engine         = new WPOS_Permission_Engine( $this->capability_map );
+        $this->capability_map = new ODAD_Capability_Map();
+        $this->engine         = new ODAD_Permission_Engine( $this->capability_map );
     }
 
     // ── Helper ────────────────────────────────────────────────────────────────
@@ -48,10 +48,10 @@ class PermissionEngineTest extends TestCase {
 
     /**
      * For an entity set not in the default map or custom map, the capability
-     * should follow the convention: wpos_{entity_set_lower}_{operation}.
+     * should follow the convention: ODAD_{entity_set_lower}_{operation}.
      */
     public function test_convention_fallback_for_unknown_entity_set(): void {
-        // The convention for 'Employees' / 'read' is 'wpos_employees_read'.
+        // The convention for 'Employees' / 'read' is 'ODAD_employees_read'.
         // A user without that cap should be denied.
         $user = $this->make_user( 4, [ 'subscriber' ], [ 'read' => true ] );
 
@@ -60,7 +60,7 @@ class PermissionEngineTest extends TestCase {
         // Grant the convention cap and confirm access.
         $user_with_cap = $this->make_user( 5, [ 'subscriber' ], [
             'read'              => true,
-            'wpos_employees_read' => true,
+            'ODAD_employees_read' => true,
         ] );
 
         $this->assertTrue( $this->engine->can_read( 'Employees', $user_with_cap ) );
@@ -70,7 +70,7 @@ class PermissionEngineTest extends TestCase {
 
     public function test_apply_row_filter_adds_post_status_condition_for_non_admin(): void {
         $user = $this->make_user( 10, [ 'subscriber' ], [ 'read' => true ] );
-        $ctx  = new WPOS_Query_Context();
+        $ctx  = new ODAD_Query_Context();
 
         $this->engine->apply_row_filter( 'Posts', $user, $ctx );
 
@@ -82,7 +82,7 @@ class PermissionEngineTest extends TestCase {
 
     public function test_apply_row_filter_adds_no_conditions_for_admin(): void {
         $user = $this->make_user( 1, [ 'administrator' ], [ 'administrator' => true ] );
-        $ctx  = new WPOS_Query_Context();
+        $ctx  = new ODAD_Query_Context();
 
         $this->engine->apply_row_filter( 'Posts', $user, $ctx );
 
@@ -91,7 +91,7 @@ class PermissionEngineTest extends TestCase {
 
     public function test_apply_row_filter_returns_ctx(): void {
         $user = $this->make_user( 2, [ 'subscriber' ], [ 'read' => true ] );
-        $ctx  = new WPOS_Query_Context();
+        $ctx  = new ODAD_Query_Context();
 
         $returned = $this->engine->apply_row_filter( 'Posts', $user, $ctx );
 
@@ -100,7 +100,7 @@ class PermissionEngineTest extends TestCase {
 
     public function test_apply_row_filter_adds_no_conditions_for_unknown_entity_set(): void {
         $user = $this->make_user( 3, [ 'subscriber' ], [ 'read' => true ] );
-        $ctx  = new WPOS_Query_Context();
+        $ctx  = new ODAD_Query_Context();
 
         $this->engine->apply_row_filter( 'Employees', $user, $ctx );
 

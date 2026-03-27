@@ -13,16 +13,16 @@ custom database tables.
 
 ## File 1: `src/adapters/class-wpos-adapter-cpt.php`
 
-Handles any Custom Post Type. Extends or wraps `WPOS_Adapter_WP_Posts`.
+Handles any Custom Post Type. Extends or wraps `ODAD_Adapter_WP_Posts`.
 
 ```php
-class WPOS_Adapter_CPT extends WPOS_Adapter_WP_Posts {
+class ODAD_Adapter_CPT extends ODAD_Adapter_WP_Posts {
 
     /**
      * Auto-discovers all registered CPTs and returns an array of
-     * WPOS_Adapter_CPT instances — one per CPT.
+     * ODAD_Adapter_CPT instances — one per CPT.
      *
-     * @return WPOS_Adapter_CPT[]  keyed by entity set name
+     * @return ODAD_Adapter_CPT[]  keyed by entity set name
      */
     public static function discover_all(): array {
         $post_types = get_post_types( [ 'public' => true, '_builtin' => false ], 'objects' );
@@ -45,23 +45,23 @@ class WPOS_Adapter_CPT extends WPOS_Adapter_WP_Posts {
 }
 ```
 
-The CPT adapter inherits all `WPOS_Adapter_WP_Posts` methods.
+The CPT adapter inherits all `ODAD_Adapter_WP_Posts` methods.
 `get_entity_type_definition()` should include any custom `register_post_type` labels.
 
 ---
 
 ## File 2: `src/adapters/class-wpos-adapter-taxonomy.php`
 
-Handles any registered taxonomy. Extends `WPOS_Adapter_WP_Terms`.
+Handles any registered taxonomy. Extends `ODAD_Adapter_WP_Terms`.
 
 ```php
-class WPOS_Adapter_Taxonomy extends WPOS_Adapter_WP_Terms {
+class ODAD_Adapter_Taxonomy extends ODAD_Adapter_WP_Terms {
 
     /**
      * Auto-discovers all registered custom taxonomies and returns
-     * an array of WPOS_Adapter_Taxonomy instances.
+     * an array of ODAD_Adapter_Taxonomy instances.
      *
-     * @return WPOS_Adapter_Taxonomy[]  keyed by entity set name
+     * @return ODAD_Adapter_Taxonomy[]  keyed by entity set name
      */
     public static function discover_all(): array {
         $taxonomies = get_taxonomies( [ 'public' => true, '_builtin' => false ], 'objects' );
@@ -89,7 +89,7 @@ class WPOS_Adapter_Taxonomy extends WPOS_Adapter_WP_Terms {
 Generic adapter for any arbitrary `$wpdb` prefixed table (e.g. `wp_employees`).
 
 ```php
-class WPOS_Adapter_Custom_Table implements WPOS_Adapter {
+class ODAD_Adapter_Custom_Table implements ODAD_Adapter {
 
     /**
      * @param string  $table_name      Without $wpdb prefix (e.g. 'employees')
@@ -115,9 +115,9 @@ class WPOS_Adapter_Custom_Table implements WPOS_Adapter {
      */
     private function detect_schema(): array;
 
-    public function get_collection( WPOS_Query_Context $ctx ): array;
-    public function get_entity( mixed $key, WPOS_Query_Context $ctx ): ?array;
-    public function get_count( WPOS_Query_Context $ctx ): int;
+    public function get_collection( ODAD_Query_Context $ctx ): array;
+    public function get_entity( mixed $key, ODAD_Query_Context $ctx ): ?array;
+    public function get_count( ODAD_Query_Context $ctx ): int;
     public function insert( array $data ): mixed;   // uses $wpdb->insert()
     public function update( mixed $key, array $data ): bool;  // uses $wpdb->update()
     public function delete( mixed $key ): bool;     // uses $wpdb->delete()
@@ -136,8 +136,8 @@ All `$wpdb` operations must use parameterized queries (`$wpdb->prepare()`,
 
 ## Acceptance Criteria
 
-- `WPOS_Adapter_CPT::discover_all()` returns one adapter per public non-builtin post type.
-- `WPOS_Adapter_Taxonomy::discover_all()` returns one adapter per public non-builtin taxonomy.
-- `WPOS_Adapter_Custom_Table` with `$schema = null` runs `DESCRIBE {table}` and returns a valid property map.
-- `WPOS_Adapter_Custom_Table::insert()` uses `$wpdb->insert()`, not `$wpdb->query()` with interpolated SQL.
+- `ODAD_Adapter_CPT::discover_all()` returns one adapter per public non-builtin post type.
+- `ODAD_Adapter_Taxonomy::discover_all()` returns one adapter per public non-builtin taxonomy.
+- `ODAD_Adapter_Custom_Table` with `$schema = null` runs `DESCRIBE {table}` and returns a valid property map.
+- `ODAD_Adapter_Custom_Table::insert()` uses `$wpdb->insert()`, not `$wpdb->query()` with interpolated SQL.
 - No string interpolation into SQL in custom table adapter — all values parameterized.

@@ -4,21 +4,21 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Abstract base class for all AST nodes produced by the OData $filter parser.
  */
-abstract class WPOS_AST_Node {}
+abstract class ODAD_AST_Node {}
 
 /**
  * Binary operator node: $left op $right
  *
  * @property string        $op    One of: eq, ne, lt, le, gt, ge, and, or,
  *                                add, sub, mul, div, divby, mod
- * @property WPOS_AST_Node $left
- * @property WPOS_AST_Node $right
+ * @property ODAD_AST_Node $left
+ * @property ODAD_AST_Node $right
  */
-class WPOS_AST_Binary extends WPOS_AST_Node {
+class ODAD_AST_Binary extends ODAD_AST_Node {
     public function __construct(
         public readonly string       $op,
-        public readonly WPOS_AST_Node $left,
-        public readonly WPOS_AST_Node $right,
+        public readonly ODAD_AST_Node $left,
+        public readonly ODAD_AST_Node $right,
     ) {}
 }
 
@@ -26,12 +26,12 @@ class WPOS_AST_Binary extends WPOS_AST_Node {
  * Unary operator node: op $operand
  *
  * @property string        $op      One of: not, -
- * @property WPOS_AST_Node $operand
+ * @property ODAD_AST_Node $operand
  */
-class WPOS_AST_Unary extends WPOS_AST_Node {
+class ODAD_AST_Unary extends ODAD_AST_Node {
     public function __construct(
         public readonly string        $op,
-        public readonly WPOS_AST_Node $operand,
+        public readonly ODAD_AST_Node $operand,
     ) {}
 }
 
@@ -40,7 +40,7 @@ class WPOS_AST_Unary extends WPOS_AST_Node {
  *
  * @property string $path  Slash-separated property path.
  */
-class WPOS_AST_Property extends WPOS_AST_Node {
+class ODAD_AST_Property extends ODAD_AST_Node {
     public function __construct(
         public readonly string $path,
     ) {}
@@ -52,7 +52,7 @@ class WPOS_AST_Property extends WPOS_AST_Node {
  * @property string $type  One of: string, int, float, bool, null, datetime, guid, duration
  * @property mixed  $value The PHP value (int, float, string, bool, or null).
  */
-class WPOS_AST_Literal extends WPOS_AST_Node {
+class ODAD_AST_Literal extends ODAD_AST_Node {
     public function __construct(
         public readonly string $type,
         public readonly mixed  $value,
@@ -63,9 +63,9 @@ class WPOS_AST_Literal extends WPOS_AST_Node {
  * Function call node: name(arg1, arg2, …)
  *
  * @property string          $name Function name (lower-cased OData canonical name).
- * @property WPOS_AST_Node[] $args Argument nodes.
+ * @property ODAD_AST_Node[] $args Argument nodes.
  */
-class WPOS_AST_Function extends WPOS_AST_Node {
+class ODAD_AST_Function extends ODAD_AST_Node {
     public function __construct(
         public readonly string $name,
         public readonly array  $args,
@@ -75,12 +75,12 @@ class WPOS_AST_Function extends WPOS_AST_Node {
 /**
  * `in` membership test: property in (v1, v2, …)
  *
- * @property WPOS_AST_Node    $property  Left-hand side (usually a property path).
- * @property WPOS_AST_Literal[] $values  Right-hand side literal list.
+ * @property ODAD_AST_Node    $property  Left-hand side (usually a property path).
+ * @property ODAD_AST_Literal[] $values  Right-hand side literal list.
  */
-class WPOS_AST_In extends WPOS_AST_Node {
+class ODAD_AST_In extends ODAD_AST_Node {
     public function __construct(
-        public readonly WPOS_AST_Node $property,
+        public readonly ODAD_AST_Node $property,
         public readonly array          $values,
     ) {}
 }
@@ -89,15 +89,15 @@ class WPOS_AST_In extends WPOS_AST_Node {
  * Lambda operator node: collection/any(v:expr) or collection/all(v:expr)
  *
  * @property string        $operator   'any' or 'all'
- * @property WPOS_AST_Node $collection The collection expression (property path).
+ * @property ODAD_AST_Node $collection The collection expression (property path).
  * @property string        $variable   Lambda variable identifier, e.g. 'd'.
- * @property WPOS_AST_Node $expression Body expression.
+ * @property ODAD_AST_Node $expression Body expression.
  */
-class WPOS_AST_Lambda extends WPOS_AST_Node {
+class ODAD_AST_Lambda extends ODAD_AST_Node {
     public function __construct(
         public readonly string        $operator,
-        public readonly WPOS_AST_Node $collection,
+        public readonly ODAD_AST_Node $collection,
         public readonly string        $variable,
-        public readonly WPOS_AST_Node $expression,
+        public readonly ODAD_AST_Node $expression,
     ) {}
 }

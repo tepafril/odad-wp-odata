@@ -1,6 +1,6 @@
 <?php
 /**
- * WPOS_Error — OData-formatted error response factory.
+ * ODAD_Error — OData-formatted error response factory.
  *
  * OData error shape:
  *   { "error": { "code": "<string>", "message": "<string>" } }
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Error {
+class ODAD_Error {
 
     /**
      * 404 Not Found.
@@ -134,8 +134,8 @@ class WPOS_Error {
         ];
 
         $response = new WP_REST_Response( $body, $status );
-        $response->header( WPOS_Response::HEADER_ODATA_VER,    WPOS_Response::ODATA_VERSION );
-        $response->header( WPOS_Response::HEADER_CONTENT_TYPE, WPOS_Response::CT_JSON_ODATA );
+        $response->header( ODAD_Response::HEADER_ODATA_VER,    ODAD_Response::ODATA_VERSION );
+        $response->header( ODAD_Response::HEADER_CONTENT_TYPE, ODAD_Response::CT_JSON_ODATA );
         return $response;
     }
 }

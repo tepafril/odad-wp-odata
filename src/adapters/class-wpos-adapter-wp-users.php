@@ -1,7 +1,7 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Adapter_WP_Users implements WPOS_Adapter {
+class ODAD_Adapter_WP_Users implements ODAD_Adapter {
 
     // ── Schema ────────────────────────────────────────────────────────────
 
@@ -41,7 +41,7 @@ class WPOS_Adapter_WP_Users implements WPOS_Adapter {
 
     // ── Reads ─────────────────────────────────────────────────────────────
 
-    public function get_collection( WPOS_Query_Context $ctx ): array {
+    public function get_collection( ODAD_Query_Context $ctx ): array {
         global $wpdb;
 
         $sql = $wpdb->prepare(
@@ -62,7 +62,7 @@ class WPOS_Adapter_WP_Users implements WPOS_Adapter {
         return array_map( [ $this, 'map_row' ], $rows );
     }
 
-    public function get_entity( mixed $key, WPOS_Query_Context $ctx ): ?array {
+    public function get_entity( mixed $key, ODAD_Query_Context $ctx ): ?array {
         global $wpdb;
 
         $sql = $wpdb->prepare(
@@ -82,7 +82,7 @@ class WPOS_Adapter_WP_Users implements WPOS_Adapter {
         return $this->map_row( $row );
     }
 
-    public function get_count( WPOS_Query_Context $ctx ): int {
+    public function get_count( ODAD_Query_Context $ctx ): int {
         global $wpdb;
 
         $count = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->users}" );

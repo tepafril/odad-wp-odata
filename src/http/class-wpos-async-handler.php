@@ -1,6 +1,6 @@
 <?php
 /**
- * WPOS_Async_Handler — WP-Cron-backed async request processing.
+ * ODAD_Async_Handler — WP-Cron-backed async request processing.
  *
  * Flow:
  *   1. Router detects "Prefer: respond-async" on an incoming request.
@@ -12,30 +12,30 @@
  *   5. Client polls GET /odata/v4/$status/{job_id} which calls get_status().
  *
  * Transients:
- *   wpos_async_job_{id}        → serialised job payload (TTL: 1 hour)
- *   wpos_async_result_{id}     → serialised result     (TTL: 1 hour)
+ *   ODAD_async_job_{id}        → serialised job payload (TTL: 1 hour)
+ *   ODAD_async_result_{id}     → serialised result     (TTL: 1 hour)
  *
  * @package WPOS
  */
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Async_Handler {
+class ODAD_Async_Handler {
 
     /** WP-Cron hook prefix. */
-    private const CRON_HOOK_PREFIX = 'wpos_async_job_';
+    private const CRON_HOOK_PREFIX = 'ODAD_async_job_';
 
     /** Transient key prefix for job payloads. */
-    private const TRANSIENT_JOB_PREFIX = 'wpos_async_job_';
+    private const TRANSIENT_JOB_PREFIX = 'ODAD_async_job_';
 
     /** Transient key prefix for job results. */
-    private const TRANSIENT_RESULT_PREFIX = 'wpos_async_result_';
+    private const TRANSIENT_RESULT_PREFIX = 'ODAD_async_result_';
 
     /** Time-to-live for job/result transients (seconds). */
     private const TTL = HOUR_IN_SECONDS;
 
     /**
-     * @param object $query_engine WPOS_Query_Engine instance.
+     * @param object $query_engine ODAD_Query_Engine instance.
      */
     public function __construct(
         private readonly object $query_engine,
@@ -50,11 +50,11 @@ class WPOS_Async_Handler {
      *
      * Serialises the request and schedules a one-off cron event.
      *
-     * @param WPOS_Request $request Incoming OData request.
+     * @param ODAD_Request $request Incoming OData request.
      * @param WP_User      $user    Authenticated user at the time of the request.
      * @return string Opaque job ID (UUID v4 format).
      */
-    public function queue( WPOS_Request $request, WP_User $user ): string {
+    public function queue( ODAD_Request $request, WP_User $user ): string {
         $job_id = $this->generate_job_id();
 
         $payload = [
@@ -113,7 +113,7 @@ class WPOS_Async_Handler {
      * WP-Cron callback: execute the queued request and store the result.
      *
      * This method is registered as the handler for the per-job cron hook
-     * (wpos_async_job_{job_id}).  It retrieves the serialised payload, runs
+     * (ODAD_async_job_{job_id}).  It retrieves the serialised payload, runs
      * the query engine, and writes the result to a transient.
      *
      * @param string $job_id The job ID to execute.
@@ -130,7 +130,7 @@ class WPOS_Async_Handler {
         $payload['status'] = 'processing';
         set_transient( self::TRANSIENT_JOB_PREFIX . $job_id, $payload, self::TTL );
 
-        /** @var WPOS_Request $request */
+        /** @var ODAD_Request $request */
         $request = $payload['request'];
         $user_id = (int) ( $payload['user_id'] ?? 0 );
         $user    = $user_id > 0 ? get_user_by( 'id', $user_id ) : new WP_User();

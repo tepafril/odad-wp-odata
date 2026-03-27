@@ -1,7 +1,7 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Adapter_WP_Terms implements WPOS_Adapter {
+class ODAD_Adapter_WP_Terms implements ODAD_Adapter {
 
     public function __construct(
         private string $taxonomy,
@@ -10,7 +10,7 @@ class WPOS_Adapter_WP_Terms implements WPOS_Adapter {
 
     // ── Reads ─────────────────────────────────────────────────────────────
 
-    public function get_collection( WPOS_Query_Context $ctx ): array {
+    public function get_collection( ODAD_Query_Context $ctx ): array {
         global $wpdb;
 
         $sql = $wpdb->prepare(
@@ -32,7 +32,7 @@ class WPOS_Adapter_WP_Terms implements WPOS_Adapter {
         return array_map( [ $this, 'map_row' ], $rows );
     }
 
-    public function get_entity( mixed $key, WPOS_Query_Context $ctx ): ?array {
+    public function get_entity( mixed $key, ODAD_Query_Context $ctx ): ?array {
         global $wpdb;
 
         $sql = $wpdb->prepare(
@@ -50,7 +50,7 @@ class WPOS_Adapter_WP_Terms implements WPOS_Adapter {
         return $row ? $this->map_row( $row ) : null;
     }
 
-    public function get_count( WPOS_Query_Context $ctx ): int {
+    public function get_count( ODAD_Query_Context $ctx ): int {
         global $wpdb;
 
         $sql = $wpdb->prepare(

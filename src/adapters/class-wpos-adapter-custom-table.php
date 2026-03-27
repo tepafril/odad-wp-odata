@@ -1,7 +1,7 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Adapter_Custom_Table implements WPOS_Adapter {
+class ODAD_Adapter_Custom_Table implements ODAD_Adapter {
 
     /**
      * @param string      $table_name      Table name without $wpdb prefix (e.g. 'employees').
@@ -106,7 +106,7 @@ class WPOS_Adapter_Custom_Table implements WPOS_Adapter {
 
     // ── Reads ─────────────────────────────────────────────────────────────
 
-    public function get_collection( WPOS_Query_Context $ctx ): array {
+    public function get_collection( ODAD_Query_Context $ctx ): array {
         global $wpdb;
 
         $full_table = $wpdb->prefix . $this->table_name;
@@ -124,7 +124,7 @@ class WPOS_Adapter_Custom_Table implements WPOS_Adapter {
         return is_array( $rows ) ? $rows : [];
     }
 
-    public function get_entity( mixed $key, WPOS_Query_Context $ctx ): ?array {
+    public function get_entity( mixed $key, ODAD_Query_Context $ctx ): ?array {
         global $wpdb;
 
         $full_table  = $wpdb->prefix . $this->table_name;
@@ -142,7 +142,7 @@ class WPOS_Adapter_Custom_Table implements WPOS_Adapter {
         return is_array( $row ) ? $row : null;
     }
 
-    public function get_count( WPOS_Query_Context $ctx ): int {
+    public function get_count( ODAD_Query_Context $ctx ): int {
         global $wpdb;
 
         $full_table = $wpdb->prefix . $this->table_name;
@@ -171,7 +171,7 @@ class WPOS_Adapter_Custom_Table implements WPOS_Adapter {
 
         if ( $result === false ) {
             throw new RuntimeException(
-                'WPOS_Adapter_Custom_Table::insert() failed for table "' .
+                'ODAD_Adapter_Custom_Table::insert() failed for table "' .
                 esc_html( $full_table ) . '": ' . $wpdb->last_error
             );
         }
@@ -199,7 +199,7 @@ class WPOS_Adapter_Custom_Table implements WPOS_Adapter {
 
         if ( $result === false ) {
             throw new RuntimeException(
-                'WPOS_Adapter_Custom_Table::update() failed for table "' .
+                'ODAD_Adapter_Custom_Table::update() failed for table "' .
                 esc_html( $full_table ) . '": ' . $wpdb->last_error
             );
         }

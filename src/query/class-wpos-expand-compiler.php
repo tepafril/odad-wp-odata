@@ -5,12 +5,12 @@ defined( 'ABSPATH' ) || exit;
  * Compiles and executes OData $expand clauses.
  *
  * No direct WordPress calls are made here. Related entities are fetched
- * through WPOS_Adapter instances provided by WPOS_Adapter_Resolver.
+ * through ODAD_Adapter instances provided by ODAD_Adapter_Resolver.
  */
-class WPOS_Expand_Compiler {
+class ODAD_Expand_Compiler {
 
     public function __construct(
-        private WPOS_Adapter_Resolver $adapter_resolver,
+        private ODAD_Adapter_Resolver $adapter_resolver,
     ) {}
 
     // ── Public API ───────────────────────────────────────────────────────────
@@ -36,7 +36,7 @@ class WPOS_Expand_Compiler {
      * @param string $expand          Raw $expand string, e.g. "Author,Tags($select=Name)"
      * @param array  $nav_property_map Map from adapter's get_entity_type_definition()['nav_properties']
      * @return array Expand plan
-     * @throws WPOS_Expand_Exception If a navigation property name is not found in $nav_property_map.
+     * @throws ODAD_Expand_Exception If a navigation property name is not found in $nav_property_map.
      */
     public function parse( string $expand, array $nav_property_map ): array {
         $segments = $this->split_top_level( $expand, ',' );
@@ -51,7 +51,7 @@ class WPOS_Expand_Compiler {
             [ $nav_name, $inner_options ] = $this->extract_nav_and_options( $raw_segment );
 
             if ( ! isset( $nav_property_map[ $nav_name ] ) ) {
-                throw new WPOS_Expand_Exception(
+                throw new ODAD_Expand_Exception(
                     sprintf( 'Unknown navigation property in $expand: "%s"', $nav_name )
                 );
             }
@@ -109,7 +109,7 @@ class WPOS_Expand_Compiler {
             $remote_fk   = $entry['remote_fk'];
 
             // Build the query context for the related adapter.
-            $ctx = new WPOS_Query_Context();
+            $ctx = new ODAD_Query_Context();
             $ctx->top  = PHP_INT_MAX; // no artificial limit during expand
             $ctx->skip = 0;
 
@@ -282,7 +282,7 @@ class WPOS_Expand_Compiler {
         string $entity_set,
         string $nav_prop,
         string $fk,
-        WPOS_Query_Context $ctx
+        ODAD_Query_Context $ctx
     ): array {
         // 1. Collect unique FK values (e.g. all AuthorID values from posts).
         $fk_values = [];
@@ -358,7 +358,7 @@ class WPOS_Expand_Compiler {
         string $fk,
         ?string $remote_fk,
         string $base_key,
-        WPOS_Query_Context $ctx
+        ODAD_Query_Context $ctx
     ): array {
         // 1. Collect all unique base-row IDs.
         $parent_ids = [];

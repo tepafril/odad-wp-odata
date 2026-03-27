@@ -1,4 +1,4 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Unknown_Entity_Exception extends \RuntimeException {}
+class ODAD_Unknown_Entity_Exception extends \RuntimeException {}

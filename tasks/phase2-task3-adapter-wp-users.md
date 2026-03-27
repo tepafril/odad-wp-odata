@@ -1,4 +1,4 @@
-# Task 2.3 — WPOS_Adapter_WP_Users
+# Task 2.3 — ODAD_Adapter_WP_Users
 
 ## Dependencies
 - Task 2.1 (adapter interface + resolver)
@@ -15,7 +15,7 @@ capability. The adapter queries `wp_users` joined with `wp_usermeta` as needed.
 ### `src/adapters/class-wpos-adapter-wp-users.php`
 
 ```php
-class WPOS_Adapter_WP_Users implements WPOS_Adapter {
+class ODAD_Adapter_WP_Users implements ODAD_Adapter {
     // Entity set name: 'Users'
 }
 ```
@@ -53,7 +53,7 @@ class WPOS_Adapter_WP_Users implements WPOS_Adapter {
 1. Never select or return `user_pass` from any query.
 2. `Login` and `Email` properties must only be included in results when the requesting
    user has `list_users` capability. The adapter itself does NOT perform this check —
-   the `WPOS_Field_ACL` layer (Phase 4) strips them. However, the entity type definition
+   the `ODAD_Field_ACL` layer (Phase 4) strips them. However, the entity type definition
    must annotate these fields as requiring `list_users`.
 3. In `get_entity_type_definition()`, mark `Login` and `Email` with:
    ```php
@@ -83,7 +83,7 @@ Use `wp_delete_user( $key )`. Return `true` on success.
 ## Bootstrapper Update
 
 ```php
-$c->singleton( WPOS_Adapter_WP_Users::class, fn() => new WPOS_Adapter_WP_Users() );
+$c->singleton( ODAD_Adapter_WP_Users::class, fn() => new ODAD_Adapter_WP_Users() );
 ```
 
 ---

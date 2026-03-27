@@ -1,38 +1,38 @@
 <?php
 /**
- * WPOS_Query_Engine — orchestrates OData query execution end-to-end.
+ * ODAD_Query_Engine — orchestrates OData query execution end-to-end.
  *
  * Execution flow for execute():
  *   1. Resolve the adapter for the requested entity set.
- *   2. Build a WPOS_Query_Context from the request (parse filter, compile SQL,
+ *   2. Build a ODAD_Query_Context from the request (parse filter, compile SQL,
  *      compile select/orderby/compute/search, set top/skip).
- *   3. Dispatch WPOS_Event_Query_Before — subscribers may inject row-level
- *      security conditions or modify the context via the wpos_query_context filter.
+ *   3. Dispatch ODAD_Event_Query_Before — subscribers may inject row-level
+ *      security conditions or modify the context via the ODAD_query_context filter.
  *   4. Fetch rows via adapter->get_collection($ctx).
  *   5. Optionally fetch total count via adapter->get_count($ctx).
  *   6. If $expand is requested, execute the expand plan (batched, no N+1).
- *   7. Dispatch WPOS_Event_Query_After — subscribers strip field ACL and fire
- *      the wpos_query_results filter.
+ *   7. Dispatch ODAD_Event_Query_After — subscribers strip field ACL and fire
+ *      the ODAD_query_results filter.
  *   8. Build @odata.nextLink when rows === $top (more pages may exist).
- *   9. Return WPOS_Query_Result.
+ *   9. Return ODAD_Query_Result.
  *
  * @package WPOS
  */
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Query_Engine {
+class ODAD_Query_Engine {
 
     public function __construct(
-        private WPOS_Filter_Parser    $filter_parser,
-        private WPOS_Filter_Compiler  $filter_compiler,
-        private WPOS_Select_Compiler  $select_compiler,
-        private WPOS_Expand_Compiler  $expand_compiler,
-        private WPOS_Compute_Compiler $compute_compiler,
-        private WPOS_Orderby_Compiler $orderby_compiler,
-        private WPOS_Search_Compiler  $search_compiler,
-        private WPOS_Adapter_Resolver $adapter_resolver,
-        private WPOS_Event_Bus        $event_bus,
+        private ODAD_Filter_Parser    $filter_parser,
+        private ODAD_Filter_Compiler  $filter_compiler,
+        private ODAD_Select_Compiler  $select_compiler,
+        private ODAD_Expand_Compiler  $expand_compiler,
+        private ODAD_Compute_Compiler $compute_compiler,
+        private ODAD_Orderby_Compiler $orderby_compiler,
+        private ODAD_Search_Compiler  $search_compiler,
+        private ODAD_Adapter_Resolver $adapter_resolver,
+        private ODAD_Event_Bus        $event_bus,
     ) {}
 
     // =========================================================================
@@ -42,12 +42,12 @@ class WPOS_Query_Engine {
     /**
      * Execute an OData collection query end-to-end.
      *
-     * @param WPOS_Request $request Parsed incoming OData request.
+     * @param ODAD_Request $request Parsed incoming OData request.
      * @param WP_User      $user    Current WordPress user.
-     * @return WPOS_Query_Result
-     * @throws WPOS_Unknown_Entity_Exception When the entity set has no registered adapter.
+     * @return ODAD_Query_Result
+     * @throws ODAD_Unknown_Entity_Exception When the entity set has no registered adapter.
      */
-    public function execute( WPOS_Request $request, WP_User $user ): WPOS_Query_Result {
+    public function execute( ODAD_Request $request, WP_User $user ): ODAD_Query_Result {
 
         // ------------------------------------------------------------------
         // 1. Resolve adapter.
@@ -60,14 +60,14 @@ class WPOS_Query_Engine {
         $ctx = $this->build_context( $request, $adapter );
 
         // ------------------------------------------------------------------
-        // 3. Dispatch Query Before — row-level security + wpos_query_context.
+        // 3. Dispatch Query Before — row-level security + ODAD_query_context.
         // ------------------------------------------------------------------
-        $before_event = new WPOS_Event_Query_Before(
+        $before_event = new ODAD_Event_Query_Before(
             entity_set:    $request->entity_set,
             user:          $user,
             query_context: $ctx,
         );
-        /** @var WPOS_Event_Query_Before $before_event */
+        /** @var ODAD_Event_Query_Before $before_event */
         $before_event = $this->event_bus->dispatch( $before_event );
         $ctx          = $before_event->query_context;
 
@@ -102,7 +102,7 @@ class WPOS_Query_Engine {
                         $expand_plan,
                         $request->entity_set
                     );
-                } catch ( WPOS_Expand_Exception $e ) {
+                } catch ( ODAD_Expand_Exception $e ) {
                     // Invalid expand expression — skip silently; the adapter
                     // already returned base rows which we can still serve.
                     unset( $e );
@@ -111,15 +111,15 @@ class WPOS_Query_Engine {
         }
 
         // ------------------------------------------------------------------
-        // 7. Dispatch Query After — field ACL + wpos_query_results filter.
+        // 7. Dispatch Query After — field ACL + ODAD_query_results filter.
         // ------------------------------------------------------------------
-        $after_event = new WPOS_Event_Query_After(
+        $after_event = new ODAD_Event_Query_After(
             entity_set:    $request->entity_set,
             user:          $user,
             query_context: $ctx,
             results:       $rows,
         );
-        /** @var WPOS_Event_Query_After $after_event */
+        /** @var ODAD_Event_Query_After $after_event */
         $after_event = $this->event_bus->dispatch( $after_event );
         $rows        = $after_event->results;
 
@@ -134,7 +134,7 @@ class WPOS_Query_Engine {
         // ------------------------------------------------------------------
         // 9. Return result.
         // ------------------------------------------------------------------
-        return new WPOS_Query_Result(
+        return new ODAD_Query_Result(
             rows:        $rows,
             total_count: $total_count,
             next_link:   $next_link,
@@ -147,24 +147,24 @@ class WPOS_Query_Engine {
      * Dispatches Query Before (context) and Query After (single-row results)
      * events so that row-level security and field ACL apply consistently.
      *
-     * @param WPOS_Request $request Parsed OData request (must have a key set).
+     * @param ODAD_Request $request Parsed OData request (must have a key set).
      * @param WP_User      $user    Current WordPress user.
      * @return array|null The entity row, or null if not found / access denied.
-     * @throws WPOS_Unknown_Entity_Exception When the entity set has no registered adapter.
+     * @throws ODAD_Unknown_Entity_Exception When the entity set has no registered adapter.
      */
-    public function get_entity( WPOS_Request $request, WP_User $user ): ?array {
+    public function get_entity( ODAD_Request $request, WP_User $user ): ?array {
 
         $adapter = $this->adapter_resolver->resolve( $request->entity_set );
 
         $ctx = $this->build_context( $request, $adapter );
 
         // Dispatch Query Before for context modification (e.g. row-level security).
-        $before_event = new WPOS_Event_Query_Before(
+        $before_event = new ODAD_Event_Query_Before(
             entity_set:    $request->entity_set,
             user:          $user,
             query_context: $ctx,
         );
-        /** @var WPOS_Event_Query_Before $before_event */
+        /** @var ODAD_Event_Query_Before $before_event */
         $before_event = $this->event_bus->dispatch( $before_event );
         $ctx          = $before_event->query_context;
 
@@ -175,13 +175,13 @@ class WPOS_Query_Engine {
         }
 
         // Dispatch Query After so field ACL stripping applies to single entities too.
-        $after_event = new WPOS_Event_Query_After(
+        $after_event = new ODAD_Event_Query_After(
             entity_set:    $request->entity_set,
             user:          $user,
             query_context: $ctx,
             results:       [ $row ],
         );
-        /** @var WPOS_Event_Query_After $after_event */
+        /** @var ODAD_Event_Query_After $after_event */
         $after_event = $this->event_bus->dispatch( $after_event );
         $rows        = $after_event->results;
 
@@ -193,7 +193,7 @@ class WPOS_Query_Engine {
     // =========================================================================
 
     /**
-     * Build a WPOS_Query_Context from a WPOS_Request.
+     * Build a ODAD_Query_Context from a ODAD_Request.
      *
      * Runs all compilers (filter, select, orderby, compute, search) and stores
      * both the raw strings and the compiled SQL fragments on the context.
@@ -204,12 +204,12 @@ class WPOS_Query_Engine {
      * request body (already merged into $request by the router) rather than
      * URL parameters.
      *
-     * @param WPOS_Request $request
-     * @param WPOS_Adapter $adapter
-     * @return WPOS_Query_Context
+     * @param ODAD_Request $request
+     * @param ODAD_Adapter $adapter
+     * @return ODAD_Query_Context
      */
-    private function build_context( WPOS_Request $request, WPOS_Adapter $adapter ): WPOS_Query_Context {
-        $ctx = new WPOS_Query_Context();
+    private function build_context( ODAD_Request $request, ODAD_Adapter $adapter ): ODAD_Query_Context {
+        $ctx = new ODAD_Query_Context();
 
         // ---------------------------------------------------------------
         // For /$query POST, body params override URL params.
@@ -220,7 +220,7 @@ class WPOS_Query_Engine {
         $expand  = $request->expand;
         $search  = $request->search;
         $compute = $request->compute;
-        $top     = $request->top ?? WPOS_Request::DEFAULT_TOP;
+        $top     = $request->top ?? ODAD_Request::DEFAULT_TOP;
         $skip    = $request->skip ?? 0;
         $count   = $request->count;
 
@@ -235,7 +235,7 @@ class WPOS_Query_Engine {
 
             if ( isset( $body['$top'] ) ) {
                 $top_raw = (int) $body['$top'];
-                $top     = min( max( $top_raw, 0 ), WPOS_Request::MAX_TOP );
+                $top     = min( max( $top_raw, 0 ), ODAD_Request::MAX_TOP );
             }
             if ( isset( $body['$skip'] ) ) {
                 $skip = max( (int) $body['$skip'], 0 );
@@ -247,9 +247,9 @@ class WPOS_Query_Engine {
 
         // Enforce defaults and caps.
         if ( $top <= 0 ) {
-            $top = WPOS_Request::DEFAULT_TOP;
+            $top = ODAD_Request::DEFAULT_TOP;
         }
-        $top  = min( $top, WPOS_Request::MAX_TOP );
+        $top  = min( $top, ODAD_Request::MAX_TOP );
         $skip = max( $skip, 0 );
 
         // Store raw strings.
@@ -324,7 +324,7 @@ class WPOS_Query_Engine {
 
     /**
      * Parse an OData $orderby string into the structured array format expected
-     * by WPOS_Query_Context::$orderby.
+     * by ODAD_Query_Context::$orderby.
      *
      * @param string $orderby Raw $orderby value, e.g. "PublishedDate desc,Title".
      * @return array<int, array{property: string, dir: string}>
@@ -360,13 +360,13 @@ class WPOS_Query_Engine {
      * Constructs the URL from the WP REST base URL and replaces/appends
      * the $skip parameter to advance by one page.
      *
-     * @param WPOS_Request      $request
-     * @param WPOS_Query_Context $ctx
+     * @param ODAD_Request      $request
+     * @param ODAD_Query_Context $ctx
      * @return string
      */
-    private function build_next_link( WPOS_Request $request, WPOS_Query_Context $ctx ): string {
+    private function build_next_link( ODAD_Request $request, ODAD_Query_Context $ctx ): string {
         $next_skip = $ctx->skip + $ctx->top;
-        $base_url  = rest_url( WPOS_Router::NAMESPACE . '/' . $request->entity_set );
+        $base_url  = rest_url( ODAD_Router::NAMESPACE . '/' . $request->entity_set );
 
         // Collect query params to forward.
         $params = [];

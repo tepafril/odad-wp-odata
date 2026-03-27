@@ -1,6 +1,6 @@
 <?php
 /**
- * WPOS_Batch_Handler — handles OData $batch requests.
+ * ODAD_Batch_Handler — handles OData $batch requests.
  *
  * Supports both:
  *   - JSON batch (OData v4.01): Content-Type: application/json
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Batch_Handler {
+class ODAD_Batch_Handler {
 
     /** Maximum number of requests in a single batch. */
     public const MAX_BATCH_REQUESTS = 100;
@@ -26,23 +26,23 @@ class WPOS_Batch_Handler {
     /**
      * Resolved router instance (populated lazily on first sub-request dispatch).
      */
-    private ?WPOS_Router $router_instance = null;
+    private ?ODAD_Router $router_instance = null;
 
     /**
-     * @param \Closure             $router_resolver  Zero-arg closure that returns the WPOS_Router singleton.
+     * @param \Closure             $router_resolver  Zero-arg closure that returns the ODAD_Router singleton.
      *                                               Using a lazy closure breaks the construction-time circular
-     *                                               dependency: WPOS_Router → WPOS_Batch_Handler → WPOS_Router.
-     * @param WPOS_Permission_Engine $permissions    Permission engine instance.
+     *                                               dependency: ODAD_Router → ODAD_Batch_Handler → ODAD_Router.
+     * @param ODAD_Permission_Engine $permissions    Permission engine instance.
      */
     public function __construct(
         private readonly \Closure              $router_resolver,
-        private readonly WPOS_Permission_Engine $permissions,
+        private readonly ODAD_Permission_Engine $permissions,
     ) {}
 
     /**
-     * Return the WPOS_Router singleton, resolving it on first call.
+     * Return the ODAD_Router singleton, resolving it on first call.
      */
-    private function router(): WPOS_Router {
+    private function router(): ODAD_Router {
         if ( null === $this->router_instance ) {
             $this->router_instance = ( $this->router_resolver )();
         }
@@ -57,18 +57,18 @@ class WPOS_Batch_Handler {
      * Handle a $batch request.
      * Detects format from Content-Type and delegates to the appropriate handler.
      *
-     * @param WPOS_Request $request The incoming batch request.
+     * @param ODAD_Request $request The incoming batch request.
      * @param \WP_User     $user    The authenticated user.
      * @return WP_REST_Response
      */
-    public function handle( WPOS_Request $request, \WP_User $user ): WP_REST_Response {
+    public function handle( ODAD_Request $request, \WP_User $user ): WP_REST_Response {
         // We need the raw WP_REST_Request for headers and raw body; the caller
-        // passes the typed WPOS_Request but we also need access to the raw request.
+        // passes the typed ODAD_Request but we also need access to the raw request.
         // We retrieve the global REST server's current request.
         $raw = $this->get_current_wp_request();
 
         if ( null === $raw ) {
-            return WPOS_Error::internal( 'Unable to retrieve current REST request in batch handler.' );
+            return ODAD_Error::internal( 'Unable to retrieve current REST request in batch handler.' );
         }
 
         $content_type = strtolower( (string) ( $raw->get_header( 'content-type' ) ?? '' ) );
@@ -77,7 +77,7 @@ class WPOS_Batch_Handler {
         if ( str_contains( $content_type, 'application/json' ) ) {
             $batch_body = $raw->get_json_params();
             if ( ! is_array( $batch_body ) ) {
-                return WPOS_Error::bad_request( 'InvalidBatchBody', 'JSON batch body must be a JSON object.' );
+                return ODAD_Error::bad_request( 'InvalidBatchBody', 'JSON batch body must be a JSON object.' );
             }
             return $this->handle_json( $batch_body, $user );
         }
@@ -86,7 +86,7 @@ class WPOS_Batch_Handler {
         if ( str_contains( $content_type, 'multipart/mixed' ) ) {
             $boundary = $this->parse_boundary( $content_type );
             if ( null === $boundary ) {
-                return WPOS_Error::bad_request(
+                return ODAD_Error::bad_request(
                     'InvalidBatchContentType',
                     'multipart/mixed batch request must include a boundary parameter.'
                 );
@@ -95,7 +95,7 @@ class WPOS_Batch_Handler {
             return $this->handle_multipart( $body, $boundary, $user );
         }
 
-        return WPOS_Error::bad_request(
+        return ODAD_Error::bad_request(
             'UnsupportedBatchFormat',
             'Content-Type must be application/json or multipart/mixed for $batch requests.'
         );
@@ -120,7 +120,7 @@ class WPOS_Batch_Handler {
      */
     private function handle_json( array $batch_body, \WP_User $user ): WP_REST_Response {
         if ( ! isset( $batch_body['requests'] ) || ! is_array( $batch_body['requests'] ) ) {
-            return WPOS_Error::bad_request(
+            return ODAD_Error::bad_request(
                 'InvalidBatchBody',
                 'JSON batch body must contain a "requests" array.'
             );
@@ -129,7 +129,7 @@ class WPOS_Batch_Handler {
         $items = $batch_body['requests'];
 
         if ( count( $items ) > self::MAX_BATCH_REQUESTS ) {
-            return WPOS_Error::bad_request(
+            return ODAD_Error::bad_request(
                 'BatchTooLarge',
                 sprintf(
                     'Batch request exceeds the maximum of %d requests.',
@@ -202,13 +202,13 @@ class WPOS_Batch_Handler {
         }
 
         $response_body = [
-            '@odata.context' => rest_url( WPOS_Router::NAMESPACE . '/$metadata#Collection($ref)' ),
+            '@odata.context' => rest_url( ODAD_Router::NAMESPACE . '/$metadata#Collection($ref)' ),
             'responses'      => $responses,
         ];
 
         $result = new WP_REST_Response( $response_body, 200 );
-        $result->header( WPOS_Response::HEADER_ODATA_VER,    WPOS_Response::ODATA_VERSION );
-        $result->header( WPOS_Response::HEADER_CONTENT_TYPE, WPOS_Response::CT_JSON_ODATA );
+        $result->header( ODAD_Response::HEADER_ODATA_VER,    ODAD_Response::ODATA_VERSION );
+        $result->header( ODAD_Response::HEADER_CONTENT_TYPE, ODAD_Response::CT_JSON_ODATA );
         return $result;
     }
 
@@ -232,7 +232,7 @@ class WPOS_Batch_Handler {
         $parts = $this->split_multipart( $body, $boundary );
 
         if ( count( $parts ) > self::MAX_BATCH_REQUESTS ) {
-            return WPOS_Error::bad_request(
+            return ODAD_Error::bad_request(
                 'BatchTooLarge',
                 sprintf(
                     'Batch request exceeds the maximum of %d parts.',
@@ -276,9 +276,9 @@ class WPOS_Batch_Handler {
         $response_body     = $this->build_multipart_response( $response_parts, $response_boundary );
 
         $result = new WP_REST_Response( $response_body, 200 );
-        $result->header( WPOS_Response::HEADER_ODATA_VER,    WPOS_Response::ODATA_VERSION );
+        $result->header( ODAD_Response::HEADER_ODATA_VER,    ODAD_Response::ODATA_VERSION );
         $result->header(
-            WPOS_Response::HEADER_CONTENT_TYPE,
+            ODAD_Response::HEADER_CONTENT_TYPE,
             'multipart/mixed; boundary=' . $response_boundary
         );
         return $result;
@@ -441,7 +441,7 @@ class WPOS_Batch_Handler {
     ): WP_REST_Response {
         // Reject external URLs to prevent SSRF.
         if ( ! $this->is_safe_url( $url ) ) {
-            return WPOS_Error::bad_request(
+            return ODAD_Error::bad_request(
                 'InvalidBatchUrl',
                 'Batch sub-request URL must be a relative path or a local WordPress REST API URL.'
             );
@@ -468,7 +468,7 @@ class WPOS_Batch_Handler {
         $route_match = $this->match_route( $url );
 
         if ( null === $route_match ) {
-            return WPOS_Error::not_found(
+            return ODAD_Error::not_found(
                 "No route matched for batch sub-request: {$method} {$url}"
             );
         }
@@ -528,7 +528,7 @@ class WPOS_Batch_Handler {
                 if ( 'POST' === $method ) {
                     return $this->router()->handle_create( $wp_request );
                 }
-                return WPOS_Error::method_not_allowed();
+                return ODAD_Error::method_not_allowed();
 
             case 'query_post':
                 return $this->router()->handle_query_post( $wp_request );
@@ -544,7 +544,7 @@ class WPOS_Batch_Handler {
                     case 'DELETE':
                         return $this->router()->handle_delete( $wp_request );
                     default:
-                        return WPOS_Error::method_not_allowed();
+                        return ODAD_Error::method_not_allowed();
                 }
 
             case 'nav_property':
@@ -554,10 +554,10 @@ class WPOS_Batch_Handler {
                 if ( 'GET' === $method ) {
                     return $this->router()->handle_count( $wp_request );
                 }
-                return WPOS_Error::method_not_allowed();
+                return ODAD_Error::method_not_allowed();
 
             default:
-                return WPOS_Error::not_found( "Unknown route type: {$route_type}" );
+                return ODAD_Error::not_found( "Unknown route type: {$route_type}" );
         }
     }
 
@@ -728,7 +728,7 @@ class WPOS_Batch_Handler {
         array  $headers,
         array  $body
     ): WP_REST_Request {
-        $full_route = '/' . WPOS_Router::NAMESPACE . '/' . ltrim( $path, '/' );
+        $full_route = '/' . ODAD_Router::NAMESPACE . '/' . ltrim( $path, '/' );
         $wp_request = new WP_REST_Request( $method, $full_route );
 
         // Set query string params.
@@ -808,7 +808,7 @@ class WPOS_Batch_Handler {
 
         // Strip WordPress REST API base paths.
         $rest_base = trailingslashit( rest_get_url_prefix() );  // e.g. "wp-json/"
-        $odata_ns  = WPOS_Router::NAMESPACE . '/';              // e.g. "odata/v4/"
+        $odata_ns  = ODAD_Router::NAMESPACE . '/';              // e.g. "odata/v4/"
 
         foreach ( [
             '/' . $rest_base . $odata_ns,
@@ -1067,8 +1067,8 @@ class WPOS_Batch_Handler {
             'id'      => $id,
             'status'  => $status,
             'headers' => [
-                WPOS_Response::HEADER_CONTENT_TYPE => WPOS_Response::CT_JSON_ODATA,
-                WPOS_Response::HEADER_ODATA_VER    => WPOS_Response::ODATA_VERSION,
+                ODAD_Response::HEADER_CONTENT_TYPE => ODAD_Response::CT_JSON_ODATA,
+                ODAD_Response::HEADER_ODATA_VER    => ODAD_Response::ODATA_VERSION,
             ],
             'body'    => [
                 'error' => [
@@ -1118,10 +1118,10 @@ class WPOS_Batch_Handler {
     private function get_current_wp_request(): ?WP_REST_Request {
         // The REST server stores the current request in WP_REST_Server::$current_route
         // but not the request itself. We use a filter-based approach.
-        if ( isset( $GLOBALS['wpos_current_batch_request'] )
-            && $GLOBALS['wpos_current_batch_request'] instanceof WP_REST_Request
+        if ( isset( $GLOBALS['ODAD_current_batch_request'] )
+            && $GLOBALS['ODAD_current_batch_request'] instanceof WP_REST_Request
         ) {
-            return $GLOBALS['wpos_current_batch_request'];
+            return $GLOBALS['ODAD_current_batch_request'];
         }
         return null;
     }

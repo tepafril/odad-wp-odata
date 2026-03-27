@@ -2,13 +2,13 @@
 
 ## Dependencies
 - Task 1.1 (DI container)
-- Task 1.2 (event bus — `WPOS_Event_Metadata_Build`, `WPOS_Event_Schema_Changed`)
-- Task 1.3 (hook bridge — `wpos_metadata_entity_types`, `wpos_metadata_entity_sets` filters)
-- Task 1.4 (HTTP layer — `WPOS_Response::metadata_xml()`)
+- Task 1.2 (event bus — `ODAD_Event_Metadata_Build`, `ODAD_Event_Schema_Changed`)
+- Task 1.3 (hook bridge — `ODAD_metadata_entity_types`, `ODAD_metadata_entity_sets` filters)
+- Task 1.4 (HTTP layer — `ODAD_Response::metadata_xml()`)
 
 ## Goal
 Build the schema registry that tracks registered entity sets, and the metadata cache
-that stores the compiled CSDL. Implement the `WPOS_Metadata_Builder` that produces
+that stores the compiled CSDL. Implement the `ODAD_Metadata_Builder` that produces
 valid OData v4.01 CSDL XML.
 
 ---
@@ -20,7 +20,7 @@ valid OData v4.01 CSDL XML.
 Holds the canonical list of entity sets known to the plugin.
 
 ```php
-class WPOS_Schema_Registry {
+class ODAD_Schema_Registry {
 
     /** @var array<string, array> entity_set_name → definition */
     private array $entity_sets = [];
@@ -52,7 +52,7 @@ A `$definition` array has this shape (adapters populate it in Phase 2):
         'Author'      => [ 'type' => 'Users',      'collection' => false ],
         'Tags'        => [ 'type' => 'Tags',        'collection' => true  ],
     ],
-    'adapter_class'  => WPOS_Adapter_WP_Posts::class,
+    'adapter_class'  => ODAD_Adapter_WP_Posts::class,
 ]
 ```
 
@@ -63,10 +63,10 @@ A `$definition` array has this shape (adapters populate it in Phase 2):
 WP Transients-based cache. TTL = `DAY_IN_SECONDS`.
 
 ```php
-class WPOS_Metadata_Cache {
+class ODAD_Metadata_Cache {
 
-    private const TRANSIENT_XML  = 'wpos_metadata_xml';
-    private const TRANSIENT_JSON = 'wpos_metadata_json';
+    private const TRANSIENT_XML  = 'ODAD_metadata_xml';
+    private const TRANSIENT_JSON = 'ODAD_metadata_json';
     private const TTL            = DAY_IN_SECONDS;
 
     public function get_xml(): ?string;
@@ -84,18 +84,18 @@ class WPOS_Metadata_Cache {
 ### `src/metadata/class-wpos-metadata-builder.php`
 
 Builds CSDL XML (and later JSON) from the schema registry.
-Must pass `wpos_metadata_entity_types` and `wpos_metadata_entity_sets` filters
+Must pass `ODAD_metadata_entity_types` and `ODAD_metadata_entity_sets` filters
 **through the Hook Bridge** before generating output, so external plugins can inject
 or modify entity type definitions.
 
 ```php
-class WPOS_Metadata_Builder {
+class ODAD_Metadata_Builder {
 
     public function __construct(
-        private WPOS_Schema_Registry $registry,
-        private WPOS_Metadata_Cache  $cache,
-        private WPOS_Event_Bus       $event_bus,
-        private WPOS_Hook_Bridge     $bridge,
+        private ODAD_Schema_Registry $registry,
+        private ODAD_Metadata_Cache  $cache,
+        private ODAD_Event_Bus       $event_bus,
+        private ODAD_Hook_Bridge     $bridge,
     ) {}
 
     public function get_xml(): string;
@@ -108,9 +108,9 @@ class WPOS_Metadata_Builder {
 
 **`get_xml()` algorithm:**
 1. Check cache (`$cache->get_xml()`). Return cached value if present.
-2. Dispatch `WPOS_Event_Metadata_Build` with entity types and sets from registry.
-3. Apply `wpos_metadata_entity_types` filter (via `$bridge->filter()`).
-4. Apply `wpos_metadata_entity_sets` filter (via `$bridge->filter()`).
+2. Dispatch `ODAD_Event_Metadata_Build` with entity types and sets from registry.
+3. Apply `ODAD_metadata_entity_types` filter (via `$bridge->filter()`).
+4. Apply `ODAD_metadata_entity_sets` filter (via `$bridge->filter()`).
 5. Build the CSDL XML string.
 6. Store in cache.
 7. Return.
@@ -153,17 +153,17 @@ Once entity types are registered (Phase 2), `build_xml()` must emit:
 Implements the cache invalidation subscriber (flesh out the stub from Task 1.3):
 
 ```php
-class WPOS_Subscriber_Schema_Changed implements WPOS_Event_Listener {
+class ODAD_Subscriber_Schema_Changed implements ODAD_Event_Listener {
 
     public function __construct(
-        private WPOS_Metadata_Cache $cache,
+        private ODAD_Metadata_Cache $cache,
     ) {}
 
     public function get_event(): string {
-        return WPOS_Event_Schema_Changed::class;
+        return ODAD_Event_Schema_Changed::class;
     }
 
-    public function handle( WPOS_Event $event ): void {
+    public function handle( ODAD_Event $event ): void {
         $this->cache->bust();
     }
 }
@@ -174,10 +174,10 @@ class WPOS_Subscriber_Schema_Changed implements WPOS_Event_Listener {
 ## Bootstrapper Update
 
 Update `class-wpos-bootstrapper.php` to wire:
-- `WPOS_Schema_Registry` singleton
-- `WPOS_Metadata_Cache` singleton
-- `WPOS_Metadata_Builder` singleton (injecting the above + event bus + bridge)
-- Update `WPOS_Subscriber_Schema_Changed` constructor to receive `WPOS_Metadata_Cache`
+- `ODAD_Schema_Registry` singleton
+- `ODAD_Metadata_Cache` singleton
+- `ODAD_Metadata_Builder` singleton (injecting the above + event bus + bridge)
+- Update `ODAD_Subscriber_Schema_Changed` constructor to receive `ODAD_Metadata_Cache`
 
 ---
 
@@ -186,6 +186,6 @@ Update `class-wpos-bootstrapper.php` to wire:
 - `GET /wp-json/odata/v4/$metadata` returns valid CSDL XML with correct namespace and `OData-Version: 4.01` header.
 - CSDL XML is cached in a WP transient after first request.
 - Second request returns cached value (no rebuild).
-- Dispatching `WPOS_Event_Schema_Changed` busts both `wpos_metadata_xml` and `wpos_metadata_json` transients.
-- `wpos_metadata_entity_types` and `wpos_metadata_entity_sets` WP filters are applied before building output.
-- External plugin adding a filter to `wpos_metadata_entity_types` can inject additional entity type definitions into the output.
+- Dispatching `ODAD_Event_Schema_Changed` busts both `ODAD_metadata_xml` and `ODAD_metadata_json` transients.
+- `ODAD_metadata_entity_types` and `ODAD_metadata_entity_sets` WP filters are applied before building output.
+- External plugin adding a filter to `ODAD_metadata_entity_types` can inject additional entity type definitions into the output.

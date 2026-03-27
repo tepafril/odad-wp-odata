@@ -5,7 +5,7 @@
  * @package WPOS
  */
 
-class WPOS_Event_Permission_Check implements WPOS_Event {
+class ODAD_Event_Permission_Check implements ODAD_Event {
     public function __construct(
         public string   $entity_set,
         public string   $operation,   // 'read' | 'insert' | 'update' | 'delete'

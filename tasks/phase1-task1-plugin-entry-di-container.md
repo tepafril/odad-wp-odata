@@ -31,35 +31,35 @@ The WordPress plugin entry point.
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WPOS_VERSION',   '0.1.0' );
-define( 'WPOS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'WPOS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'ODAD_VERSION',   '0.1.0' );
+define( 'ODAD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'ODAD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
-// Autoloader (PSR-4: WPOS_ prefix → src/)
+// Autoloader (PSR-4: ODAD_ prefix → src/)
 spl_autoload_register( function ( string $class ): void {
-    if ( ! str_starts_with( $class, 'WPOS_' ) ) {
+    if ( ! str_starts_with( $class, 'ODAD_' ) ) {
         return;
     }
-    // Convert WPOS_Foo_Bar → foo-bar, WPOS_Interface_Foo → interface-foo
-    $suffix   = strtolower( substr( $class, 5 ) );        // strip WPOS_
+    // Convert ODAD_Foo_Bar → foo-bar, ODAD_Interface_Foo → interface-foo
+    $suffix   = strtolower( substr( $class, 5 ) );        // strip ODAD_
     $filename = str_replace( '_', '-', $suffix );
     // Try class file first, then interface file
     $paths = [
-        WPOS_PLUGIN_DIR . "src/bootstrap/class-wpos-{$filename}.php",
-        WPOS_PLUGIN_DIR . "src/http/class-wpos-{$filename}.php",
-        WPOS_PLUGIN_DIR . "src/hooks/class-wpos-{$filename}.php",
-        WPOS_PLUGIN_DIR . "src/events/class-wpos-{$filename}.php",
-        WPOS_PLUGIN_DIR . "src/events/events/class-wpos-{$filename}.php",
-        WPOS_PLUGIN_DIR . "src/query/class-wpos-{$filename}.php",
-        WPOS_PLUGIN_DIR . "src/write/class-wpos-{$filename}.php",
-        WPOS_PLUGIN_DIR . "src/permissions/class-wpos-{$filename}.php",
-        WPOS_PLUGIN_DIR . "src/metadata/class-wpos-{$filename}.php",
-        WPOS_PLUGIN_DIR . "src/adapters/class-wpos-{$filename}.php",
-        WPOS_PLUGIN_DIR . "src/admin/class-wpos-{$filename}.php",
-        WPOS_PLUGIN_DIR . "src/hooks/subscribers/class-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/bootstrap/class-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/http/class-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/hooks/class-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/events/class-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/events/events/class-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/query/class-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/write/class-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/permissions/class-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/metadata/class-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/adapters/class-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/admin/class-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/hooks/subscribers/class-wpos-{$filename}.php",
         // interfaces
-        WPOS_PLUGIN_DIR . "src/events/interface-wpos-{$filename}.php",
-        WPOS_PLUGIN_DIR . "src/adapters/interface-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/events/interface-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/adapters/interface-wpos-{$filename}.php",
     ];
     foreach ( $paths as $path ) {
         if ( file_exists( $path ) ) {
@@ -70,13 +70,13 @@ spl_autoload_register( function ( string $class ): void {
 } );
 
 add_action( 'plugins_loaded', function (): void {
-    $container = WPOS_Bootstrapper::build();
-    $container->get( WPOS_Hook_Bridge::class )->register();
-    $GLOBALS['wpos_container'] = $container;
+    $container = ODAD_Bootstrapper::build();
+    $container->get( ODAD_Hook_Bridge::class )->register();
+    $GLOBALS['ODAD_container'] = $container;
 }, 5 );
 
-function wpos_container(): WPOS_Container {
-    return $GLOBALS['wpos_container'];
+function ODAD_container(): ODAD_Container {
+    return $GLOBALS['ODAD_container'];
 }
 ```
 
@@ -88,7 +88,7 @@ function wpos_container(): WPOS_Container {
 <?php
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Container {
+class ODAD_Container {
 
     private array $factories  = [];
     private array $singletons = [];
@@ -121,10 +121,10 @@ This is a scaffold. It only registers what exists in Phase 1.
 Later tasks will add more `singleton()` bindings here.
 
 The bootstrapper must register:
-- `WPOS_Event_Bus`
-- `WPOS_Hook_Bridge`
-- `WPOS_Schema_Registry`
-- `WPOS_Metadata_Cache`
+- `ODAD_Event_Bus`
+- `ODAD_Hook_Bridge`
+- `ODAD_Schema_Registry`
+- `ODAD_Metadata_Cache`
 
 (Other bindings — adapters, query engine, permissions, etc. — are added in their respective tasks.)
 
@@ -134,9 +134,9 @@ Implement `register_subscribers()` as empty for now; it will be filled in as sub
 
 ## Architecture Rules to Enforce
 
-- `WPOS_Container` has NO knowledge of WordPress. It is pure PHP.
+- `ODAD_Container` has NO knowledge of WordPress. It is pure PHP.
 - The autoloader must NOT use Composer (plugin must work without it).
-- `$GLOBALS['wpos_container']` is for external access only; internal wiring always uses constructor injection.
+- `$GLOBALS['ODAD_container']` is for external access only; internal wiring always uses constructor injection.
 - `plugins_loaded` at priority 5 ensures external plugins at priority 10 can hook in after bootstrap.
 
 ---
@@ -144,7 +144,7 @@ Implement `register_subscribers()` as empty for now; it will be filled in as sub
 ## Acceptance Criteria
 
 - Plugin activates in WordPress without fatal errors.
-- `wpos_container()` returns the container instance.
+- `ODAD_container()` returns the container instance.
 - Container throws `\RuntimeException` with a clear message when an unregistered service is requested.
-- Autoloader resolves all `WPOS_*` classes from the `src/` directory.
+- Autoloader resolves all `ODAD_*` classes from the `src/` directory.
 - No direct `require`/`include` calls outside the autoloader and entry point.

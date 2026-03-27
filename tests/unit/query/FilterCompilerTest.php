@@ -1,14 +1,14 @@
 <?php
 /**
- * Unit tests for WPOS_Filter_Compiler.
+ * Unit tests for ODAD_Filter_Compiler.
  */
 
 use PHPUnit\Framework\TestCase;
 
 class FilterCompilerTest extends TestCase {
 
-    private WPOS_Filter_Parser   $parser;
-    private WPOS_Filter_Compiler $compiler;
+    private ODAD_Filter_Parser   $parser;
+    private ODAD_Filter_Compiler $compiler;
 
     /** @var array<string,string> */
     private array $column_map = [
@@ -18,8 +18,8 @@ class FilterCompilerTest extends TestCase {
     ];
 
     protected function setUp(): void {
-        $this->parser   = new WPOS_Filter_Parser();
-        $this->compiler = new WPOS_Filter_Compiler();
+        $this->parser   = new ODAD_Filter_Parser();
+        $this->compiler = new ODAD_Filter_Compiler();
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -111,12 +111,12 @@ class FilterCompilerTest extends TestCase {
     // ── Unknown property ─────────────────────────────────────────────────────
 
     public function test_unknown_property_throws_exception(): void {
-        $this->expectException( WPOS_Filter_Compile_Exception::class );
+        $this->expectException( ODAD_Filter_Compile_Exception::class );
         $this->compile( "UnknownProp eq 'value'" );
     }
 
     public function test_unknown_property_in_function_throws_exception(): void {
-        $this->expectException( WPOS_Filter_Compile_Exception::class );
+        $this->expectException( ODAD_Filter_Compile_Exception::class );
         $this->compile( "contains(UnknownProp, 'value')" );
     }
 }

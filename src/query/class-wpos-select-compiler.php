@@ -6,7 +6,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * No WordPress calls are made in this class.
  */
-class WPOS_Select_Compiler {
+class ODAD_Select_Compiler {
 
     /**
      * Compile a list of OData property names into a SQL column list.
@@ -20,7 +20,7 @@ class WPOS_Select_Compiler {
      *                                         The entry keyed 'ID' (if present) is treated as the
      *                                         primary key and always included.
      * @return string SQL column list, e.g. "p.ID, p.post_title, p.post_status".
-     * @throws WPOS_Select_Exception If any property name is not found in $column_map.
+     * @throws ODAD_Select_Exception If any property name is not found in $column_map.
      */
     public function compile( array $properties, array $column_map ): string {
         if ( empty( $column_map ) ) {
@@ -36,7 +36,7 @@ class WPOS_Select_Compiler {
 
             foreach ( $properties as $property ) {
                 if ( ! array_key_exists( $property, $column_map ) ) {
-                    throw new WPOS_Select_Exception(
+                    throw new ODAD_Select_Exception(
                         sprintf( 'Unknown $select property: "%s"', $property )
                     );
                 }

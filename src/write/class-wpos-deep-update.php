@@ -6,12 +6,12 @@ defined( 'ABSPATH' ) || exit;
  * changes described by a delta payload (items marked @removed are deleted,
  * items with a key are updated, items without a key are inserted).
  */
-class WPOS_Deep_Update {
+class ODAD_Deep_Update {
 
     public function __construct(
-        private WPOS_Adapter_Resolver $adapter_resolver,
-        private WPOS_Schema_Registry  $schema_registry,
-        private WPOS_Event_Bus        $event_bus,
+        private ODAD_Adapter_Resolver $adapter_resolver,
+        private ODAD_Schema_Registry  $schema_registry,
+        private ODAD_Event_Bus        $event_bus,
     ) {}
 
     /**
@@ -26,7 +26,7 @@ class WPOS_Deep_Update {
      */
     public function execute( string $entity_set, mixed $key, array $payload, \WP_User $user ): array {
         // 1. Dispatch before event.
-        $before = new WPOS_Event_Deep_Update_Before( $entity_set, $key, $user, $payload );
+        $before = new ODAD_Event_Deep_Update_Before( $entity_set, $key, $user, $payload );
         $this->event_bus->dispatch( $before );
 
         if ( $before->cancelled ) {
@@ -74,7 +74,7 @@ class WPOS_Deep_Update {
                 unset( $delta_item['@removed'] );
 
                 // Dispatch nested before event.
-                $nested_before = new WPOS_Event_Deep_Update_Nested_Before(
+                $nested_before = new ODAD_Event_Deep_Update_Nested_Before(
                     $entity_set,
                     $nested_entity_set,
                     $operation,
@@ -101,11 +101,11 @@ class WPOS_Deep_Update {
         }
 
         // 5. Re-fetch updated root entity.
-        $ctx    = new WPOS_Query_Context();
+        $ctx    = new ODAD_Query_Context();
         $result = $root_adapter->get_entity( $key, $ctx ) ?? [];
 
         // 6. Dispatch after event.
-        $after = new WPOS_Event_Deep_Update_After( $entity_set, $key, $user, $result );
+        $after = new ODAD_Event_Deep_Update_After( $entity_set, $key, $user, $result );
         $this->event_bus->dispatch( $after );
 
         return $result;

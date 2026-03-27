@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for WPOS_Metadata_Builder.
+ * Unit tests for ODAD_Metadata_Builder.
  *
  * The WordPress transient functions are stubbed in bootstrap.php:
  *   get_transient()  → false  (always a cache miss)
@@ -8,7 +8,7 @@
  *   delete_transient → no-op
  *
  * Because the stubs hold no in-memory state, we use a spy subclass of
- * WPOS_Metadata_Cache to verify caching behaviour without WP infrastructure.
+ * ODAD_Metadata_Cache to verify caching behaviour without WP infrastructure.
  */
 
 use PHPUnit\Framework\TestCase;
@@ -16,10 +16,10 @@ use PHPUnit\Framework\TestCase;
 // ── In-memory metadata cache ──────────────────────────────────────────────────
 
 /**
- * Drop-in replacement for WPOS_Metadata_Cache that stores values in memory
+ * Drop-in replacement for ODAD_Metadata_Cache that stores values in memory
  * rather than WP transients.  Allows verifying cache-hit / miss / bust logic.
  */
-class Test_Memory_Metadata_Cache extends WPOS_Metadata_Cache {
+class Test_Memory_Metadata_Cache extends ODAD_Metadata_Cache {
 
     private ?string $xml  = null;
     private ?string $json = null;
@@ -40,21 +40,21 @@ class Test_Memory_Metadata_Cache extends WPOS_Metadata_Cache {
 
 class MetadataBuilderTest extends TestCase {
 
-    private WPOS_Schema_Registry    $registry;
+    private ODAD_Schema_Registry    $registry;
     private Test_Memory_Metadata_Cache $cache;
-    private WPOS_Event_Bus          $event_bus;
-    private WPOS_Hook_Bridge        $bridge;
-    private WPOS_Function_Registry  $function_registry;
-    private WPOS_Action_Registry    $action_registry;
-    private WPOS_Metadata_Builder   $builder;
+    private ODAD_Event_Bus          $event_bus;
+    private ODAD_Hook_Bridge        $bridge;
+    private ODAD_Function_Registry  $function_registry;
+    private ODAD_Action_Registry    $action_registry;
+    private ODAD_Metadata_Builder   $builder;
 
     protected function setUp(): void {
-        $this->registry          = new WPOS_Schema_Registry();
+        $this->registry          = new ODAD_Schema_Registry();
         $this->cache             = new Test_Memory_Metadata_Cache();
-        $this->event_bus         = new WPOS_Event_Bus();
-        $this->bridge            = new WPOS_Hook_Bridge( $this->event_bus );
-        $this->function_registry = new WPOS_Function_Registry();
-        $this->action_registry   = new WPOS_Action_Registry();
+        $this->event_bus         = new ODAD_Event_Bus();
+        $this->bridge            = new ODAD_Hook_Bridge( $this->event_bus );
+        $this->function_registry = new ODAD_Function_Registry();
+        $this->action_registry   = new ODAD_Action_Registry();
 
         // Register a minimal entity set so the metadata is non-trivial.
         $this->registry->register( 'Posts', [
@@ -66,7 +66,7 @@ class MetadataBuilderTest extends TestCase {
             ],
         ] );
 
-        $this->builder = new WPOS_Metadata_Builder(
+        $this->builder = new ODAD_Metadata_Builder(
             registry:          $this->registry,
             cache:             $this->cache,
             event_bus:         $this->event_bus,
@@ -149,7 +149,7 @@ class MetadataBuilderTest extends TestCase {
         $this->builder->get_xml();
         $this->assertNotNull( $this->cache->get_xml() );
 
-        // Simulate what WPOS_Subscriber_Schema_Changed does: bust the cache.
+        // Simulate what ODAD_Subscriber_Schema_Changed does: bust the cache.
         $this->cache->bust();
 
         // Cache should now be empty.

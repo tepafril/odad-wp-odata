@@ -17,11 +17,11 @@ This task is a code review + targeted fixes pass, not new features.
 **Rule:** Every user-supplied value that reaches `$wpdb` must go through `$wpdb->prepare()`.
 
 **Audit targets:**
-- `WPOS_Filter_Compiler` — verify every literal value uses `%s`/`%d`/`%f` placeholder
-- `WPOS_Adapter_Custom_Table` — verify all `insert()`, `update()`, `delete()` use `$wpdb->insert()` / `$wpdb->update()` / `$wpdb->delete()` (never raw `$wpdb->query()` with interpolated values)
-- `WPOS_Set_Operations` — verify bulk SQL uses `$wpdb->prepare()` for all values
-- `WPOS_Orderby_Compiler` — verify direction is only `ASC` or `DESC`, never from user input directly
-- `WPOS_Select_Compiler` — verify column names always come from the column map, never raw input
+- `ODAD_Filter_Compiler` — verify every literal value uses `%s`/`%d`/`%f` placeholder
+- `ODAD_Adapter_Custom_Table` — verify all `insert()`, `update()`, `delete()` use `$wpdb->insert()` / `$wpdb->update()` / `$wpdb->delete()` (never raw `$wpdb->query()` with interpolated values)
+- `ODAD_Set_Operations` — verify bulk SQL uses `$wpdb->prepare()` for all values
+- `ODAD_Orderby_Compiler` — verify direction is only `ASC` or `DESC`, never from user input directly
+- `ODAD_Select_Compiler` — verify column names always come from the column map, never raw input
 
 **Add tests:**
 - `$filter=Title eq '; DROP TABLE wp_posts; --'` — should produce a safe prepared query
@@ -35,15 +35,15 @@ This task is a code review + targeted fixes pass, not new features.
 **Rule:** Entity-level AND field-level ACL enforced on every response.
 
 **Audit targets:**
-- `WPOS_Subscriber_Permission_Check` — verify it fires before every read/write
-- `WPOS_Field_ACL::apply()` — verify it runs after every query result
+- `ODAD_Subscriber_Permission_Check` — verify it fires before every read/write
+- `ODAD_Field_ACL::apply()` — verify it runs after every query result
 - Users adapter — triple-check `user_pass` exclusion
 - `$expand` — verify navigation expansion respects permission check on expanded entity set
 
 **Add tests:**
 - Authenticated user without `list_users` cannot see `Email` field on Users
 - `$expand=Author` on Posts for an auth user without `list_users` — `Author.Email` must be stripped
-- Unauthenticated request returns 403 unless `wpos_allow_public_access` explicitly returns true
+- Unauthenticated request returns 403 unless `ODAD_allow_public_access` explicitly returns true
 
 ---
 
@@ -55,7 +55,7 @@ This task is a code review + targeted fixes pass, not new features.
 - Batch response — each item's error message is sanitized
 
 **Fix:**
-In `WPOS_Error`, check `WP_DEBUG` before including detailed messages:
+In `ODAD_Error`, check `WP_DEBUG` before including detailed messages:
 ```php
 public static function internal( string $message = '' ): WP_REST_Response {
     $detail = defined('WP_DEBUG') && WP_DEBUG ? $message : 'An internal error occurred.';
@@ -67,11 +67,11 @@ public static function internal( string $message = '' ): WP_REST_Response {
 
 ### 4. Over-Fetching / DoS Protection
 
-**Rule:** `$top` default = 100, max = 1000 (enforced in `WPOS_Request`).
+**Rule:** `$top` default = 100, max = 1000 (enforced in `ODAD_Request`).
 
 **Audit targets:**
-- `WPOS_Request` — verify max `$top` enforcement
-- Filter depth — add a max nesting depth to `WPOS_Filter_Parser` (default: 20 levels)
+- `ODAD_Request` — verify max `$top` enforcement
+- Filter depth — add a max nesting depth to `ODAD_Filter_Parser` (default: 20 levels)
 - URL length — WP REST API handles this, but document the 8KB limit
 - Batch size — max 100 requests per batch (Task 5.5)
 
@@ -86,8 +86,8 @@ public static function internal( string $message = '' ): WP_REST_Response {
 
 **Rule:** Each nested entity permission is checked individually.
 
-**Audit target:** `WPOS_Deep_Insert` and `WPOS_Deep_Update` — verify
-`WPOS_Event_Deep_Insert_Nested_Before` is dispatched for EVERY nested entity.
+**Audit target:** `ODAD_Deep_Insert` and `ODAD_Deep_Update` — verify
+`ODAD_Event_Deep_Insert_Nested_Before` is dispatched for EVERY nested entity.
 
 **Add test:**
 - User with `edit_posts` but NOT `create_users` cannot deep-insert a Post with a new User
@@ -99,14 +99,14 @@ public static function internal( string $message = '' ): WP_REST_Response {
 
 **Rule:** WP nonce required on all non-GET REST requests using cookie authentication.
 
-**Audit target:** `WPOS_Router` — add nonce verification for cookie-auth requests.
+**Audit target:** `ODAD_Router` — add nonce verification for cookie-auth requests.
 
 ```php
 // In router, for POST/PATCH/PUT/DELETE:
 if ( $this->is_cookie_auth( $request ) ) {
     $nonce = $request->get_header('X-WP-Nonce');
     if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
-        return WPOS_Error::forbidden('Invalid nonce.');
+        return ODAD_Error::forbidden('Invalid nonce.');
     }
 }
 ```
@@ -118,18 +118,18 @@ Verify this is functioning correctly — don't double-implement.
 
 ### 7. Schema Disclosure
 
-**Rule:** `$metadata` requires authentication unless `wpos_allow_public_access` returns true.
+**Rule:** `$metadata` requires authentication unless `ODAD_allow_public_access` returns true.
 
-**Audit target:** `WPOS_Router::metadata()` — verify auth check before serving CSDL.
+**Audit target:** `ODAD_Router::metadata()` — verify auth check before serving CSDL.
 
 ---
 
 ### 8. Input Validation
 
 **Audit targets:**
-- `WPOS_Request` — validate entity set name is alphanumeric + underscore only
-- `WPOS_Request` — validate key value format matches entity type's key property type
-- `WPOS_Batch_Handler` — validate batch item `url` does not reference external URLs
+- `ODAD_Request` — validate entity set name is alphanumeric + underscore only
+- `ODAD_Request` — validate key value format matches entity type's key property type
+- `ODAD_Batch_Handler` — validate batch item `url` does not reference external URLs
 
 ---
 

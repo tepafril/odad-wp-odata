@@ -14,14 +14,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! defined( 'DAY_IN_SECONDS' ) ) {
     define( 'DAY_IN_SECONDS', 86400 );
 }
-if ( ! defined( 'WPOS_VERSION' ) ) {
-    define( 'WPOS_VERSION', '0.1.0' );
+if ( ! defined( 'ODAD_VERSION' ) ) {
+    define( 'ODAD_VERSION', '0.1.0' );
 }
-if ( ! defined( 'WPOS_PLUGIN_DIR' ) ) {
-    define( 'WPOS_PLUGIN_DIR', dirname( __DIR__, 2 ) . '/' );
+if ( ! defined( 'ODAD_PLUGIN_DIR' ) ) {
+    define( 'ODAD_PLUGIN_DIR', dirname( __DIR__, 2 ) . '/' );
 }
-if ( ! defined( 'WPOS_PLUGIN_URL' ) ) {
-    define( 'WPOS_PLUGIN_URL', 'http://localhost/' );
+if ( ! defined( 'ODAD_PLUGIN_URL' ) ) {
+    define( 'ODAD_PLUGIN_URL', 'http://localhost/' );
 }
 
 // ── WordPress function stubs ──────────────────────────────────────────────────
@@ -111,14 +111,14 @@ if ( ! class_exists( 'WP_User' ) ) {
 // ── Plugin autoloader ─────────────────────────────────────────────────────────
 
 spl_autoload_register( function ( string $class ): void {
-    if ( ! str_starts_with( $class, 'WPOS_' ) ) {
+    if ( ! str_starts_with( $class, 'ODAD_' ) ) {
         return;
     }
 
-    $suffix   = strtolower( substr( $class, 5 ) ); // strip WPOS_
+    $suffix   = strtolower( substr( $class, 5 ) ); // strip ODAD_
     $filename = str_replace( '_', '-', $suffix );
 
-    $plugin_dir = WPOS_PLUGIN_DIR;
+    $plugin_dir = ODAD_PLUGIN_DIR;
 
     $paths = [
         $plugin_dir . "src/bootstrap/class-wpos-{$filename}.php",

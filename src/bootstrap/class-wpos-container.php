@@ -1,7 +1,7 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
-class WPOS_Container {
+class ODAD_Container {
 
     private array $factories  = [];
     private array $singletons = [];

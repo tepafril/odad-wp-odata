@@ -1,7 +1,7 @@
 # Task 5.5 — Batch Requests (Multipart MIME + JSON Batch)
 
 ## Dependencies
-- Task 1.4 (HTTP layer — WPOS_Request, WPOS_Response, router)
+- Task 1.4 (HTTP layer — ODAD_Request, ODAD_Response, router)
 - Task 3.5 (query engine — re-used for individual batch item execution)
 - Task 5.1–5.3 (write handlers — re-used for batch writes)
 
@@ -29,18 +29,18 @@ Content-Type determines format:
 ### `src/http/class-wpos-batch-handler.php`
 
 ```php
-class WPOS_Batch_Handler {
+class ODAD_Batch_Handler {
 
     public function __construct(
-        private WPOS_Router          $router,
-        private WPOS_Permission_Engine $permissions,
+        private ODAD_Router          $router,
+        private ODAD_Permission_Engine $permissions,
     ) {}
 
     /**
      * Handle a $batch request.
      * Detects format from Content-Type and delegates.
      */
-    public function handle( WPOS_Request $request, \WP_User $user ): WP_REST_Response;
+    public function handle( ODAD_Request $request, \WP_User $user ): WP_REST_Response;
 
     /** Parse and execute multipart MIME batch */
     private function handle_multipart( string $body, string $boundary, \WP_User $user ): WP_REST_Response;
@@ -128,7 +128,7 @@ Individual GET requests outside changesets are independent.
 ## Execution Strategy
 
 For each batch item:
-1. Construct an internal `WPOS_Request` from the batch item's method + URL + body.
+1. Construct an internal `ODAD_Request` from the batch item's method + URL + body.
 2. Dispatch through the existing router/query engine/write handler pipeline.
 3. Capture the response (status + headers + body).
 4. Include in batch response array.
