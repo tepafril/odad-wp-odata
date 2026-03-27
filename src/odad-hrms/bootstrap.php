@@ -73,16 +73,16 @@ add_action( 'ODAD_register_entity_sets', function (
 
 add_action( 'ODAD_register_functions', function ( ODAD_Function_Registry $registry ): void {
 
-    // GET /odata/v4/HR.GetLeaveBalance(EmployeeID=5)
-    $registry->register(
-        name:        'HR.GetLeaveBalance',
-        handler:     new ODAD_HR_Fn_Leave_Balance(),
-        binding:     [],
-        parameters:  [
-            [ 'name' => 'EmployeeID', 'type' => 'Edm.Int32', 'required' => true ],
-        ],
-        return_type: 'Edm.Int32',
-    );
+    // // GET /odata/v4/HR.GetLeaveBalance(EmployeeID=5)
+    // $registry->register(
+    //     name:        'HR.GetLeaveBalance',
+    //     handler:     new ODAD_HR_Fn_Leave_Balance(),
+    //     binding:     [],
+    //     parameters:  [
+    //         [ 'name' => 'EmployeeID', 'type' => 'Edm.Int32', 'required' => true ],
+    //     ],
+    //     return_type: 'Edm.Int32',
+    // );
 
 } );
 
@@ -91,27 +91,27 @@ add_action( 'ODAD_register_functions', function ( ODAD_Function_Registry $regist
 
 add_action( 'ODAD_register_actions', function ( ODAD_Action_Registry $registry ): void {
 
-    // POST /odata/v4/HR.ApproveLeave   body: { "LeaveRequestID": 42 }
-    $registry->register(
-        name:        'HR.ApproveLeave',
-        handler:     new ODAD_HR_Act_Approve_Leave(),
-        binding:     [],
-        parameters:  [
-            [ 'name' => 'LeaveRequestID', 'type' => 'Edm.Int32', 'required' => true ],
-        ],
-        return_type: 'Edm.Boolean',
-    );
+    // // POST /odata/v4/HR.ApproveLeave   body: { "LeaveRequestID": 42 }
+    // $registry->register(
+    //     name:        'HR.ApproveLeave',
+    //     handler:     new ODAD_HR_Act_Approve_Leave(),
+    //     binding:     [],
+    //     parameters:  [
+    //         [ 'name' => 'LeaveRequestID', 'type' => 'Edm.Int32', 'required' => true ],
+    //     ],
+    //     return_type: 'Edm.Boolean',
+    // );
 
-    // POST /odata/v4/HR.SubmitTimesheet   body: { "TimesheetID": 7 }
-    $registry->register(
-        name:        'HR.SubmitTimesheet',
-        handler:     new ODAD_HR_Act_Submit_Timesheet(),
-        binding:     [],
-        parameters:  [
-            [ 'name' => 'TimesheetID', 'type' => 'Edm.Int32', 'required' => true ],
-        ],
-        return_type: 'Edm.Boolean',
-    );
+    // // POST /odata/v4/HR.SubmitTimesheet   body: { "TimesheetID": 7 }
+    // $registry->register(
+    //     name:        'HR.SubmitTimesheet',
+    //     handler:     new ODAD_HR_Act_Submit_Timesheet(),
+    //     binding:     [],
+    //     parameters:  [
+    //         [ 'name' => 'TimesheetID', 'type' => 'Edm.Int32', 'required' => true ],
+    //     ],
+    //     return_type: 'Edm.Boolean',
+    // );
 
 } );
 

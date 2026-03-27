@@ -56,6 +56,15 @@ class ODAD_Admin {
             fn() => ODAD_container()->get( ODAD_Admin_Permission_Config::class )->render()
         );
 
+        add_submenu_page(
+            'odad-dashboard',
+            __( 'API Docs', 'wp-odata-suite' ),
+            __( 'API Docs', 'wp-odata-suite' ),
+            'manage_options',
+            'odad-api-docs',
+            fn() => ODAD_container()->get( ODAD_Admin_API_Docs::class )->render()
+        );
+
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
     }
 

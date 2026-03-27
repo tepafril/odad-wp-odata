@@ -130,6 +130,15 @@ class ODAD_Bootstrapper {
             $c->get( ODAD_Event_Bus::class ),
         ) );
 
+        // ── OpenAPI (Phase 9) ─────────────────────────────────────────────
+        $container->singleton( ODAD_OpenAPI_Cache::class, fn() => new ODAD_OpenAPI_Cache() );
+
+        $container->singleton( ODAD_OpenAPI_Generator::class, fn( ODAD_Container $c ) => new ODAD_OpenAPI_Generator(
+            $c->get( ODAD_Schema_Registry::class ),
+        ) );
+
+        $container->singleton( ODAD_Admin_API_Docs::class, fn() => new ODAD_Admin_API_Docs() );
+
         // ── Async handler (Phase 5.6) ─────────────────────────────────────
         $container->singleton( ODAD_Async_Handler::class, fn( ODAD_Container $c ) => new ODAD_Async_Handler(
             $c->get( ODAD_Query_Engine::class ),
@@ -158,10 +167,30 @@ class ODAD_Bootstrapper {
                 action_registry:    $c->get( ODAD_Action_Registry::class ),
                 async_handler:      $c->get( ODAD_Async_Handler::class ),
                 batch_handler:      $c->get( ODAD_Batch_Handler::class ),
+                openapi_generator:  $c->get( ODAD_OpenAPI_Generator::class ),
+                openapi_cache:      $c->get( ODAD_OpenAPI_Cache::class ),
             );
         } );
 
         self::register_subscribers( $container );
+
+        // ── Auth layer ────────────────────────────────────────────────────
+        $container->singleton( ODAD_JWT::class,             fn() => new ODAD_JWT() );
+        $container->singleton( ODAD_Token_Store::class,     fn() => new ODAD_Token_Store() );
+        $container->singleton( ODAD_Auth_Controller::class, fn( ODAD_Container $c ) => new ODAD_Auth_Controller(
+            $c->get( ODAD_JWT::class ),
+            $c->get( ODAD_Token_Store::class ),
+        ) );
+
+        add_action( 'rest_api_init',
+            fn() => ODAD_container()->get( ODAD_Auth_Controller::class )->register_routes()
+        );
+        add_filter( 'determine_current_user',
+            [ ODAD_JWT_Auth_Handler::class, 'resolve_user' ], 20
+        );
+        add_action( 'odad_purge_expired_tokens',
+            fn() => ODAD_container()->get( ODAD_Token_Store::class )->purge_expired()
+        );
 
         return $container;
     }
@@ -188,7 +217,10 @@ class ODAD_Bootstrapper {
             $container->get( ODAD_Action_Registry::class ),
             $container->get( ODAD_Capability_Map::class ),
         ) );
-        $bus->subscribe( new ODAD_Subscriber_Schema_Changed( $container->get( ODAD_Metadata_Cache::class ) ) );
+        $bus->subscribe( new ODAD_Subscriber_Schema_Changed(
+            $container->get( ODAD_Metadata_Cache::class ),
+            $container->get( ODAD_OpenAPI_Cache::class ),
+        ) );
         $bus->subscribe( new ODAD_Subscriber_Rest_Init( $container->get( ODAD_Router::class ) ) );
         $bus->subscribe( new ODAD_Subscriber_Permission_Check(
             $container->get( ODAD_Permission_Engine::class ),

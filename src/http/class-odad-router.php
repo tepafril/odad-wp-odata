@@ -58,8 +58,10 @@ class ODAD_Router {
         private readonly ?ODAD_Hook_Bridge        $bridge            = null,
         private readonly ?ODAD_Function_Registry  $function_registry = null,
         private readonly ?ODAD_Action_Registry    $action_registry   = null,
-        private readonly ?ODAD_Async_Handler      $async_handler     = null,
-        private readonly ?ODAD_Batch_Handler      $batch_handler     = null,
+        private readonly ?ODAD_Async_Handler      $async_handler      = null,
+        private readonly ?ODAD_Batch_Handler      $batch_handler      = null,
+        private readonly ?ODAD_OpenAPI_Generator  $openapi_generator  = null,
+        private readonly ?ODAD_OpenAPI_Cache      $openapi_cache      = null,
     ) {}
 
     /**
@@ -85,6 +87,17 @@ class ODAD_Router {
         register_rest_route( $ns, '/\$metadata', [
             'methods'             => WP_REST_Server::READABLE,
             'callback'            => [ $this, 'handle_metadata' ],
+            'permission_callback' => '__return_true',
+        ] );
+
+        // ------------------------------------------------------------------
+        // OpenAPI spec  GET /odata/v4/openapi.json
+        // Registered before dynamic routes so it is not swallowed by the
+        // unbound-action pattern (/(?P<action>[a-zA-Z0-9_.]+)).
+        // ------------------------------------------------------------------
+        register_rest_route( $ns, '/openapi\.json', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [ $this, 'handle_openapi' ],
             'permission_callback' => '__return_true',
         ] );
 
@@ -384,6 +397,30 @@ class ODAD_Router {
 
         $csdl_xml = $this->metadata_builder->build_xml();
         return ODAD_Response::metadata_xml( $csdl_xml );
+    }
+
+    /**
+     * GET /odata/v4/openapi.json
+     * Returns the OpenAPI 3.0 specification as JSON, served from cache when available.
+     *
+     * @param WP_REST_Request $wp_request
+     * @return WP_REST_Response
+     */
+    public function handle_openapi( WP_REST_Request $wp_request ): WP_REST_Response {
+        if ( null === $this->openapi_generator || null === $this->openapi_cache ) {
+            return ODAD_Error::not_implemented( 'OpenAPI spec is not available.' );
+        }
+
+        $cached = $this->openapi_cache->get();
+        if ( null !== $cached ) {
+            return new WP_REST_Response( json_decode( $cached, true ), 200 );
+        }
+
+        $spec = $this->openapi_generator->generate();
+        $json = wp_json_encode( $spec, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT );
+        $this->openapi_cache->set( (string) $json );
+
+        return new WP_REST_Response( $spec, 200 );
     }
 
     /**

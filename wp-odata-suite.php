@@ -13,6 +13,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
+register_activation_hook( __FILE__,   [ 'ODAD_Auth_Installer', 'activate' ] );
+register_deactivation_hook( __FILE__, [ 'ODAD_Auth_Installer', 'deactivate' ] );
+
 define( 'ODAD_VERSION',   '0.1.0' );
 define( 'ODAD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ODAD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -41,6 +44,8 @@ spl_autoload_register( function ( string $class ): void {
         ODAD_PLUGIN_DIR . "src/metadata/class-odad-{$filename}.php",
         ODAD_PLUGIN_DIR . "src/adapters/class-odad-{$filename}.php",
         ODAD_PLUGIN_DIR . "src/admin/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/auth/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/openapi/class-odad-{$filename}.php",
         ODAD_PLUGIN_DIR . "src/hooks/subscribers/class-odad-{$filename}.php",
         // ODAD-HRMS domain
         ODAD_PLUGIN_DIR . "src/odad-hrms/entities/class-odad-{$filename}.php",
