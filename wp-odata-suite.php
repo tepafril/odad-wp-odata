@@ -42,10 +42,6 @@ spl_autoload_register( function ( string $class ): void {
         ODAD_PLUGIN_DIR . "src/adapters/class-odad-{$filename}.php",
         ODAD_PLUGIN_DIR . "src/admin/class-odad-{$filename}.php",
         ODAD_PLUGIN_DIR . "src/hooks/subscribers/class-odad-{$filename}.php",
-        // ODAD-HRMS domain
-        ODAD_PLUGIN_DIR . "src/odad-hrms/entities/class-odad-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/odad-hrms/actions/class-odad-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/odad-hrms/functions/class-odad-{$filename}.php",
         // interfaces
         ODAD_PLUGIN_DIR . "src/events/interface-odad-{$filename}.php",
         ODAD_PLUGIN_DIR . "src/adapters/interface-odad-{$filename}.php",
@@ -58,12 +54,6 @@ spl_autoload_register( function ( string $class ): void {
     }
 } );
 
-require_once ODAD_PLUGIN_DIR . 'src/odad-hrms/tables.php';
-require_once ODAD_PLUGIN_DIR . 'src/odad-hrms/bootstrap.php';
-
-if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-    require_once ODAD_PLUGIN_DIR . 'src/odad-hrms/seeder.php';
-}
 
 add_action( 'plugins_loaded', function (): void {
     $container = ODAD_Bootstrapper::build();
