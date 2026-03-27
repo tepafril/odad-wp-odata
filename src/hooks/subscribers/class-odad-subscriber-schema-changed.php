@@ -15,7 +15,8 @@ defined( 'ABSPATH' ) || exit;
 class ODAD_Subscriber_Schema_Changed implements ODAD_Event_Listener {
 
     public function __construct(
-        private ODAD_Metadata_Cache $cache,
+        private ODAD_Metadata_Cache     $cache,
+        private ?ODAD_OpenAPI_Cache     $openapi_cache = null,
     ) {}
 
     public function get_event(): string {
@@ -24,5 +25,6 @@ class ODAD_Subscriber_Schema_Changed implements ODAD_Event_Listener {
 
     public function handle( ODAD_Event $event ): void {
         $this->cache->bust();
+        $this->openapi_cache?->bust();
     }
 }

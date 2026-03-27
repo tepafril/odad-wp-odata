@@ -45,6 +45,7 @@ spl_autoload_register( function ( string $class ): void {
         ODAD_PLUGIN_DIR . "src/adapters/class-odad-{$filename}.php",
         ODAD_PLUGIN_DIR . "src/admin/class-odad-{$filename}.php",
         ODAD_PLUGIN_DIR . "src/auth/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/openapi/class-odad-{$filename}.php",
         ODAD_PLUGIN_DIR . "src/hooks/subscribers/class-odad-{$filename}.php",
         // interfaces
         ODAD_PLUGIN_DIR . "src/events/interface-odad-{$filename}.php",
