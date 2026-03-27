@@ -5,7 +5,7 @@
  * Requires a live WordPress test database (WP_UnitTestCase).
  * Each test runs inside a transaction that is rolled back on tearDown.
  *
- * @package WPOS\Tests\Integration
+ * @package ODAD\Tests\Integration
  */
 
 class WPUsersAdapterTest extends WP_UnitTestCase {

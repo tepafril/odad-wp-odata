@@ -24,7 +24,7 @@ changed since the last request.
 **Delta tracking strategy:** Use `post_modified_gmt` / `user_registered` timestamps.
 (Full change-log table is out of scope for v1 — use timestamps.)
 
-### `src/query/class-wpos-delta-token.php`
+### `src/query/class-odad-delta-token.php`
 
 ```php
 class ODAD_Delta_Token {
@@ -75,7 +75,7 @@ WP-Cron job, and returns `202 Accepted` with a status URL.
 
 ### Files
 
-**`src/http/class-wpos-async-handler.php`**
+**`src/http/class-odad-async-handler.php`**
 
 ```php
 class ODAD_Async_Handler {

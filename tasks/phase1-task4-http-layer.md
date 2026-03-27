@@ -26,7 +26,7 @@ All OData endpoints live under:
 
 ## Files to Create
 
-### `src/http/class-wpos-request.php`
+### `src/http/class-odad-request.php`
 
 Parses an incoming `WP_REST_Request` into a typed OData request object.
 
@@ -58,7 +58,7 @@ class ODAD_Request {
 
 Enforce: `$top` default = 100, max = 1000. If client requests > 1000, cap silently at 1000.
 
-### `src/http/class-wpos-response.php`
+### `src/http/class-odad-response.php`
 
 Formats the response as OData-compliant JSON.
 
@@ -94,7 +94,7 @@ Response must set:
 - `Content-Type: application/json;odata.metadata=minimal;odata.streaming=true`
 - `OData-Version: 4.01`
 
-### `src/http/class-wpos-error.php`
+### `src/http/class-odad-error.php`
 
 OData error format: `{"error": {"code": "...", "message": "..."}}`.
 
@@ -109,7 +109,7 @@ class ODAD_Error {
 }
 ```
 
-### `src/http/class-wpos-router.php`
+### `src/http/class-odad-router.php`
 
 Registers all OData routes with `WP_REST_Server`. Dispatches to injected services.
 At Phase 1, only the `$metadata` and service document endpoints need real implementations.
@@ -158,7 +158,7 @@ Content-Type: application/xml
 
 ## Bootstrapper Update
 
-In `class-wpos-bootstrapper.php`, register `ODAD_Router` as a singleton and update
+In `class-odad-bootstrapper.php`, register `ODAD_Router` as a singleton and update
 `ODAD_Subscriber_Rest_Init` (or create the REST init wiring in `ODAD_Hook_Bridge`)
 to call `$router->register_routes()` when `rest_api_init` fires.
 

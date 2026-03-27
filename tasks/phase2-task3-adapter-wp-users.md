@@ -12,7 +12,7 @@ capability. The adapter queries `wp_users` joined with `wp_usermeta` as needed.
 
 ## File
 
-### `src/adapters/class-wpos-adapter-wp-users.php`
+### `src/adapters/class-odad-adapter-wp-users.php`
 
 ```php
 class ODAD_Adapter_WP_Users implements ODAD_Adapter {

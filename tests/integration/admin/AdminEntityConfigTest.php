@@ -4,7 +4,7 @@
  *
  * Requires the full bootstrapped container (available after plugins_loaded).
  *
- * @package WPOS\Tests\Integration
+ * @package ODAD\Tests\Integration
  */
 
 class AdminEntityConfigTest extends WP_UnitTestCase {

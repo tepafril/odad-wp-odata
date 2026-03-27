@@ -16,7 +16,7 @@ Each entity set is a separate configured instance of the same adapter class.
 
 ## File
 
-### `src/adapters/class-wpos-adapter-wp-posts.php`
+### `src/adapters/class-odad-adapter-wp-posts.php`
 
 ```php
 class ODAD_Adapter_WP_Posts implements ODAD_Adapter {

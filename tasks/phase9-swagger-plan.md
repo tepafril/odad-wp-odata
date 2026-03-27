@@ -73,7 +73,7 @@ The cache is busted by `ODAD_Event_Schema_Changed` — same event that busts
 
 ### Task 1.1 — Core generator
 
-**File:** `src/openapi/class-wpos-openapi-generator.php`
+**File:** `src/openapi/class-odad-openapi-generator.php`
 
 ```php
 class ODAD_OpenAPI_Generator {
@@ -254,7 +254,7 @@ Properties with `'read_only' => true` in the definition are excluded from
 
 ### Task 1.2 — OpenAPI cache
 
-**File:** `src/openapi/class-wpos-openapi-cache.php`
+**File:** `src/openapi/class-odad-openapi-cache.php`
 
 ```php
 class ODAD_OpenAPI_Cache {
@@ -269,7 +269,7 @@ class ODAD_OpenAPI_Cache {
 Wire bust into the existing `ODAD_Subscriber_Schema_Changed`:
 
 ```php
-// In class-wpos-subscriber-schema-changed.php — add openapi cache bust
+// In class-odad-subscriber-schema-changed.php — add openapi cache bust
 public function handle( ODAD_Event $event ): void {
     $this->metadata_cache->bust();
     $this->openapi_cache->bust();  // ADD THIS
@@ -335,17 +335,17 @@ No `swagger-ui-standalone-preset.js` needed (we embed the spec URL directly).
 
 ### Task 2.2 — Admin page
 
-**File:** `src/admin/class-wpos-admin-api-docs.php`
+**File:** `src/admin/class-odad-admin-api-docs.php`
 
 Add submenu to existing `ODAD_Admin::register_menu()`:
 
 ```php
 add_submenu_page(
-    'wpos-dashboard',
+    'odad-dashboard',
     __( 'API Docs', 'wp-odata-suite' ),
     __( 'API Docs', 'wp-odata-suite' ),
     'manage_options',
-    'wpos-api-docs',
+    'odad-api-docs',
     fn() => ODAD_container()->get( ODAD_Admin_API_Docs::class )->render()
 );
 ```
@@ -357,8 +357,8 @@ public function render(): void {
     if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Unauthorized' );
 
     $spec_url = rest_url( 'odata/v4/openapi.json' );
-    wp_enqueue_style(  'wpos-swagger-ui', ODAD_PLUGIN_URL . 'assets/swagger-ui/swagger-ui.css', [], ODAD_VERSION );
-    wp_enqueue_script( 'wpos-swagger-ui', ODAD_PLUGIN_URL . 'assets/swagger-ui/swagger-ui-bundle.js', [], ODAD_VERSION, true );
+    wp_enqueue_style(  'odad-swagger-ui', ODAD_PLUGIN_URL . 'assets/swagger-ui/swagger-ui.css', [], ODAD_VERSION );
+    wp_enqueue_script( 'odad-swagger-ui', ODAD_PLUGIN_URL . 'assets/swagger-ui/swagger-ui-bundle.js', [], ODAD_VERSION, true );
     ?>
     <div class="wrap">
         <h1><?php esc_html_e( 'API Documentation', 'wp-odata-suite' ); ?></h1>
@@ -368,11 +368,11 @@ public function render(): void {
                 <?php echo esc_html( $spec_url ); ?>
             </a>
         </p>
-        <div id="wpos-swagger-ui-container"></div>
+        <div id="odad-swagger-ui-container"></div>
         <script>
         SwaggerUIBundle({
             url:              <?php echo wp_json_encode( $spec_url ); ?>,
-            dom_id:           '#wpos-swagger-ui-container',
+            dom_id:           '#odad-swagger-ui-container',
             presets:          [ SwaggerUIBundle.presets.apis ],
             layout:           'BaseLayout',
             deepLinking:      true,
@@ -490,15 +490,15 @@ Phase 3 (independent)
 
 | File | Action |
 |---|---|
-| `src/openapi/class-wpos-openapi-generator.php` | **Create** |
-| `src/openapi/class-wpos-openapi-cache.php` | **Create** |
-| `src/admin/class-wpos-admin-api-docs.php` | **Create** |
+| `src/openapi/class-odad-openapi-generator.php` | **Create** |
+| `src/openapi/class-odad-openapi-cache.php` | **Create** |
+| `src/admin/class-odad-admin-api-docs.php` | **Create** |
 | `assets/swagger-ui/swagger-ui-bundle.js` | **Download** |
 | `assets/swagger-ui/swagger-ui.css` | **Download** |
-| `src/http/class-wpos-router.php` | Add `/openapi.json` route + `handle_openapi()` |
-| `src/admin/class-wpos-admin.php` | Add "API Docs" submenu item |
-| `src/hooks/subscribers/class-wpos-subscriber-schema-changed.php` | Add `openapi_cache->bust()` |
-| `src/bootstrap/class-wpos-bootstrapper.php` | Register new singletons, update Router + SchemaChanged args |
+| `src/http/class-odad-router.php` | Add `/openapi.json` route + `handle_openapi()` |
+| `src/admin/class-odad-admin.php` | Add "API Docs" submenu item |
+| `src/hooks/subscribers/class-odad-subscriber-schema-changed.php` | Add `openapi_cache->bust()` |
+| `src/bootstrap/class-odad-bootstrapper.php` | Register new singletons, update Router + SchemaChanged args |
 | `wp-odata-suite.php` autoloader | Add `src/openapi/` directory |
 | `tests/unit/openapi/OpenAPIGeneratorTest.php` | **Create** |
 

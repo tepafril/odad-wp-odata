@@ -30,7 +30,7 @@ POST /odata/v4/Posts(42)/NS.PublishNow          → bound action
 
 ---
 
-## File 1: `src/query/class-wpos-function-registry.php`
+## File 1: `src/query/class-odad-function-registry.php`
 
 ```php
 class ODAD_Function_Registry {
@@ -61,7 +61,7 @@ class ODAD_Function_Registry {
 }
 ```
 
-## File 2: `src/write/class-wpos-action-registry.php`
+## File 2: `src/write/class-odad-action-registry.php`
 
 Same structure as `ODAD_Function_Registry` but for actions (POST).
 

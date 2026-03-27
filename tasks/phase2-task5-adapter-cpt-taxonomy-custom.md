@@ -11,7 +11,7 @@ custom database tables.
 
 ---
 
-## File 1: `src/adapters/class-wpos-adapter-cpt.php`
+## File 1: `src/adapters/class-odad-adapter-cpt.php`
 
 Handles any Custom Post Type. Extends or wraps `ODAD_Adapter_WP_Posts`.
 
@@ -50,7 +50,7 @@ The CPT adapter inherits all `ODAD_Adapter_WP_Posts` methods.
 
 ---
 
-## File 2: `src/adapters/class-wpos-adapter-taxonomy.php`
+## File 2: `src/adapters/class-odad-adapter-taxonomy.php`
 
 Handles any registered taxonomy. Extends `ODAD_Adapter_WP_Terms`.
 
@@ -84,7 +84,7 @@ class ODAD_Adapter_Taxonomy extends ODAD_Adapter_WP_Terms {
 
 ---
 
-## File 3: `src/adapters/class-wpos-adapter-custom-table.php`
+## File 3: `src/adapters/class-odad-adapter-custom-table.php`
 
 Generic adapter for any arbitrary `$wpdb` prefixed table (e.g. `wp_employees`).
 

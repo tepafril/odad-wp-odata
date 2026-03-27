@@ -14,7 +14,7 @@ Also implement server-driven pagination and the `/$query` POST body endpoint.
 
 ## File
 
-### `src/query/class-wpos-query-engine.php`
+### `src/query/class-odad-query-engine.php`
 
 ```php
 class ODAD_Query_Engine {
@@ -77,7 +77,7 @@ execute():
 
 ## `ODAD_Query_Result` Class
 
-Create `src/query/class-wpos-query-result.php`:
+Create `src/query/class-odad-query-result.php`:
 
 ```php
 class ODAD_Query_Result {

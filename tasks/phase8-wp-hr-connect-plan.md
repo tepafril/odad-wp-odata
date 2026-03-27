@@ -47,7 +47,7 @@ WordPress Admin
 4. A `determine_current_user` filter validates Bearer tokens before every REST request.
 5. WP-OData Suite handles all OData protocol; this plugin only registers adapters.
 6. Row-level security: employees see only their own check-ins and leave requests.
-7. All admin-facing WP hooks go through `WPHR_Hook_Bridge` (same pattern as WPOS).
+7. All admin-facing WP hooks go through `WPHR_Hook_Bridge` (same pattern as ODAD).
 
 ---
 
@@ -180,7 +180,7 @@ add_action( 'plugins_loaded', function (): void {
         return;
     }
     WPHR_Bootstrapper::boot();
-}, 15 ); // priority 15 — after WPOS (priority 5) is fully loaded
+}, 15 ); // priority 15 — after ODAD (priority 5) is fully loaded
 
 function wphr_container(): WPHR_Container {
     return $GLOBALS['wphr_container'];

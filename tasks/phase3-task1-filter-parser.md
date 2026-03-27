@@ -14,7 +14,7 @@ no WordPress dependencies.
 
 ## Files to Create
 
-### `src/query/class-wpos-filter-parser.php`
+### `src/query/class-odad-filter-parser.php`
 
 The parser takes a raw `$filter` string and returns an AST root node.
 
@@ -28,7 +28,7 @@ class ODAD_Filter_Parser {
 
 ## AST Node Types
 
-Create a file `src/query/class-wpos-ast-node.php` with all node classes:
+Create a file `src/query/class-odad-ast-node.php` with all node classes:
 
 ```php
 abstract class ODAD_AST_Node {}

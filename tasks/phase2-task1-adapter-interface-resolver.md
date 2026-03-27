@@ -11,7 +11,7 @@ names to adapter instances. These are the contracts everything in Phase 2 is bui
 
 ## Files to Create
 
-### `src/adapters/interface-wpos-adapter.php`
+### `src/adapters/interface-odad-adapter.php`
 
 ```php
 interface ODAD_Adapter {
@@ -57,7 +57,7 @@ interface ODAD_Adapter {
 
 ---
 
-### `src/adapters/class-wpos-adapter-resolver.php`
+### `src/adapters/class-odad-adapter-resolver.php`
 
 Maps entity set names → adapter instances. Injected into all domain services.
 
@@ -95,7 +95,7 @@ class ODAD_Adapter_Resolver {
 
 ### Exception class
 
-Create `src/adapters/class-wpos-unknown-entity-exception.php`:
+Create `src/adapters/class-odad-unknown-entity-exception.php`:
 ```php
 class ODAD_Unknown_Entity_Exception extends \RuntimeException {}
 ```
@@ -105,7 +105,7 @@ class ODAD_Unknown_Entity_Exception extends \RuntimeException {}
 ## `ODAD_Query_Context` Stub
 
 `ODAD_Query_Context` is fully built in Phase 3 (Task 3.5), but the adapter interface
-references it. Create a minimal stub in `src/query/class-wpos-query-context.php` now:
+references it. Create a minimal stub in `src/query/class-odad-query-context.php` now:
 
 ```php
 class ODAD_Query_Context {
@@ -126,7 +126,7 @@ class ODAD_Query_Context {
 
 ## Bootstrapper Update
 
-In `class-wpos-bootstrapper.php`, add:
+In `class-odad-bootstrapper.php`, add:
 ```php
 $c->singleton( ODAD_Adapter_Resolver::class, fn() => new ODAD_Adapter_Resolver() );
 ```

@@ -6,7 +6,7 @@
  * is re-initialised via the 'rest_api_init' action.  This matches the approach
  * used throughout WP core's own REST API test suite.
  *
- * @package WPOS\Tests\Integration
+ * @package ODAD\Tests\Integration
  */
 
 class ODataEndpointTest extends WP_UnitTestCase {
@@ -136,12 +136,12 @@ class ODataEndpointTest extends WP_UnitTestCase {
     }
 
     /**
-     * GET /odata/v4/Posts?$filter=Title eq 'Unique-WPOS-Test' → result contains that post.
+     * GET /odata/v4/Posts?$filter=Title eq 'Unique-ODAD-Test' → result contains that post.
      */
     public function test_filter_eq(): void {
         wp_set_current_user( $this->create_admin() );
 
-        $unique_title = 'Unique-WPOS-Test-' . mt_rand( 10000, 99999 );
+        $unique_title = 'Unique-ODAD-Test-' . mt_rand( 10000, 99999 );
         $this->factory->post->create( [
             'post_title'  => $unique_title,
             'post_status' => 'publish',

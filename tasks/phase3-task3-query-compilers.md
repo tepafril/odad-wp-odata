@@ -10,7 +10,7 @@ SQL fragments. Each compiler handles one OData system query option.
 
 ---
 
-## File 1: `src/query/class-wpos-select-compiler.php`
+## File 1: `src/query/class-odad-select-compiler.php`
 
 Translates `$select=Title,Status,AuthorID` into a SQL column list.
 
@@ -34,7 +34,7 @@ Rules:
 
 ---
 
-## File 2: `src/query/class-wpos-orderby-compiler.php`
+## File 2: `src/query/class-odad-orderby-compiler.php`
 
 Translates `$orderby=PublishedDate desc,Title` into a SQL ORDER BY clause.
 
@@ -59,7 +59,7 @@ Rules:
 
 ---
 
-## File 3: `src/query/class-wpos-search-compiler.php`
+## File 3: `src/query/class-odad-search-compiler.php`
 
 Translates `$search=keyword` into a SQL LIKE expression for a basic full-text search.
 
@@ -83,7 +83,7 @@ Rules:
 
 ---
 
-## File 4: `src/query/class-wpos-compute-compiler.php`
+## File 4: `src/query/class-odad-compute-compiler.php`
 
 Translates `$compute=Price mul Quantity as Total` into SQL computed columns.
 

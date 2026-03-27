@@ -1,10 +1,10 @@
 /* WP-OData Suite Admin Styles */
 
-.wpos-wrap h1 {
+.odad-wrap h1 {
     margin-bottom: 16px;
 }
 
-.wpos-card {
+.odad-card {
     background: #fff;
     border: 1px solid #ccd0d4;
     border-radius: 4px;
@@ -13,50 +13,50 @@
     box-shadow: 0 1px 1px rgba(0,0,0,.04);
 }
 
-.wpos-card h2 {
+.odad-card h2 {
     margin-top: 0;
     padding-bottom: 8px;
     border-bottom: 1px solid #eee;
 }
 
-.wpos-entity-table th,
-.wpos-entity-table td {
+.odad-entity-table th,
+.odad-entity-table td {
     padding: 8px 12px;
 }
 
-.wpos-perm-table th,
-.wpos-perm-table td {
+.odad-perm-table th,
+.odad-perm-table td {
     text-align: center;
     padding: 8px 12px;
 }
 
-.wpos-perm-table th:first-child,
-.wpos-perm-table td:first-child {
+.odad-perm-table th:first-child,
+.odad-perm-table td:first-child {
     text-align: left;
 }
 
-.wpos-quick-links {
+.odad-quick-links {
     margin: 0;
     padding: 0;
     list-style: disc;
     padding-left: 20px;
 }
 
-.wpos-quick-links li {
+.odad-quick-links li {
     margin-bottom: 6px;
 }
 
-.wpos-ok {
+.odad-ok {
     color: #46b450;
     font-weight: 600;
 }
 
-.wpos-err {
+.odad-err {
     color: #dc3232;
     font-weight: 600;
 }
 
-.wpos-checking {
+.odad-checking {
     color: #888;
     font-style: italic;
 }

@@ -227,96 +227,96 @@ wp-odata-suite/
 ├── src/
 │   │
 │   ├── bootstrap/
-│   │   ├── class-wpos-container.php          # DI container (Phase 1)
-│   │   └── class-wpos-bootstrapper.php       # Wires container + bridge
+│   │   ├── class-odad-container.php          # DI container (Phase 1)
+│   │   └── class-odad-bootstrapper.php       # Wires container + bridge
 │   │
 │   ├── http/                                 # WP REST API boundary
-│   │   ├── class-wpos-router.php             # REST route registration
-│   │   ├── class-wpos-request.php            # Parses incoming OData request
-│   │   ├── class-wpos-response.php           # Formats OData JSON response
-│   │   └── class-wpos-error.php              # OData error format
+│   │   ├── class-odad-router.php             # REST route registration
+│   │   ├── class-odad-request.php            # Parses incoming OData request
+│   │   ├── class-odad-response.php           # Formats OData JSON response
+│   │   └── class-odad-error.php              # OData error format
 │   │
 │   ├── hooks/                                # LAYER 1 — WP boundary
-│   │   ├── class-wpos-hook-bridge.php        # ONLY file with add_filter/apply_filters
+│   │   ├── class-odad-hook-bridge.php        # ONLY file with add_filter/apply_filters
 │   │   └── subscribers/
-│   │       ├── class-wpos-subscriber-schema-init.php
-│   │       ├── class-wpos-subscriber-schema-changed.php     # cache invalidation
-│   │       ├── class-wpos-subscriber-permission-check.php
-│   │       ├── class-wpos-subscriber-query-before.php
-│   │       ├── class-wpos-subscriber-query-after.php
-│   │       ├── class-wpos-subscriber-write-before.php
-│   │       ├── class-wpos-subscriber-write-after.php
-│   │       ├── class-wpos-subscriber-deep-insert.php
-│   │       ├── class-wpos-subscriber-deep-update.php
-│   │       ├── class-wpos-subscriber-set-operation.php
-│   │       ├── class-wpos-subscriber-metadata-build.php
-│   │       └── class-wpos-subscriber-admin-config-saved.php
+│   │       ├── class-odad-subscriber-schema-init.php
+│   │       ├── class-odad-subscriber-schema-changed.php     # cache invalidation
+│   │       ├── class-odad-subscriber-permission-check.php
+│   │       ├── class-odad-subscriber-query-before.php
+│   │       ├── class-odad-subscriber-query-after.php
+│   │       ├── class-odad-subscriber-write-before.php
+│   │       ├── class-odad-subscriber-write-after.php
+│   │       ├── class-odad-subscriber-deep-insert.php
+│   │       ├── class-odad-subscriber-deep-update.php
+│   │       ├── class-odad-subscriber-set-operation.php
+│   │       ├── class-odad-subscriber-metadata-build.php
+│   │       └── class-odad-subscriber-admin-config-saved.php
 │   │
 │   ├── events/                               # LAYER 2 — Internal event bus
-│   │   ├── class-wpos-event-bus.php
-│   │   ├── interface-wpos-event.php
-│   │   ├── interface-wpos-stoppable-event.php
-│   │   ├── interface-wpos-event-listener.php
+│   │   ├── class-odad-event-bus.php
+│   │   ├── interface-odad-event.php
+│   │   ├── interface-odad-stoppable-event.php
+│   │   ├── interface-odad-event-listener.php
 │   │   └── events/
-│   │       ├── class-wpos-event-wp-init.php
-│   │       ├── class-wpos-event-rest-init.php
-│   │       ├── class-wpos-event-schema-register.php
-│   │       ├── class-wpos-event-schema-changed.php          # NEW — triggers cache bust
-│   │       ├── class-wpos-event-metadata-build.php
-│   │       ├── class-wpos-event-query-before.php
-│   │       ├── class-wpos-event-query-after.php
-│   │       ├── class-wpos-event-write-before.php
-│   │       ├── class-wpos-event-write-after.php
-│   │       ├── class-wpos-event-permission-check.php
-│   │       ├── class-wpos-event-deep-insert-before.php      # NEW
-│   │       ├── class-wpos-event-deep-insert-after.php       # NEW
-│   │       ├── class-wpos-event-deep-update-before.php      # NEW
-│   │       ├── class-wpos-event-deep-update-after.php       # NEW
-│   │       ├── class-wpos-event-set-operation-before.php    # NEW
-│   │       └── class-wpos-event-set-operation-after.php     # NEW
+│   │       ├── class-odad-event-wp-init.php
+│   │       ├── class-odad-event-rest-init.php
+│   │       ├── class-odad-event-schema-register.php
+│   │       ├── class-odad-event-schema-changed.php          # NEW — triggers cache bust
+│   │       ├── class-odad-event-metadata-build.php
+│   │       ├── class-odad-event-query-before.php
+│   │       ├── class-odad-event-query-after.php
+│   │       ├── class-odad-event-write-before.php
+│   │       ├── class-odad-event-write-after.php
+│   │       ├── class-odad-event-permission-check.php
+│   │       ├── class-odad-event-deep-insert-before.php      # NEW
+│   │       ├── class-odad-event-deep-insert-after.php       # NEW
+│   │       ├── class-odad-event-deep-update-before.php      # NEW
+│   │       ├── class-odad-event-deep-update-after.php       # NEW
+│   │       ├── class-odad-event-set-operation-before.php    # NEW
+│   │       └── class-odad-event-set-operation-after.php     # NEW
 │   │
 │   ├── query/                                # LAYER 3 — Domain: query
-│   │   ├── class-wpos-query-engine.php
-│   │   ├── class-wpos-query-context.php
-│   │   ├── class-wpos-query-result.php
-│   │   ├── class-wpos-filter-parser.php
-│   │   ├── class-wpos-filter-compiler.php
-│   │   ├── class-wpos-orderby-compiler.php
-│   │   ├── class-wpos-select-compiler.php
-│   │   ├── class-wpos-expand-compiler.php
-│   │   ├── class-wpos-compute-compiler.php
-│   │   └── class-wpos-search-compiler.php
+│   │   ├── class-odad-query-engine.php
+│   │   ├── class-odad-query-context.php
+│   │   ├── class-odad-query-result.php
+│   │   ├── class-odad-filter-parser.php
+│   │   ├── class-odad-filter-compiler.php
+│   │   ├── class-odad-orderby-compiler.php
+│   │   ├── class-odad-select-compiler.php
+│   │   ├── class-odad-expand-compiler.php
+│   │   ├── class-odad-compute-compiler.php
+│   │   └── class-odad-search-compiler.php
 │   │
 │   ├── write/                                # LAYER 3 — Domain: writes
-│   │   ├── class-wpos-write-handler.php
-│   │   ├── class-wpos-deep-insert.php
-│   │   ├── class-wpos-deep-update.php
-│   │   └── class-wpos-set-operations.php
+│   │   ├── class-odad-write-handler.php
+│   │   ├── class-odad-deep-insert.php
+│   │   ├── class-odad-deep-update.php
+│   │   └── class-odad-set-operations.php
 │   │
 │   ├── permissions/                          # LAYER 3 — Domain: ACL
-│   │   ├── class-wpos-permission-engine.php
-│   │   ├── class-wpos-capability-map.php
-│   │   └── class-wpos-field-acl.php
+│   │   ├── class-odad-permission-engine.php
+│   │   ├── class-odad-capability-map.php
+│   │   └── class-odad-field-acl.php
 │   │
 │   ├── metadata/                             # LAYER 3 — Domain: schema
-│   │   ├── class-wpos-metadata-builder.php
-│   │   ├── class-wpos-metadata-cache.php
-│   │   └── class-wpos-schema-registry.php
+│   │   ├── class-odad-metadata-builder.php
+│   │   ├── class-odad-metadata-cache.php
+│   │   └── class-odad-schema-registry.php
 │   │
 │   ├── adapters/                             # Adapter layer (WP-aware)
-│   │   ├── interface-wpos-adapter.php
-│   │   ├── class-wpos-adapter-resolver.php   # NEW — resolves name → adapter
-│   │   ├── class-wpos-adapter-wp-posts.php
-│   │   ├── class-wpos-adapter-wp-users.php
-│   │   ├── class-wpos-adapter-wp-terms.php
-│   │   ├── class-wpos-adapter-cpt.php
-│   │   ├── class-wpos-adapter-taxonomy.php
-│   │   └── class-wpos-adapter-custom-table.php
+│   │   ├── interface-odad-adapter.php
+│   │   ├── class-odad-adapter-resolver.php   # NEW — resolves name → adapter
+│   │   ├── class-odad-adapter-wp-posts.php
+│   │   ├── class-odad-adapter-wp-users.php
+│   │   ├── class-odad-adapter-wp-terms.php
+│   │   ├── class-odad-adapter-cpt.php
+│   │   ├── class-odad-adapter-taxonomy.php
+│   │   └── class-odad-adapter-custom-table.php
 │   │
 │   └── admin/                                # Admin UI (WP-aware)
-│       ├── class-wpos-admin.php
-│       ├── class-wpos-admin-entity-config.php
-│       └── class-wpos-admin-permission-config.php
+│       ├── class-odad-admin.php
+│       ├── class-odad-admin-entity-config.php
+│       └── class-odad-admin-permission-config.php
 │
 ├── assets/
 │   ├── js/
@@ -355,7 +355,7 @@ The single WP boundary class. All `add_action`, `add_filter`, `apply_filters`,
 `do_action` calls live here and nowhere else.
 
 ```php
-// src/hooks/class-wpos-hook-bridge.php
+// src/hooks/class-odad-hook-bridge.php
 
 class ODAD_Hook_Bridge {
 
@@ -401,7 +401,7 @@ class ODAD_Hook_Bridge {
 ### Layer 2 — Internal Event Bus
 
 ```php
-// src/events/class-wpos-event-bus.php
+// src/events/class-odad-event-bus.php
 
 class ODAD_Event_Bus {
 
@@ -467,7 +467,7 @@ Each subscriber is a thin bridge class: one internal event → one domain call
 → one WP filter exposure.
 
 ```php
-// src/hooks/subscribers/class-wpos-subscriber-query-before.php
+// src/hooks/subscribers/class-odad-subscriber-query-before.php
 
 class ODAD_Subscriber_Query_Before implements ODAD_Event_Listener {
 
@@ -806,7 +806,7 @@ The resolver is a registry that maps entity set names to adapter instances.
 It lives in the adapter layer (WP-aware) and is injected into domain services.
 
 ```php
-// src/adapters/class-wpos-adapter-resolver.php
+// src/adapters/class-odad-adapter-resolver.php
 
 class ODAD_Adapter_Resolver {
 
@@ -840,7 +840,7 @@ class ODAD_Adapter_Resolver {
 ### Adapter Interface (Canonical)
 
 ```php
-// src/adapters/interface-wpos-adapter.php
+// src/adapters/interface-odad-adapter.php
 
 interface ODAD_Adapter {
 
@@ -970,7 +970,7 @@ Admin saves entity config in WP admin panel
 ### Admin-Specific Subscribers
 
 ```php
-// src/hooks/subscribers/class-wpos-subscriber-admin-config-saved.php
+// src/hooks/subscribers/class-odad-subscriber-admin-config-saved.php
 
 class ODAD_Subscriber_Admin_Config_Saved implements ODAD_Event_Listener {
 
@@ -1018,7 +1018,7 @@ But when schema changes — whether via admin UI or via an external plugin calli
 `ODAD_Subscriber_Schema_Changed` catches it and busts the transient cache.
 
 ```php
-// src/hooks/subscribers/class-wpos-subscriber-schema-changed.php
+// src/hooks/subscribers/class-odad-subscriber-schema-changed.php
 
 class ODAD_Subscriber_Schema_Changed implements ODAD_Event_Listener {
 
@@ -1037,7 +1037,7 @@ class ODAD_Subscriber_Schema_Changed implements ODAD_Event_Listener {
 ### Cache Build Strategy
 
 ```php
-// src/metadata/class-wpos-metadata-cache.php
+// src/metadata/class-odad-metadata-cache.php
 
 class ODAD_Metadata_Cache {
 
@@ -1085,7 +1085,7 @@ The container is a **Phase 1 deliverable**. It is the wiring backbone of the
 entire three-layer architecture. Without it, the separation of concerns collapses.
 
 ```php
-// src/bootstrap/class-wpos-container.php
+// src/bootstrap/class-odad-container.php
 
 class ODAD_Container {
 
@@ -1109,7 +1109,7 @@ class ODAD_Container {
 ```
 
 ```php
-// src/bootstrap/class-wpos-bootstrapper.php
+// src/bootstrap/class-odad-bootstrapper.php
 
 class ODAD_Bootstrapper {
 

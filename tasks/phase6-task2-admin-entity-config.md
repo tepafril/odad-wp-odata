@@ -14,7 +14,7 @@ The save flow must route through the event bus and trigger cache invalidation.
 
 ## File
 
-### `src/admin/class-wpos-admin-entity-config.php`
+### `src/admin/class-odad-admin-entity-config.php`
 
 ```php
 class ODAD_Admin_Entity_Config {
@@ -101,7 +101,7 @@ public function save(): void {
 
 ---
 
-## Subscriber: `class-wpos-subscriber-admin-config-saved.php`
+## Subscriber: `class-odad-subscriber-admin-config-saved.php`
 
 Flesh out the stub from Task 1.3:
 

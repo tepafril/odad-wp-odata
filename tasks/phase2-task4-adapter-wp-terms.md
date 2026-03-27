@@ -12,7 +12,7 @@ Each taxonomy is a separate configured instance.
 
 ## File
 
-### `src/adapters/class-wpos-adapter-wp-terms.php`
+### `src/adapters/class-odad-adapter-wp-terms.php`
 
 ```php
 class ODAD_Adapter_WP_Terms implements ODAD_Adapter {

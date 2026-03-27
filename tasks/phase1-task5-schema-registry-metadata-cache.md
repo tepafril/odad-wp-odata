@@ -15,7 +15,7 @@ valid OData v4.01 CSDL XML.
 
 ## Files to Create
 
-### `src/metadata/class-wpos-schema-registry.php`
+### `src/metadata/class-odad-schema-registry.php`
 
 Holds the canonical list of entity sets known to the plugin.
 
@@ -58,7 +58,7 @@ A `$definition` array has this shape (adapters populate it in Phase 2):
 
 ---
 
-### `src/metadata/class-wpos-metadata-cache.php`
+### `src/metadata/class-odad-metadata-cache.php`
 
 WP Transients-based cache. TTL = `DAY_IN_SECONDS`.
 
@@ -81,7 +81,7 @@ class ODAD_Metadata_Cache {
 
 ---
 
-### `src/metadata/class-wpos-metadata-builder.php`
+### `src/metadata/class-odad-metadata-builder.php`
 
 Builds CSDL XML (and later JSON) from the schema registry.
 Must pass `ODAD_metadata_entity_types` and `ODAD_metadata_entity_sets` filters
@@ -148,7 +148,7 @@ Once entity types are registered (Phase 2), `build_xml()` must emit:
 
 ---
 
-### `src/hooks/subscribers/class-wpos-subscriber-schema-changed.php`
+### `src/hooks/subscribers/class-odad-subscriber-schema-changed.php`
 
 Implements the cache invalidation subscriber (flesh out the stub from Task 1.3):
 
@@ -173,7 +173,7 @@ class ODAD_Subscriber_Schema_Changed implements ODAD_Event_Listener {
 
 ## Bootstrapper Update
 
-Update `class-wpos-bootstrapper.php` to wire:
+Update `class-odad-bootstrapper.php` to wire:
 - `ODAD_Schema_Registry` singleton
 - `ODAD_Metadata_Cache` singleton
 - `ODAD_Metadata_Builder` singleton (injecting the above + event bus + bridge)

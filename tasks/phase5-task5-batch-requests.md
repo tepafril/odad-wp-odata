@@ -26,7 +26,7 @@ Content-Type determines format:
 
 ## File
 
-### `src/http/class-wpos-batch-handler.php`
+### `src/http/class-odad-batch-handler.php`
 
 ```php
 class ODAD_Batch_Handler {

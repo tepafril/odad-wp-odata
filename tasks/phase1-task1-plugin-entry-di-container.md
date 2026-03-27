@@ -45,21 +45,21 @@ spl_autoload_register( function ( string $class ): void {
     $filename = str_replace( '_', '-', $suffix );
     // Try class file first, then interface file
     $paths = [
-        ODAD_PLUGIN_DIR . "src/bootstrap/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/http/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/hooks/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/events/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/events/events/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/query/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/write/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/permissions/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/metadata/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/adapters/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/admin/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/hooks/subscribers/class-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/bootstrap/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/http/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/hooks/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/events/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/events/events/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/query/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/write/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/permissions/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/metadata/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/adapters/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/admin/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/hooks/subscribers/class-odad-{$filename}.php",
         // interfaces
-        ODAD_PLUGIN_DIR . "src/events/interface-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/adapters/interface-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/events/interface-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/adapters/interface-odad-{$filename}.php",
     ];
     foreach ( $paths as $path ) {
         if ( file_exists( $path ) ) {
@@ -82,7 +82,7 @@ function ODAD_container(): ODAD_Container {
 
 ---
 
-### `wp-odata-suite/src/bootstrap/class-wpos-container.php`
+### `wp-odata-suite/src/bootstrap/class-odad-container.php`
 
 ```php
 <?php
@@ -115,7 +115,7 @@ class ODAD_Container {
 
 ---
 
-### `wp-odata-suite/src/bootstrap/class-wpos-bootstrapper.php`
+### `wp-odata-suite/src/bootstrap/class-odad-bootstrapper.php`
 
 This is a scaffold. It only registers what exists in Phase 1.
 Later tasks will add more `singleton()` bindings here.

@@ -5,7 +5,7 @@
  * These tests rely on the full bootstrapped plugin container which is set up by
  * plugins_loaded (triggered automatically by the WP test suite bootstrap).
  *
- * @package WPOS\Tests\Integration
+ * @package ODAD\Tests\Integration
  */
 
 class HookBridgeTest extends WP_UnitTestCase {

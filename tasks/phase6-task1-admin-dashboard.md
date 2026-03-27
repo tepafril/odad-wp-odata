@@ -14,7 +14,7 @@ directly in admin classes.
 
 ## File
 
-### `src/admin/class-wpos-admin.php`
+### `src/admin/class-odad-admin.php`
 
 ```php
 class ODAD_Admin {
@@ -83,7 +83,7 @@ public function on_admin_menu(): void {
 
 ## Assets
 
-Create minimal CSS/JS in `assets/css/wpos-admin.css` and `assets/js/wpos-admin.js`.
+Create minimal CSS/JS in `assets/css/odad-admin.css` and `assets/js/odad-admin.js`.
 The dashboard is server-rendered HTML (WP Settings API). React is optional.
 
 ---

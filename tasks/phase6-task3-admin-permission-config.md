@@ -14,7 +14,7 @@ allowing administrators to customize what each role can do.
 
 ## File
 
-### `src/admin/class-wpos-admin-permission-config.php`
+### `src/admin/class-odad-admin-permission-config.php`
 
 ```php
 class ODAD_Admin_Permission_Config {

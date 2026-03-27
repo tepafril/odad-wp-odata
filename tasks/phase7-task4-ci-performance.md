@@ -95,7 +95,7 @@ if ( defined('WP_DEBUG') && WP_DEBUG ) {
     // ... query ...
     $time = microtime(true) - $start;
     if ( $time > 0.1 ) {
-        error_log("WPOS slow query ({$time}s): {$sql}");
+        error_log("ODAD slow query ({$time}s): {$sql}");
     }
 }
 ```

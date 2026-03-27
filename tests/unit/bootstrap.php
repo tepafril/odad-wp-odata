@@ -121,21 +121,21 @@ spl_autoload_register( function ( string $class ): void {
     $plugin_dir = ODAD_PLUGIN_DIR;
 
     $paths = [
-        $plugin_dir . "src/bootstrap/class-wpos-{$filename}.php",
-        $plugin_dir . "src/http/class-wpos-{$filename}.php",
-        $plugin_dir . "src/hooks/class-wpos-{$filename}.php",
-        $plugin_dir . "src/events/class-wpos-{$filename}.php",
-        $plugin_dir . "src/events/events/class-wpos-{$filename}.php",
-        $plugin_dir . "src/query/class-wpos-{$filename}.php",
-        $plugin_dir . "src/write/class-wpos-{$filename}.php",
-        $plugin_dir . "src/permissions/class-wpos-{$filename}.php",
-        $plugin_dir . "src/metadata/class-wpos-{$filename}.php",
-        $plugin_dir . "src/adapters/class-wpos-{$filename}.php",
-        $plugin_dir . "src/admin/class-wpos-{$filename}.php",
-        $plugin_dir . "src/hooks/subscribers/class-wpos-{$filename}.php",
+        $plugin_dir . "src/bootstrap/class-odad-{$filename}.php",
+        $plugin_dir . "src/http/class-odad-{$filename}.php",
+        $plugin_dir . "src/hooks/class-odad-{$filename}.php",
+        $plugin_dir . "src/events/class-odad-{$filename}.php",
+        $plugin_dir . "src/events/events/class-odad-{$filename}.php",
+        $plugin_dir . "src/query/class-odad-{$filename}.php",
+        $plugin_dir . "src/write/class-odad-{$filename}.php",
+        $plugin_dir . "src/permissions/class-odad-{$filename}.php",
+        $plugin_dir . "src/metadata/class-odad-{$filename}.php",
+        $plugin_dir . "src/adapters/class-odad-{$filename}.php",
+        $plugin_dir . "src/admin/class-odad-{$filename}.php",
+        $plugin_dir . "src/hooks/subscribers/class-odad-{$filename}.php",
         // interfaces
-        $plugin_dir . "src/events/interface-wpos-{$filename}.php",
-        $plugin_dir . "src/adapters/interface-wpos-{$filename}.php",
+        $plugin_dir . "src/events/interface-odad-{$filename}.php",
+        $plugin_dir . "src/adapters/interface-odad-{$filename}.php",
     ];
 
     foreach ( $paths as $path ) {

@@ -27,7 +27,7 @@ WP 'init' fires
 
 ---
 
-## File: `src/hooks/subscribers/class-wpos-subscriber-schema-init.php`
+## File: `src/hooks/subscribers/class-odad-subscriber-schema-init.php`
 
 ```php
 class ODAD_Subscriber_Schema_Init implements ODAD_Event_Listener {

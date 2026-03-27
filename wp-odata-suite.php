@@ -27,25 +27,25 @@ spl_autoload_register( function ( string $class ): void {
     $filename = str_replace( '_', '-', $suffix );
     // Try class file first, then interface file
     $paths = [
-        ODAD_PLUGIN_DIR . "src/bootstrap/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/http/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/hooks/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/events/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/events/events/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/query/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/write/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/permissions/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/metadata/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/adapters/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/admin/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/hooks/subscribers/class-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/bootstrap/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/http/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/hooks/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/events/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/events/events/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/query/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/write/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/permissions/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/metadata/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/adapters/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/admin/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/hooks/subscribers/class-odad-{$filename}.php",
         // ODAD-HRMS domain
-        ODAD_PLUGIN_DIR . "src/odad-hrms/entities/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/odad-hrms/actions/class-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/odad-hrms/functions/class-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/odad-hrms/entities/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/odad-hrms/actions/class-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/odad-hrms/functions/class-odad-{$filename}.php",
         // interfaces
-        ODAD_PLUGIN_DIR . "src/events/interface-wpos-{$filename}.php",
-        ODAD_PLUGIN_DIR . "src/adapters/interface-wpos-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/events/interface-odad-{$filename}.php",
+        ODAD_PLUGIN_DIR . "src/adapters/interface-odad-{$filename}.php",
     ];
     foreach ( $paths as $path ) {
         if ( file_exists( $path ) ) {

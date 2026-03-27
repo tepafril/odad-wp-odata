@@ -21,7 +21,7 @@ DELETE /odata/v4/Posts/$filter=@f/$each?@f=Status eq 'auto-draft'
 
 ## File
 
-### `src/write/class-wpos-set-operations.php`
+### `src/write/class-odad-set-operations.php`
 
 ```php
 class ODAD_Set_Operations {
@@ -108,7 +108,7 @@ Parse `@x` from the URL alias and `?@x=...` from query params.
 
 ---
 
-## Subscriber: `class-wpos-subscriber-set-operation.php`
+## Subscriber: `class-odad-subscriber-set-operation.php`
 
 Flesh out the stub from Task 1.3:
 

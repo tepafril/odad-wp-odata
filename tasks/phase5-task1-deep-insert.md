@@ -23,7 +23,7 @@ POST /odata/v4/Posts
 
 ---
 
-## File 1: `src/write/class-wpos-deep-insert.php`
+## File 1: `src/write/class-odad-deep-insert.php`
 
 ```php
 class ODAD_Deep_Insert {
@@ -100,7 +100,7 @@ The relationship strategy is defined in the nav property definition under a
 
 ## `ODAD_Write_Handler` Update
 
-Create `src/write/class-wpos-write-handler.php` if not yet created:
+Create `src/write/class-odad-write-handler.php` if not yet created:
 
 ```php
 class ODAD_Write_Handler {
@@ -124,7 +124,7 @@ whether to call `deep_insert->execute()` or a simple `adapter->insert()`.
 
 ---
 
-## Subscriber: `class-wpos-subscriber-deep-insert.php`
+## Subscriber: `class-odad-subscriber-deep-insert.php`
 
 Flesh out the stub from Task 1.3:
 

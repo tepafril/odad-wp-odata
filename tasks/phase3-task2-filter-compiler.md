@@ -14,7 +14,7 @@ SQL `WHERE` clause using `$wpdb->prepare()`. This is a security-critical compone
 
 ## File
 
-### `src/query/class-wpos-filter-compiler.php`
+### `src/query/class-odad-filter-compiler.php`
 
 ```php
 class ODAD_Filter_Compiler {

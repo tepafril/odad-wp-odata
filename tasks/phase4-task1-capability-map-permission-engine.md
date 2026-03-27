@@ -13,7 +13,7 @@ Both are pure PHP domain services. No WP hook calls here — those happen in sub
 
 ---
 
-## File 1: `src/permissions/class-wpos-capability-map.php`
+## File 1: `src/permissions/class-odad-capability-map.php`
 
 ```php
 class ODAD_Capability_Map {
@@ -56,7 +56,7 @@ e.g.  ODAD_employees_read
 
 ---
 
-## File 2: `src/permissions/class-wpos-permission-engine.php`
+## File 2: `src/permissions/class-odad-permission-engine.php`
 
 ```php
 class ODAD_Permission_Engine {

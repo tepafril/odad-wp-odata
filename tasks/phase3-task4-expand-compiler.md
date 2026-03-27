@@ -13,7 +13,7 @@ E.g. `$expand=Author,Tags` or `$expand=Author($select=DisplayName)`.
 
 ## File
 
-### `src/query/class-wpos-expand-compiler.php`
+### `src/query/class-odad-expand-compiler.php`
 
 ```php
 class ODAD_Expand_Compiler {

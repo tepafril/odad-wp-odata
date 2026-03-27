@@ -11,7 +11,7 @@ to WP filter hooks and the permission/ACL domain services.
 
 ---
 
-## File 1: `src/hooks/subscribers/class-wpos-subscriber-permission-check.php`
+## File 1: `src/hooks/subscribers/class-odad-subscriber-permission-check.php`
 
 Handles `ODAD_Event_Permission_Check`. Applies the `ODAD_can_{operation}` WP filter
 so external plugins can override the permission decision.
@@ -59,7 +59,7 @@ class ODAD_Subscriber_Permission_Check implements ODAD_Event_Listener {
 
 ---
 
-## File 2: `src/hooks/subscribers/class-wpos-subscriber-write-before.php`
+## File 2: `src/hooks/subscribers/class-odad-subscriber-write-before.php`
 
 Handles `ODAD_Event_Write_Before`.
 - Checks permission via `ODAD_Permission_Engine`
@@ -119,7 +119,7 @@ class ODAD_Subscriber_Write_Before implements ODAD_Event_Listener {
 
 ---
 
-## File 3: `src/hooks/subscribers/class-wpos-subscriber-write-after.php`
+## File 3: `src/hooks/subscribers/class-odad-subscriber-write-after.php`
 
 Handles `ODAD_Event_Write_After`. Fires the appropriate WP action notification.
 

@@ -25,7 +25,7 @@ WordPress (outer) → Hook Bridge → Event Bus → Domain Services (inner)
 
 ## Files to Create
 
-### `src/hooks/class-wpos-hook-bridge.php`
+### `src/hooks/class-odad-hook-bridge.php`
 
 ```php
 class ODAD_Hook_Bridge {
@@ -92,18 +92,18 @@ body for now. The correct `get_event()` return value must be set.
 
 | File | get_event() return |
 |---|---|
-| `class-wpos-subscriber-schema-init.php` | `ODAD_Event_WP_Init::class` |
-| `class-wpos-subscriber-schema-changed.php` | `ODAD_Event_Schema_Changed::class` |
-| `class-wpos-subscriber-permission-check.php` | `ODAD_Event_Permission_Check::class` |
-| `class-wpos-subscriber-query-before.php` | `ODAD_Event_Query_Before::class` |
-| `class-wpos-subscriber-query-after.php` | `ODAD_Event_Query_After::class` |
-| `class-wpos-subscriber-write-before.php` | `ODAD_Event_Write_Before::class` |
-| `class-wpos-subscriber-write-after.php` | `ODAD_Event_Write_After::class` |
-| `class-wpos-subscriber-deep-insert.php` | `ODAD_Event_Deep_Insert_Before::class` |
-| `class-wpos-subscriber-deep-update.php` | `ODAD_Event_Deep_Update_Before::class` |
-| `class-wpos-subscriber-set-operation.php` | `ODAD_Event_Set_Operation_Before::class` |
-| `class-wpos-subscriber-metadata-build.php` | `ODAD_Event_Metadata_Build::class` |
-| `class-wpos-subscriber-admin-config-saved.php` | `ODAD_Event_Admin_Entity_Config_Saved::class` |
+| `class-odad-subscriber-schema-init.php` | `ODAD_Event_WP_Init::class` |
+| `class-odad-subscriber-schema-changed.php` | `ODAD_Event_Schema_Changed::class` |
+| `class-odad-subscriber-permission-check.php` | `ODAD_Event_Permission_Check::class` |
+| `class-odad-subscriber-query-before.php` | `ODAD_Event_Query_Before::class` |
+| `class-odad-subscriber-query-after.php` | `ODAD_Event_Query_After::class` |
+| `class-odad-subscriber-write-before.php` | `ODAD_Event_Write_Before::class` |
+| `class-odad-subscriber-write-after.php` | `ODAD_Event_Write_After::class` |
+| `class-odad-subscriber-deep-insert.php` | `ODAD_Event_Deep_Insert_Before::class` |
+| `class-odad-subscriber-deep-update.php` | `ODAD_Event_Deep_Update_Before::class` |
+| `class-odad-subscriber-set-operation.php` | `ODAD_Event_Set_Operation_Before::class` |
+| `class-odad-subscriber-metadata-build.php` | `ODAD_Event_Metadata_Build::class` |
+| `class-odad-subscriber-admin-config-saved.php` | `ODAD_Event_Admin_Entity_Config_Saved::class` |
 
 ### Pattern for each stub
 
@@ -129,7 +129,7 @@ class ODAD_Subscriber_Schema_Init implements ODAD_Event_Listener {
 
 ## Bootstrapper Update
 
-In `class-wpos-bootstrapper.php` (from Task 1.1), add all subscriber registrations
+In `class-odad-bootstrapper.php` (from Task 1.1), add all subscriber registrations
 to `register_subscribers()`. Each subscriber must be constructed and passed to
 `$bus->subscribe()`. Use empty constructors for now (no dependencies required yet).
 

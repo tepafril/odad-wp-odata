@@ -12,14 +12,14 @@ no WordPress dependencies.
 
 ## Files to Create
 
-### `src/events/interface-wpos-event.php`
+### `src/events/interface-odad-event.php`
 Marker interface. All event value objects implement this.
 
 ```php
 interface ODAD_Event {}
 ```
 
-### `src/events/interface-wpos-stoppable-event.php`
+### `src/events/interface-odad-stoppable-event.php`
 ```php
 interface ODAD_Stoppable_Event extends ODAD_Event {
     public function is_stopped(): bool;
@@ -27,7 +27,7 @@ interface ODAD_Stoppable_Event extends ODAD_Event {
 }
 ```
 
-### `src/events/interface-wpos-event-listener.php`
+### `src/events/interface-odad-event-listener.php`
 ```php
 interface ODAD_Event_Listener {
     /** Return the fully-qualified class name of the event this listener handles. */
@@ -36,7 +36,7 @@ interface ODAD_Event_Listener {
 }
 ```
 
-### `src/events/class-wpos-event-bus.php`
+### `src/events/class-odad-event-bus.php`
 ```php
 class ODAD_Event_Bus {
     /** @var array<string, ODAD_Event_Listener[]> */
@@ -66,17 +66,17 @@ All files live in `src/events/events/`.
 
 ### Schema Events
 
-**`class-wpos-event-wp-init.php`**
+**`class-odad-event-wp-init.php`**
 ```php
 class ODAD_Event_WP_Init implements ODAD_Event {}
 ```
 
-**`class-wpos-event-rest-init.php`**
+**`class-odad-event-rest-init.php`**
 ```php
 class ODAD_Event_REST_Init implements ODAD_Event {}
 ```
 
-**`class-wpos-event-schema-register.php`**
+**`class-odad-event-schema-register.php`**
 ```php
 class ODAD_Event_Schema_Register implements ODAD_Event {
     public function __construct(
@@ -85,7 +85,7 @@ class ODAD_Event_Schema_Register implements ODAD_Event {
 }
 ```
 
-**`class-wpos-event-schema-changed.php`**
+**`class-odad-event-schema-changed.php`**
 ```php
 class ODAD_Event_Schema_Changed implements ODAD_Event {
     // $reason: 'entity_registered' | 'config_updated' | 'entity_removed'
@@ -96,7 +96,7 @@ class ODAD_Event_Schema_Changed implements ODAD_Event {
 }
 ```
 
-**`class-wpos-event-metadata-build.php`**
+**`class-odad-event-metadata-build.php`**
 ```php
 class ODAD_Event_Metadata_Build implements ODAD_Event {
     public function __construct(
@@ -110,7 +110,7 @@ class ODAD_Event_Metadata_Build implements ODAD_Event {
 
 ### Query Events
 
-**`class-wpos-event-query-before.php`**
+**`class-odad-event-query-before.php`**
 ```php
 class ODAD_Event_Query_Before implements ODAD_Event {
     public function __construct(
@@ -121,7 +121,7 @@ class ODAD_Event_Query_Before implements ODAD_Event {
 }
 ```
 
-**`class-wpos-event-query-after.php`**
+**`class-odad-event-query-after.php`**
 ```php
 class ODAD_Event_Query_After implements ODAD_Event {
     public function __construct(
@@ -137,7 +137,7 @@ class ODAD_Event_Query_After implements ODAD_Event {
 
 ### Standard Write Events
 
-**`class-wpos-event-write-before.php`**
+**`class-odad-event-write-before.php`**
 ```php
 class ODAD_Event_Write_Before implements ODAD_Event {
     public bool $cancelled = false;
@@ -152,7 +152,7 @@ class ODAD_Event_Write_Before implements ODAD_Event {
 }
 ```
 
-**`class-wpos-event-write-after.php`**
+**`class-odad-event-write-after.php`**
 ```php
 class ODAD_Event_Write_After implements ODAD_Event {
     public function __construct(
@@ -169,7 +169,7 @@ class ODAD_Event_Write_After implements ODAD_Event {
 
 ### Deep Insert Events
 
-**`class-wpos-event-deep-insert-before.php`**
+**`class-odad-event-deep-insert-before.php`**
 ```php
 class ODAD_Event_Deep_Insert_Before implements ODAD_Event {
     public bool $cancelled = false;
@@ -182,7 +182,7 @@ class ODAD_Event_Deep_Insert_Before implements ODAD_Event {
 }
 ```
 
-**`class-wpos-event-deep-insert-nested-before.php`**
+**`class-odad-event-deep-insert-nested-before.php`**
 ```php
 class ODAD_Event_Deep_Insert_Nested_Before implements ODAD_Event {
     public bool $cancelled = false;
@@ -197,7 +197,7 @@ class ODAD_Event_Deep_Insert_Nested_Before implements ODAD_Event {
 }
 ```
 
-**`class-wpos-event-deep-insert-after.php`**
+**`class-odad-event-deep-insert-after.php`**
 ```php
 class ODAD_Event_Deep_Insert_After implements ODAD_Event {
     public function __construct(
@@ -213,7 +213,7 @@ class ODAD_Event_Deep_Insert_After implements ODAD_Event {
 
 ### Deep Update Events
 
-**`class-wpos-event-deep-update-before.php`**
+**`class-odad-event-deep-update-before.php`**
 ```php
 class ODAD_Event_Deep_Update_Before implements ODAD_Event {
     public bool $cancelled = false;
@@ -227,7 +227,7 @@ class ODAD_Event_Deep_Update_Before implements ODAD_Event {
 }
 ```
 
-**`class-wpos-event-deep-update-nested-before.php`**
+**`class-odad-event-deep-update-nested-before.php`**
 ```php
 class ODAD_Event_Deep_Update_Nested_Before implements ODAD_Event {
     public bool $cancelled = false;
@@ -243,7 +243,7 @@ class ODAD_Event_Deep_Update_Nested_Before implements ODAD_Event {
 }
 ```
 
-**`class-wpos-event-deep-update-after.php`**
+**`class-odad-event-deep-update-after.php`**
 ```php
 class ODAD_Event_Deep_Update_After implements ODAD_Event {
     public function __construct(
@@ -259,7 +259,7 @@ class ODAD_Event_Deep_Update_After implements ODAD_Event {
 
 ### Set-Based Operation Events
 
-**`class-wpos-event-set-operation-before.php`**
+**`class-odad-event-set-operation-before.php`**
 ```php
 class ODAD_Event_Set_Operation_Before implements ODAD_Event {
     public bool $cancelled = false;
@@ -274,7 +274,7 @@ class ODAD_Event_Set_Operation_Before implements ODAD_Event {
 }
 ```
 
-**`class-wpos-event-set-operation-after.php`**
+**`class-odad-event-set-operation-after.php`**
 ```php
 class ODAD_Event_Set_Operation_After implements ODAD_Event {
     public function __construct(
@@ -290,7 +290,7 @@ class ODAD_Event_Set_Operation_After implements ODAD_Event {
 
 ### Permission Check Event
 
-**`class-wpos-event-permission-check.php`**
+**`class-odad-event-permission-check.php`**
 ```php
 class ODAD_Event_Permission_Check implements ODAD_Event {
     public function __construct(
@@ -307,7 +307,7 @@ class ODAD_Event_Permission_Check implements ODAD_Event {
 
 ### Admin Events
 
-**`class-wpos-event-admin-entity-config-saved.php`**
+**`class-odad-event-admin-entity-config-saved.php`**
 ```php
 class ODAD_Event_Admin_Entity_Config_Saved implements ODAD_Event {
     public function __construct(
@@ -317,7 +317,7 @@ class ODAD_Event_Admin_Entity_Config_Saved implements ODAD_Event {
 }
 ```
 
-**`class-wpos-event-admin-permission-saved.php`**
+**`class-odad-event-admin-permission-saved.php`**
 ```php
 class ODAD_Event_Admin_Permission_Saved implements ODAD_Event {
     public function __construct(

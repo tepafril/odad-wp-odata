@@ -13,7 +13,7 @@ writing to fields the user cannot modify.
 
 ## File
 
-### `src/permissions/class-wpos-field-acl.php`
+### `src/permissions/class-odad-field-acl.php`
 
 ```php
 class ODAD_Field_ACL {

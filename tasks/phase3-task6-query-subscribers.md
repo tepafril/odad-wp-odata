@@ -16,7 +16,7 @@ Implement the two query subscribers that sit between the Hook Bridge and the dom
 
 ---
 
-## File 1: `src/hooks/subscribers/class-wpos-subscriber-query-before.php`
+## File 1: `src/hooks/subscribers/class-odad-subscriber-query-before.php`
 
 ```php
 class ODAD_Subscriber_Query_Before implements ODAD_Event_Listener {
@@ -55,7 +55,7 @@ class ODAD_Subscriber_Query_Before implements ODAD_Event_Listener {
 
 ---
 
-## File 2: `src/hooks/subscribers/class-wpos-subscriber-query-after.php`
+## File 2: `src/hooks/subscribers/class-odad-subscriber-query-after.php`
 
 ```php
 class ODAD_Subscriber_Query_After implements ODAD_Event_Listener {

@@ -6,7 +6,7 @@
  * Tests run inside WP's transaction wrapper so row data is rolled back,
  * but DDL (CREATE/DROP TABLE) commits immediately in MySQL.
  *
- * @package WPOS\Tests\Integration
+ * @package ODAD\Tests\Integration
  */
 
 class CustomTableAdapterTest extends WP_UnitTestCase {
@@ -36,7 +36,7 @@ class CustomTableAdapterTest extends WP_UnitTestCase {
         // Adapter uses the bare name; the class prepends $wpdb->prefix internally.
         $this->adapter = new ODAD_Adapter_Custom_Table(
             self::TABLE,
-            'WposTestCustom',
+            'ODADTestCustom',
             'id',
         );
     }

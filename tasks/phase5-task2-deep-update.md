@@ -26,7 +26,7 @@ PATCH /odata/v4/Posts(42)
 
 ## File
 
-### `src/write/class-wpos-deep-update.php`
+### `src/write/class-odad-deep-update.php`
 
 ```php
 class ODAD_Deep_Update {
@@ -107,7 +107,7 @@ Items with `@removed` are deletes — use the key to identify which nested entit
 
 ---
 
-## Subscriber: `class-wpos-subscriber-deep-update.php`
+## Subscriber: `class-odad-subscriber-deep-update.php`
 
 Pattern mirrors `ODAD_Subscriber_Deep_Insert`. Register for:
 - `ODAD_Event_Deep_Update_Before`
