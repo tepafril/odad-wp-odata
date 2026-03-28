@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+/* Override dark: variant to match PrimeVue's .app-dark class instead of OS prefers-color-scheme */
+@custom-variant dark (&:where(.app-dark, .app-dark *));
+
+/* PrimeUI surface/primary palette so bg-surface-200 etc. resolve (Tailwind v4 needs @theme in main file).
+   Fallbacks match Aura light theme so colors show before PrimeVue injects --p-surface-* */
+@theme inline {
+  --color-surface-0: var(--p-surface-0, #ffffff);
+  --color-surface-50: var(--p-surface-50, #f8fafc);
+  --color-surface-100: var(--p-surface-100, #f1f5f9);
+  --color-surface-200: var(--p-surface-200, #e2e8f0);
+  --color-surface-300: var(--p-surface-300, #cbd5e1);
+  --color-surface-400: var(--p-surface-400, #94a3b8);
+  --color-surface-500: var(--p-surface-500, #64748b);
+  --color-surface-600: var(--p-surface-600, #475569);
+  --color-surface-700: var(--p-surface-700, #334155);
+  --color-surface-800: var(--p-surface-800, #1e293b);
+  --color-surface-900: var(--p-surface-900, #0f172a);
+  --color-surface-950: var(--p-surface-950, #020617);
+  --color-primary: var(--p-primary-color, #10b981);
+  --color-primary-50: var(--p-primary-50, #ecfdf5);
+  --color-primary-100: var(--p-primary-100, #d1fae5);
+  --color-primary-200: var(--p-primary-200, #a7f3d0);
+  --color-primary-300: var(--p-primary-300, #6ee7b7);
+  --color-primary-400: var(--p-primary-400, #34d399);
+  --color-primary-500: var(--p-primary-500, #10b981);
+  --color-primary-600: var(--p-primary-600, #059669);
+  --color-primary-700: var(--p-primary-700, #047857);
+  --color-primary-800: var(--p-primary-800, #065f46);
+  --color-primary-900: var(--p-primary-900, #064e3b);
+  --color-primary-950: var(--p-primary-950, #022c22);
+}

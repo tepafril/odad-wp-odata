@@ -1,0 +1,109 @@
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useToast } from 'primevue/usetoast';
+import { request, getBaseUrl } from '@/api/client';
+import { DepartmentService } from '@/service/DepartmentService';
+
+const toast = useToast();
+const loading = ref(false);
+const items = ref([]);
+const filters = ref({ year: new Date().getFullYear(), department_id: '' });
+
+const departmentOptions = ref([]);
+
+onMounted(async () => {
+    const dRes = await DepartmentService.getList({ per_page: 500 }).catch(() => null);
+    if (dRes) departmentOptions.value = (dRes.items ?? []).map(d => ({ label: d.name, value: Number(d.id) }));
+    loadReport();
+});
+
+async function loadReport() {
+    loading.value = true;
+    try {
+        const q = new URLSearchParams();
+        Object.entries(filters.value).forEach(([k, v]) => { if (v !== '' && v != null) q.set(k, v); });
+        const res = await request(`reports/leave-accrual?${q}`);
+        if (res.error) throw new Error(res.error.message);
+        items.value = res.data?.items || [];
+    } catch (e) {
+        toast.add({ severity: 'error', summary: 'Error', detail: e.message, life: 4000 });
+    } finally {
+        loading.value = false;
+    }
+}
+
+function exportCsv() {
+    const q = new URLSearchParams();
+    Object.entries(filters.value).forEach(([k, v]) => { if (v !== '' && v != null) q.set(k, v); });
+    q.set('format', 'csv');
+    const a = document.createElement('a');
+    a.href = `${getBaseUrl()}/reports/leave-accrual?${q}`;
+    a.download = 'leave-accrual.csv';
+    a.click();
+}
+</script>
+
+<template>
+    <div class="card w-full !max-w-full">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div>
+                <div class="font-semibold text-xl mb-1">Leave Accrual Report</div>
+                <p class="text-surface-500 m-0">Accrual-enabled leave balances with monthly rate and projections.</p>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-end gap-3 mb-4">
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium">Year</label>
+                <InputNumber v-model="filters.year" :useGrouping="false" class="w-24" />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium">Department</label>
+                <Select v-model="filters.department_id" :options="departmentOptions" optionLabel="label"
+                    optionValue="value" placeholder="All" showClear style="width:14rem" />
+            </div>
+            <Button label="Apply" icon="pi pi-search" @click="loadReport" />
+            <Button label="Export CSV" icon="pi pi-download" severity="secondary" @click="exportCsv" />
+        </div>
+
+        <DataTable :value="items" :loading="loading" paginator :rows="20" stripedRows showGridlines
+            responsiveLayout="scroll" class="text-sm">
+            <template #empty><div class="text-center py-8 text-surface-500">No accrual data found.</div></template>
+            <Column field="name" header="Employee" sortable style="min-width:12rem">
+                <template #body="{ data }">
+                    <div>
+                        <div class="font-medium">{{ data.name }}</div>
+                        <div class="text-surface-500 text-xs">{{ data.employee_number }}</div>
+                    </div>
+                </template>
+            </Column>
+            <Column field="department" header="Department" sortable style="min-width:10rem" />
+            <Column field="leave_type" header="Leave Type" sortable style="min-width:10rem" />
+            <Column field="accrual_frequency" header="Frequency" style="min-width:7rem">
+                <template #body="{ data }">
+                    <Tag :value="data.accrual_frequency" :severity="data.accrual_frequency === 'monthly' ? 'info' : 'warn'" class="capitalize" />
+                </template>
+            </Column>
+            <Column field="monthly_rate" header="Monthly Rate" sortable style="min-width:8rem" />
+            <Column field="max_days_per_year" header="Max/Year" sortable style="min-width:7rem" />
+            <Column field="total_allocated" header="Allocated" sortable style="min-width:7rem" />
+            <Column field="carry_forwarded" header="Carry Fwd" sortable style="min-width:7rem" />
+            <Column field="total_taken" header="Taken" sortable style="min-width:6rem" />
+            <Column field="current_balance" header="Balance" sortable style="min-width:7rem">
+                <template #body="{ data }">
+                    <span :class="Number(data.current_balance) < 0 ? 'text-red-500 font-semibold' : ''">
+                        {{ data.current_balance }}
+                    </span>
+                </template>
+            </Column>
+            <Column field="projected_remaining" header="Projected" sortable style="min-width:8rem">
+                <template #body="{ data }">
+                    <span :class="Number(data.projected_remaining) < 0 ? 'text-red-500' : 'text-green-600'">
+                        {{ data.projected_remaining }}
+                    </span>
+                </template>
+            </Column>
+            <Column field="last_accrual_date" header="Last Accrual" sortable style="min-width:9rem" />
+        </DataTable>
+    </div>
+</template>

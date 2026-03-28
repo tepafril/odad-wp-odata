@@ -1,0 +1,17 @@
+/* Global styles and layout */
+@use 'primeicons/primeicons.css';
+@use '@/assets/layout/layout.scss';
+
+/*
+ * Tailwind v4 Preflight resets native <input> background to `transparent`,
+ * which falls back to the browser system color (white) and overrides
+ * PrimeVue's var(--p-inputtext-background) in dark mode.
+ * This rule restores the correct token with higher specificity.
+ */
+.app-dark {
+    input.p-inputtext,
+    input.p-datepicker-input {
+        background: var(--p-inputtext-background) !important;
+        color: var(--p-inputtext-color) !important;
+    }
+}
