@@ -16,9 +16,10 @@ defined( 'ABSPATH' ) || exit;
 register_activation_hook( __FILE__,   [ 'ODAD_Auth_Installer', 'activate' ] );
 register_deactivation_hook( __FILE__, [ 'ODAD_Auth_Installer', 'deactivate' ] );
 
-define( 'ODAD_VERSION',   '0.1.0' );
-define( 'ODAD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'ODAD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'ODAD_VERSION',     '0.1.0' );
+define( 'ODAD_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
+define( 'ODAD_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
+define( 'ODAD_PLUGIN_FILE', __FILE__ );
 
 // AST node classes are all defined in one file — load it before the autoloader.
 require_once ODAD_PLUGIN_DIR . 'src/query/class-odad-ast-node.php';
@@ -73,6 +74,7 @@ if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 add_action( 'plugins_loaded', function (): void {
     $container = ODAD_Bootstrapper::build();
     $container->get( ODAD_Hook_Bridge::class )->register();
+    $container->get( ODAD_Admin_SPA::class )->register();
     $GLOBALS['ODAD_container'] = $container;
 }, 5 );
 

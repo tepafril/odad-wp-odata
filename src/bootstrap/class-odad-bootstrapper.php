@@ -113,6 +113,9 @@ class ODAD_Bootstrapper {
             $c->get( ODAD_Event_Bus::class ),
         ) );
 
+        // ── HR Suite SPA Admin Page ───────────────────────────────────────
+        $container->singleton( ODAD_Admin_SPA::class, fn() => new ODAD_Admin_SPA() );
+
         // ── Admin UI (Phase 6) ────────────────────────────────────────────
         $container->singleton( ODAD_Admin::class, fn( ODAD_Container $c ) => new ODAD_Admin(
             $c->get( ODAD_Schema_Registry::class ),

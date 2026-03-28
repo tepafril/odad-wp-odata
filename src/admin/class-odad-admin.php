@@ -77,13 +77,13 @@ class ODAD_Admin {
         }
         wp_enqueue_style(
             'odad-admin',
-            ODAD_PLUGIN_URL . 'assets/css/odad-admin.css',
+            ODAD_PLUGIN_URL . 'assets/css/wpos-admin.css',
             [],
             ODAD_VERSION
         );
         wp_enqueue_script(
             'odad-admin',
-            ODAD_PLUGIN_URL . 'assets/js/odad-admin.js',
+            ODAD_PLUGIN_URL . 'assets/js/wpos-admin.js',
             [ 'jquery' ],
             ODAD_VERSION,
             true
